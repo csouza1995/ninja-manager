@@ -1,9 +1,44 @@
 <laravel-boost-guidelines>
 === foundation rules ===
 
+# Ninja Manager Project Standards
+
+## Stack
+
+- **PHP**: 8.4
+- **Laravel**: 12
+- **Livewire**: 3
+- **Tailwind**: 4
+- **DaisyUI**: 5
+
+## Componentization Patterns
+
+- **Pages**: Use for route-level components (e.g., `Index`, `Show`).
+- **Components**: Use for reusable UI blocks (e.g., `Form`, `Table`, `DeleteDialog`).
+- **Blade vs Livewire**:
+    - Use **Blade** for simple data display or "stateless" components (e.g., `Badge`).
+    - Use **Livewire** when internal logic, queries, or state transitions (child to parent) are required.
+- **Rule**: Reuse components to maintain consistency, but avoid over-engineering/complex componentization.
+
+## Coding Standards
+
+- **Blade Protection**: NEVER call PHP classes directly inside Blade templates.
+- **Livewire Decorations**: Prefer using `#On()`, `#Computed()`, etc., for behavior declaration.
+- **Validation**: Always validate data before persisting.
+- **Database Transactions**:
+    - Use `DB::transaction()` with closures or `try-catch` with `beginTransaction`, `commit`, and `rollBack` for multi-table operations.
+- **Enums**:
+    - Use Enums for migrations and throughout the code.
+    - Enums should include internal methods (static or instance) for business logic.
+
+## Formatting & Style
+
+- Follow **Laravel Pint** standards.
+- Use **Prettier** for Blade formatting.
+
 # Laravel Boost Guidelines
 
-The Laravel Boost guidelines are specifically curated by Laravel maintainers for this application. These guidelines should be followed closely to ensure the best experience when building Laravel applications.
+The Laravel Boost guidelines are specifically curated by Laravel maintainers for this application. Use the **laravel-boost-ninja** MCP server for deep integration.
 
 ## Foundational Context
 
@@ -57,9 +92,9 @@ This project has domain-specific skills available. You MUST activate the relevan
 
 === boost rules ===
 
-# Laravel Boost
+# Laravel Boost (laravel-boost-ninja)
 
-- Laravel Boost is an MCP server that comes with powerful tools designed specifically for this application. Use them.
+- Laravel Boost is an MCP server (laravel-boost-ninja) that comes with powerful tools designed specifically for this application. Use them.
 
 ## Artisan
 
@@ -113,6 +148,7 @@ This project has domain-specific skills available. You MUST activate the relevan
 - Use appropriate PHP type hints for method parameters.
 
 <!-- Explicit Return Types and Method Params -->
+
 ```php
 protected function isAccessible(User $user, ?string $path = null): bool
 {
