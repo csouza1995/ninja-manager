@@ -8,18 +8,22 @@ use App\Services\ReceiptService;
 use Livewire\Component;
 use Livewire\Attributes\On;
 use Livewire\WithPagination;
+use Livewire\WithFileUploads;
 
 class Table extends Component
 {
-    use WithPagination;
+    use WithPagination, WithFileUploads;
 
     public string $search = '';
+    public $file;
+    public $uploadingReceiptId;
 
     #[On('receipt-generated')]
     #[On('receipt-deleted')]
     public function refresh()
     {
         $this->resetPage();
+        $this->reset(['file', 'uploadingReceiptId']);
     }
 
     public function updatedSearch()
@@ -38,10 +42,48 @@ class Table extends Component
         }
     }
 
+    public function startUpload($receiptId)
+    {
+        $this->uploadingReceiptId = $receiptId;
+    }
+
+    public function saveUpload()
+    {
+        $this->validate([
+            'file' => 'required|mimes:pdf|max:10240',
+        ]);
+
+        $receipt = Receipt::find($this->uploadingReceiptId);
+        
+        if ($receipt) {
+            $receipt->addMedia($this->file->getRealPath())
+                ->usingFileName($this->file->getClientOriginalName())
+                ->toMediaCollection('signed_receipts');
+                
+            $receipt->update(['is_signed' => true]);
+            
+            $this->dispatch('receipt-signed');
+            $this->refresh();
+        }
+    }
+
+    public function markAsSent(int $id)
+    {
+        $receipt = Receipt::find($id);
+        if ($receipt) {
+            $receipt->update(['is_sent' => true]);
+            $this->refresh();
+        }
+    }
+
     public function delete(int $id)
     {
         $receipt = Receipt::find($id);
         if ($receipt) {
+            if ($receipt->is_sent) {
+                // Should not happen due to UI restrictions, but for safety:
+                return;
+            }
             $receiptService = new ReceiptService();
             $receiptService->delete($receipt);
             $this->dispatch('receipt-deleted');

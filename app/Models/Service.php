@@ -55,6 +55,11 @@ class Service extends Model
         return $this->hasOne(Receipt::class);
     }
 
+    public function revenue(): HasOne
+    {
+        return $this->hasOne(Revenue::class);
+    }
+
     // Computed Properties
     public function getTotalAttribute(): float
     {

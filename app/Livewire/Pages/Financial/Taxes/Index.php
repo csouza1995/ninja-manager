@@ -13,6 +13,7 @@ class Index extends Component
 
     public bool $isFormOpen = false;
     public ?int $taxId = null;
+    public string $search = '';
 
     #[Validate('required|min:2')]
     public string $name = '';
@@ -67,6 +68,11 @@ class Index extends Component
         $this->resetForm();
     }
 
+    public function updatedSearch()
+    {
+        $this->resetPage();
+    }
+
     private function resetForm()
     {
         $this->reset(['taxId', 'name', 'percentage', 'is_active']);
@@ -75,7 +81,12 @@ class Index extends Component
     public function render()
     {
         return view('livewire.pages.financial.taxes.index', [
-            'taxes' => Tax::latest()->paginate(10)
+            'taxes' => Tax::query()
+                ->when($this->search, function ($query) {
+                    $query->where('name', 'like', "%{$this->search}%");
+                })
+                ->latest()
+                ->paginate(10)
         ])->layout('components.layouts.app');
     }
 }

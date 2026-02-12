@@ -12,7 +12,6 @@ class Invoice extends Model
         'access_key',
         'amount',
         'issued_at',
-        'service_id',
         'notes',
     ];
 
@@ -21,8 +20,8 @@ class Invoice extends Model
         'issued_at' => 'date',
     ];
 
-    public function service(): BelongsTo
+    public function revenue(): \Illuminate\Database\Eloquent\Relations\HasOne
     {
-        return $this->belongsTo(Service::class);
+        return $this->hasOne(Revenue::class);
     }
 }

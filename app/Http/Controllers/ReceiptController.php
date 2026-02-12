@@ -12,6 +12,10 @@ class ReceiptController extends Controller
      */
     public function print(Receipt $receipt)
     {
+        if ($receipt->is_signed && $receipt->hasSignedPdf()) {
+            return redirect($receipt->getSignedPdfUrl());
+        }
+
         $receipt->load(['service.client', 'service.executor', 'service.role', 'service.items']);
         
         return view('receipts.template', [

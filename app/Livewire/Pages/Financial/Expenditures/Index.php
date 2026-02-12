@@ -14,6 +14,7 @@ class Index extends Component
 
     public bool $isFormOpen = false;
     public ?int $expenditureId = null;
+    public string $search = '';
 
     #[Validate('required|min:2')]
     public $destination = '';
@@ -104,6 +105,11 @@ class Index extends Component
         session()->flash('success', 'Despesa excluída.');
     }
 
+    public function updatedSearch()
+    {
+        $this->resetPage();
+    }
+
     public function closeForm()
     {
         $this->isFormOpen = false;
@@ -122,7 +128,14 @@ class Index extends Component
     public function render()
     {
         return view('livewire.pages.financial.expenditures.index', [
-            'expenditures' => Expenditure::with('bankAccount')->latest()->paginate(10),
+            'expenditures' => Expenditure::with('bankAccount')
+                ->when($this->search, function ($query) {
+                    $query->where('destination', 'like', "%{$this->search}%")
+                        ->orWhere('description', 'like', "%{$this->search}%")
+                        ->orWhere('classification', 'like', "%{$this->search}%");
+                })
+                ->latest()
+                ->paginate(10),
             'bankAccounts' => BankAccount::all(),
         ])->layout('components.layouts.app');
     }

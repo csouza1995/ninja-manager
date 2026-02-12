@@ -15,7 +15,7 @@ class Revenue extends Model
         'bank_account_id',
         'due_date',
         'gross_amount',
-        'nf_id',
+        'invoice_id',
         'tax_percentage',
         'tax_amount',
         'net_amount',
@@ -40,5 +40,10 @@ class Revenue extends Model
     public function bankAccount(): BelongsTo
     {
         return $this->belongsTo(BankAccount::class);
+    }
+
+    public function invoice(): BelongsTo
+    {
+        return $this->belongsTo(Invoice::class);
     }
 }

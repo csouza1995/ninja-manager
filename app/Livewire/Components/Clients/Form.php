@@ -12,6 +12,7 @@ class Form extends Component
 {
     public ?int $clientId = null;
     public bool $showModal = false;
+    public bool $readOnly = false;
 
     #[Validate('required|in:individual,company')]
     public string $type = 'individual';
@@ -56,12 +57,29 @@ class Form extends Component
     public function create()
     {
         $this->reset();
+        $this->readOnly = false;
         $this->showModal = true;
+    }
+
+    #[On('show-client')]
+    public function show(int $id)
+    {
+        $this->edit($id);
+        $this->readOnly = true;
+    }
+
+    #[On('duplicate-client')]
+    public function duplicate(int $id)
+    {
+        $this->edit($id);
+        $this->clientId = null;
+        $this->readOnly = false;
     }
 
     #[On('edit-client')]
     public function edit(int $id)
     {
+        $this->readOnly = false;
         $this->clientId = $id;
         $client = $this->client;
         
@@ -77,6 +95,7 @@ class Form extends Component
 
     public function save()
     {
+        if ($this->readOnly) return;
         $this->validate();
 
         Client::updateOrCreate(

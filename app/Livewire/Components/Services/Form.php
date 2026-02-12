@@ -17,6 +17,7 @@ class Form extends Component
 {
     public ?int $serviceId = null;
     public bool $showModal = false;
+    public bool $readOnly = false;
 
     #[Validate('required')]
     public ?int $client_id = null;
@@ -84,12 +85,41 @@ class Form extends Component
     {
         $this->reset();
         $this->items = [];
+        $this->readOnly = false;
         $this->showModal = true;
+    }
+
+    #[On('show-service')]
+    public function show(int $id)
+    {
+        $this->edit($id);
+        $this->readOnly = true;
+    }
+
+    #[On('duplicate-service')]
+    public function duplicate(int $id)
+    {
+        $this->edit($id);
+        $this->serviceId = null;
+        $this->is_paid = false;
+        $this->is_documented = false;
+        $this->is_invoiced = false;
+        $this->status = 'negotiating';
+        $this->started_at = null;
+        $this->finished_at = null;
+        
+        // Remove individual IDs from items so they are created as new
+        foreach ($this->items as &$item) {
+            $item['id'] = null;
+        }
+        
+        $this->readOnly = false;
     }
 
     #[On('edit-service')]
     public function edit(int $id)
     {
+        $this->readOnly = false;
         $this->serviceId = $id;
         $service = $this->service;
 
@@ -160,6 +190,7 @@ class Form extends Component
 
     public function save()
     {
+        if ($this->readOnly) return;
         $this->validate();
 
         if (empty($this->items)) {

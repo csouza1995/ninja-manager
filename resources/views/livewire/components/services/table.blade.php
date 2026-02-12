@@ -14,6 +14,9 @@
             </thead>
             <tbody>
                 @forelse($services as $service)
+                    @php
+                        $revenue = \App\Models\Revenue::where('service_id', $service->id)->first();
+                    @endphp
                     <tr class="hover">
                         <td class="font-mono text-xs">#{{ str_pad($service->id, 5, '0', STR_PAD_LEFT) }}</td>
                         <td>
@@ -27,7 +30,8 @@
                         <td>
                             @php
                                 $statusClasses = [
-                                    'negotiating' => 'badge-neutral',
+                                    'negotiating' => 'badge-warning text-warning-content',
+                                    'approved' => 'badge-secondary',
                                     'cancelled' => 'badge-error',
                                     'in_progress' => 'badge-info',
                                     'delivered' => 'badge-primary',
@@ -35,6 +39,7 @@
                                 ];
                                 $statusLabels = [
                                     'negotiating' => 'Negociando',
+                                    'approved' => 'Aprovado',
                                     'cancelled' => 'Cancelado',
                                     'in_progress' => 'Em andamento',
                                     'delivered' => 'Entregue',
@@ -48,82 +53,132 @@
                         <td>
                             <div class="flex flex-wrap gap-1">
                                 @if ($service->is_paid)
-                                    <span class="badge badge-success badge-sm" title="Pago">
+                                    @if ($service->revenue)
+                                        <a href="{{ route('financial.revenues', ['showId' => $service->revenue->id]) }}"
+                                            class="badge badge-success badge-sm hover:scale-105 transition-transform"
+                                            title="Ver Receita">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none"
+                                                viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            </svg>
+                                            Pago
+                                        </a>
+                                    @else
+                                        <span class="badge badge-success badge-sm" title="Pago">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none"
+                                                viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            </svg>
+                                            Pago
+                                        </span>
+                                    @endif
+                                @elseif ($service->revenue)
+                                    <a href="{{ route('financial.revenues', ['showId' => $service->revenue->id]) }}"
+                                        class="badge badge-success badge-outline badge-sm hover:scale-105 transition-transform"
+                                        title="Visualizar Receita">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none"
                                             viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M5 13l4 4L19 7" />
+                                                d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                         </svg>
-                                        Pago
-                                    </span>
+                                        Receita
+                                    </a>
                                 @endif
-                                @if ($service->is_documented)
-                                    <span class="badge badge-info badge-sm" title="Com Recibo">
+                                @if ($service->is_documented && $service->receipt)
+                                    <a href="{{ route('receipts.print', $service->receipt) }}" target="_blank"
+                                        class="badge badge-info badge-sm hover:scale-105 transition-transform"
+                                        title="Ver Recibo">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none"
                                             viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                 d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                         </svg>
                                         Recibo
-                                    </span>
+                                    </a>
                                 @endif
-                                @if ($service->is_invoiced)
-                                    <span class="badge badge-primary badge-sm" title="Faturado (NF)">
+                                @if ($service->revenue?->invoice)
+                                    <a href="{{ route('financial.invoices', ['search' => $service->revenue->invoice->number]) }}"
+                                        class="badge badge-primary badge-sm" title="Faturado (NF)">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none"
                                             viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                         </svg>
                                         NF
-                                    </span>
+                                    </a>
                                 @endif
                             </div>
                         </td>
                         <td class="font-bold">R$ {{ number_format($service->total, 2, ',', '.') }}</td>
                         <td class="text-right">
-                            <div class="flex justify-end gap-2">
-                                @if ($service->status !== 'cancelled')
-                                    @if ($service->is_documented && $service->receipt)
-                                        <a href="{{ route('receipts.print', $service->receipt) }}" target="_blank"
-                                            class="btn btn-square btn-ghost btn-sm text-success"
-                                            title="Visualizar Recibo">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
-                                                viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                            </svg>
-                                        </a>
-                                    @else
-                                        <button
-                                            wire:click="$dispatch('generate-receipt', { serviceId: {{ $service->id }} })"
-                                            class="btn btn-square btn-ghost btn-sm text-info" title="Gerar Recibo">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
-                                                viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                            </svg>
-                                        </button>
-                                    @endif
+                            <div class="flex justify-end gap-1">
+                                <!-- Launch Revenue (Shortcut) -->
+                                @if (in_array($service->status, ['approved', 'in_progress', 'delivered', 'finalized']) && !$service->revenue)
+                                    <a href="{{ route('financial.revenues', ['createFromService' => $service->id]) }}"
+                                        class="btn btn-square btn-ghost btn-xs text-success" title="Lançar Receita">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                                            viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                        </svg>
+                                    </a>
                                 @endif
 
-                                <button wire:click="$dispatch('edit-service', { id: {{ $service->id }} })"
-                                    class="btn btn-square btn-ghost btn-sm" title="Editar">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
-                                        viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                <!-- Generate Receipt (First Action) -->
+                                @if ($service->status !== 'cancelled' && $service->is_paid && !$service->receipt)
+                                    <button
+                                        wire:click="$dispatch('generate-receipt', { serviceId: {{ $service->id }} })"
+                                        class="btn btn-square btn-ghost btn-xs text-info" title="Gerar Recibo">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                                            viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M12 4.5v15m7.5-7.5h-15" />
+                                        </svg>
+                                    </button>
+                                @endif
+
+                                <!-- View Service -->
+                                <button wire:click="$dispatch('show-service', { id: {{ $service->id }} })"
+                                    class="btn btn-square btn-ghost btn-xs text-primary" title="Visualizar">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                        stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
                                     </svg>
                                 </button>
 
-                                @if ($service->canDelete())
-                                    <button wire:click="$dispatch('delete-service', { id: {{ $service->id }} })"
-                                        class="btn btn-square btn-ghost btn-sm text-error" title="Excluir">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                                <!-- Duplicate Service -->
+                                <button wire:click="$dispatch('duplicate-service', { id: {{ $service->id }} })"
+                                    class="btn btn-square btn-ghost btn-xs text-warning" title="Duplicar">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                        stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 0 1-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 0 1 1.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 0 0-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 0 1-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 0 0-3.375-3.375h-1.5a1.125 1.125 0 0 1-1.125-1.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H9.75" />
+                                    </svg>
+                                </button>
+
+                                @if ($service->canEdit())
+                                    <button wire:click="$dispatch('edit-service', { id: {{ $service->id }} })"
+                                        class="btn btn-square btn-ghost btn-xs" title="Editar">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
                                             viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                        </svg>
+                                    </button>
+                                @endif
+
+                                @if ($service->canDelete())
+                                    <button wire:click="$dispatch('delete-service', { id: {{ $service->id }} })"
+                                        class="btn btn-square btn-ghost btn-xs text-error" title="Excluir">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                                            viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="m14.74 9-.34 7m-4.74 0-.34-7m10 4.634V20a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V6.634m12 0a2 2 0 0 0-2-2h-3.366a2 2 0 0 0-1.268.464L9.08 6.634a2 2 0 0 0-2 2h10.74Z" />
                                         </svg>
                                     </button>
                                 @endif

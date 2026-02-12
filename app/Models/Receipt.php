@@ -17,11 +17,15 @@ class Receipt extends Model implements HasMedia
         'year',
         'sequence',
         'status',
+        'is_signed',
+        'is_sent',
     ];
 
     protected $casts = [
         'year' => 'integer',
         'sequence' => 'integer',
+        'is_signed' => 'boolean',
+        'is_sent' => 'boolean',
     ];
 
     protected static function boot()
@@ -53,6 +57,12 @@ class Receipt extends Model implements HasMedia
     public function registerMediaCollections(): void
     {
         $this->addMediaCollection('receipts')
+            ->useDisk('public')
+            ->singleFile()
+            ->acceptsMimeTypes(['application/pdf']);
+
+        $this->addMediaCollection('signed_receipts')
+            ->useDisk('public')
             ->singleFile()
             ->acceptsMimeTypes(['application/pdf']);
     }
@@ -71,5 +81,15 @@ class Receipt extends Model implements HasMedia
     public function hasPdf(): bool
     {
         return $this->hasMedia('receipts');
+    }
+
+    public function getSignedPdfUrl(): ?string
+    {
+        return $this->getFirstMediaUrl('signed_receipts');
+    }
+
+    public function hasSignedPdf(): bool
+    {
+        return $this->hasMedia('signed_receipts');
     }
 }

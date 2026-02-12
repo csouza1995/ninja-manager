@@ -14,6 +14,7 @@ class Index extends Component
 
     public $showModal = false;
     public $editingId = null;
+    public string $search = '';
 
     // Form fields
     public $number;
@@ -87,6 +88,11 @@ class Index extends Component
         $this->dispatch('notify', 'Nota Fiscal salva com sucesso!');
     }
 
+    public function updatedSearch()
+    {
+        $this->resetPage();
+    }
+
     public function delete($id)
     {
         Invoice::findOrFail($id)->delete();
@@ -96,6 +102,11 @@ class Index extends Component
     public function render()
     {
         $invoices = Invoice::with('service.client')
+            ->when($this->search, function ($query) {
+                $query->where('number', 'like', "%{$this->search}%")
+                    ->orWhere('access_key', 'like', "%{$this->search}%")
+                    ->orWhere('notes', 'like', "%{$this->search}%");
+            })
             ->orderBy('issued_at', 'desc')
             ->paginate(10);
 

@@ -40,7 +40,7 @@ class Table extends Component
 
     public function render()
     {
-        $services = Service::with(['client', 'executor', 'role'])
+        $services = Service::with(['client', 'executor', 'role', 'revenue', 'receipt'])
             ->when($this->search, function ($query) {
                 $query->whereHas('client', function ($q) {
                     $q->where('name', 'like', "%{$this->search}%");

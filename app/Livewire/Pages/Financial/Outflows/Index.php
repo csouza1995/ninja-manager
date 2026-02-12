@@ -15,6 +15,7 @@ class Index extends Component
 
     public $showModal = false;
     public $editingId = null;
+    public string $search = '';
 
     // Form fields
     public $type = 'Prolabore';
@@ -148,6 +149,11 @@ class Index extends Component
         $this->dispatch('notify', 'Registro de saída salvo com sucesso!');
     }
 
+    public function updatedSearch()
+    {
+        $this->resetPage();
+    }
+
     public function delete($id)
     {
         Outflow::findOrFail($id)->delete();
@@ -157,6 +163,11 @@ class Index extends Component
     public function render()
     {
         $outflows = Outflow::with(['originBankAccount', 'destinationBankAccount'])
+            ->when($this->search, function ($query) {
+                $query->where('description', 'like', "%{$this->search}%")
+                    ->orWhere('person_name', 'like', "%{$this->search}%")
+                    ->orWhere('type', 'like', "%{$this->search}%");
+            })
             ->orderBy('due_date', 'desc')
             ->paginate(10);
 

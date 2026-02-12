@@ -3,7 +3,11 @@
         <div class="modal modal-open">
             <div class="modal-box max-w-2xl">
                 <h3 class="font-bold text-lg text-primary mb-4">
-                    {{ $clientId ? 'Editar Cliente' : 'Novo Cliente' }}
+                    @if ($readOnly)
+                        Visualizar Cliente
+                    @else
+                        {{ $clientId ? 'Editar Cliente' : 'Novo Cliente' }}
+                    @endif
                 </h3>
 
                 <form wire:submit="save">
@@ -14,12 +18,12 @@
                         <div class="flex gap-4">
                             <label class="label cursor-pointer gap-2">
                                 <input type="radio" wire:model.live="type" value="individual"
-                                    class="radio radio-primary" />
+                                    class="radio radio-primary" @disabled($readOnly) />
                                 <span class="label-text">Pessoa Física</span>
                             </label>
                             <label class="label cursor-pointer gap-2">
-                                <input type="radio" wire:model.live="type" value="company"
-                                    class="radio radio-primary" />
+                                <input type="radio" wire:model.live="type" value="company" class="radio radio-primary"
+                                    @disabled($readOnly) />
                                 <span class="label-text">Pessoa Jurídica</span>
                             </label>
                         </div>
@@ -30,7 +34,8 @@
                             <span class="label-text">Nome {{ $type === 'company' ? 'da Empresa' : '' }}</span>
                         </label>
                         <input type="text" wire:model="name"
-                            class="input input-bordered w-full @error('name') input-error @enderror" />
+                            class="input input-bordered w-full @error('name') input-error @enderror"
+                            @disabled($readOnly) />
                         @error('name')
                             <span class="label-text-alt text-error">{{ $message }}</span>
                         @enderror
@@ -41,7 +46,8 @@
                             <span class="label-text">Apelido</span>
                         </label>
                         <input type="text" wire:model="nickname"
-                            class="input input-bordered w-full @error('nickname') input-error @enderror" />
+                            class="input input-bordered w-full @error('nickname') input-error @enderror"
+                            @disabled($readOnly) />
                         @error('nickname')
                             <span class="label-text-alt text-error">{{ $message }}</span>
                         @enderror
@@ -52,7 +58,8 @@
                             <span class="label-text">{{ $type === 'individual' ? 'CPF' : 'CNPJ' }}</span>
                         </label>
                         <input type="text" wire:model="document"
-                            class="input input-bordered w-full @error('document') input-error @enderror" />
+                            class="input input-bordered w-full @error('document') input-error @enderror"
+                            @disabled($readOnly) />
                         @error('document')
                             <span class="label-text-alt text-error">{{ $message }}</span>
                         @enderror
@@ -66,7 +73,8 @@
                                 <span class="label-text">CEP</span>
                             </label>
                             <input type="text" wire:model="zip_code"
-                                class="input input-bordered w-full @error('zip_code') input-error @enderror" />
+                                class="input input-bordered w-full @error('zip_code') input-error @enderror"
+                                @disabled($readOnly) />
                             @error('zip_code')
                                 <span class="label-text-alt text-error">{{ $message }}</span>
                             @enderror
@@ -77,7 +85,8 @@
                                 <span class="label-text">Número</span>
                             </label>
                             <input type="text" wire:model="number"
-                                class="input input-bordered w-full @error('number') input-error @enderror" />
+                                class="input input-bordered w-full @error('number') input-error @enderror"
+                                @disabled($readOnly) />
                             @error('number')
                                 <span class="label-text-alt text-error">{{ $message }}</span>
                             @enderror
@@ -89,7 +98,8 @@
                             <span class="label-text">Rua</span>
                         </label>
                         <input type="text" wire:model="street"
-                            class="input input-bordered w-full @error('street') input-error @enderror" />
+                            class="input input-bordered w-full @error('street') input-error @enderror"
+                            @disabled($readOnly) />
                         @error('street')
                             <span class="label-text-alt text-error">{{ $message }}</span>
                         @enderror
@@ -100,7 +110,8 @@
                             <span class="label-text">Bairro</span>
                         </label>
                         <input type="text" wire:model="neighborhood"
-                            class="input input-bordered w-full @error('neighborhood') input-error @enderror" />
+                            class="input input-bordered w-full @error('neighborhood') input-error @enderror"
+                            @disabled($readOnly) />
                         @error('neighborhood')
                             <span class="label-text-alt text-error">{{ $message }}</span>
                         @enderror
@@ -112,7 +123,8 @@
                                 <span class="label-text">Cidade</span>
                             </label>
                             <input type="text" wire:model="city"
-                                class="input input-bordered w-full @error('city') input-error @enderror" />
+                                class="input input-bordered w-full @error('city') input-error @enderror"
+                                @disabled($readOnly) />
                             @error('city')
                                 <span class="label-text-alt text-error">{{ $message }}</span>
                             @enderror
@@ -123,7 +135,8 @@
                                 <span class="label-text">Estado</span>
                             </label>
                             <input type="text" wire:model="state" maxlength="2"
-                                class="input input-bordered w-full @error('state') input-error @enderror" />
+                                class="input input-bordered w-full @error('state') input-error @enderror"
+                                @disabled($readOnly) />
                             @error('state')
                                 <span class="label-text-alt text-error">{{ $message }}</span>
                             @enderror
@@ -134,12 +147,17 @@
                         <label class="label">
                             <span class="label-text">Complemento</span>
                         </label>
-                        <input type="text" wire:model="complement" class="input input-bordered w-full" />
+                        <input type="text" wire:model="complement" class="input input-bordered w-full"
+                            @disabled($readOnly) />
                     </div>
 
                     <div class="modal-action">
-                        <button type="button" wire:click="closeModal" class="btn btn-ghost">Cancelar</button>
-                        <button type="submit" class="btn btn-primary">Salvar</button>
+                        <button type="button" wire:click="closeModal" class="btn btn-ghost">
+                            {{ $readOnly ? 'Fechar' : 'Cancelar' }}
+                        </button>
+                        @if (!$readOnly)
+                            <button type="submit" class="btn btn-primary">Salvar</button>
+                        @endif
                     </div>
                 </form>
             </div>

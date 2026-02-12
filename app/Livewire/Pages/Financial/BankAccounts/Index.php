@@ -13,6 +13,7 @@ class Index extends Component
 
     public bool $isFormOpen = false;
     public ?int $bankAccountId = null;
+    public string $search = '';
 
     #[Validate('required|min:2')]
     public string $bank_name = '';
@@ -68,6 +69,11 @@ class Index extends Component
         $this->resetForm();
     }
 
+    public function updatedSearch()
+    {
+        $this->resetPage();
+    }
+
     private function resetForm()
     {
         $this->reset(['bankAccountId', 'bank_name', 'owner_name', 'nickname']);
@@ -76,7 +82,14 @@ class Index extends Component
     public function render()
     {
         return view('livewire.pages.financial.bank-accounts.index', [
-            'accounts' => BankAccount::latest()->paginate(10)
+            'accounts' => BankAccount::query()
+                ->when($this->search, function ($query) {
+                    $query->where('bank_name', 'like', "%{$this->search}%")
+                        ->orWhere('owner_name', 'like', "%{$this->search}%")
+                        ->orWhere('nickname', 'like', "%{$this->search}%");
+                })
+                ->latest()
+                ->paginate(10)
         ])->layout('components.layouts.app');
     }
 }

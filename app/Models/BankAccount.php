@@ -13,6 +13,11 @@ class BankAccount extends Model
         'nickname',
     ];
 
+    public function getNameAttribute(): string
+    {
+        return $this->nickname ?: $this->bank_name;
+    }
+
     public function revenues(): HasMany
     {
         return $this->hasMany(Revenue::class);
