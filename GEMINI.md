@@ -36,6 +36,15 @@
 - Follow **Laravel Pint** standards.
 - Use **Prettier** for Blade formatting.
 
+## Version Control (Git Flow)
+
+- **main**: Production branch (User controlled).
+- **stage**: Staging/testing branch (User controlled).
+- **develop**: Integration branch for features.
+- **Features**: Always create branches from `develop`.
+- **Commit Pattern**: Use Conventional Commits (`feat:`, `fix:`, `docs:`, `chore:`, etc.).
+- **Merge Approval**: Agent MUST ask user for approval before merging ANY branch into `develop`.
+
 # Laravel Boost Guidelines
 
 The Laravel Boost guidelines are specifically curated by Laravel maintainers for this application. Use the **laravel-boost-ninja** MCP server for deep integration.
