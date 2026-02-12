@@ -1,83 +1,85 @@
-<div class="p-6">
-    <div class="max-w-7xl mx-auto">
-        <div class="flex justify-between items-center mb-8">
-            <h1 class="text-3xl font-bold text-primary flex items-center gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                    stroke="currentColor" class="w-8 h-8">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
-                </svg>
-                Controle de Notas Fiscais (NF)
-            </h1>
-            <button wire:click="openCreateModal" class="btn btn-primary">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                    stroke="currentColor" class="w-5 h-5">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                </svg>
-                Nova NF
-            </button>
-        </div>
+<div>
+    <div class="mb-6">
+        <h2 class="text-3xl font-bold text-primary">Notas Fiscais</h2>
+        <p class="mt-1 text-sm text-base-content/60">Controle a emissão e as chaves de acesso de NFs</p>
+    </div>
 
-        <div class="bg-base-100 rounded-box shadow-xl overflow-hidden border border-base-200">
-            <table class="table table-zebra w-full">
-                <thead class="bg-base-200">
-                    <tr>
-                        <th>Emissão</th>
-                        <th>Número</th>
-                        <th>Cliente / Serviço</th>
-                        <th>Valor</th>
-                        <th class="text-right">Ações</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($invoices as $invoice)
+    <div class="card bg-base-200 border border-base-300 shadow-xl">
+        <div class="card-body">
+            <div class="flex justify-between items-center mb-6 gap-4">
+                <div class="flex-1">
+                </div>
+                <button wire:click="openCreateModal" class="btn btn-primary">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    Nova NF
+                </button>
+            </div>
+
+            <div class="overflow-hidden">
+                <table class="table table-zebra w-full">
+                    <thead>
                         <tr>
-                            <td class="font-mono text-xs">{{ $invoice->issued_at->format('d/m/Y') }}</td>
-                            <td>
-                                @if ($invoice->number)
-                                    <span class="badge badge-outline badge-sm">{{ $invoice->number }}</span>
-                                @else
-                                    <span class="opacity-30">-</span>
-                                @endif
-                                @if ($invoice->access_key)
-                                    <div class="text-[10px] opacity-50 truncate max-w-[150px]"
-                                        title="{{ $invoice->access_key }}">
-                                        {{ $invoice->access_key }}
-                                    </div>
-                                @endif
-                            </td>
-                            <td>
-                                @if ($invoice->service)
-                                    <div class="flex flex-col">
-                                        <span class="font-bold text-sm">{{ $invoice->service->client->name }}</span>
-                                        <span class="text-xs opacity-50">Sérvico #{{ $invoice->service->id }} -
-                                            {{ $invoice->service->description }}</span>
-                                    </div>
-                                @else
-                                    <span class="text-xs italic opacity-40">Avulsa</span>
-                                @endif
-                            </td>
-                            <td class="font-bold font-mono text-primary">
-                                R$ {{ number_format($invoice->amount, 2, ',', '.') }}
-                            </td>
-                            <td class="text-right flex justify-end gap-2">
-                                <button wire:click="edit({{ $invoice->id }})" class="btn btn-ghost btn-xs text-info">
-                                    Editar
-                                </button>
-                                <button wire:confirm="Tem certeza que deseja excluir esta NF?"
-                                    wire:click="delete({{ $invoice->id }})" class="btn btn-ghost btn-xs text-error">
-                                    Excluir
-                                </button>
-                            </td>
+                            <th>Emissão</th>
+                            <th>Número</th>
+                            <th>Cliente / Serviço</th>
+                            <th>Valor</th>
+                            <th class="text-right">Ações</th>
                         </tr>
-                    @empty
-                        <tr>
-                            <td colspan="5" class="text-center py-8 opacity-50">Nenhuma NF registrada.</td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
-            <div class="p-4 bg-base-200">
+                    </thead>
+                    <tbody>
+                        @forelse($invoices as $invoice)
+                            <tr>
+                                <td class="font-mono text-xs">{{ $invoice->issued_at->format('d/m/Y') }}</td>
+                                <td>
+                                    @if ($invoice->number)
+                                        <span class="badge badge-outline badge-sm">{{ $invoice->number }}</span>
+                                    @else
+                                        <span class="opacity-30">-</span>
+                                    @endif
+                                    @if ($invoice->access_key)
+                                        <div class="text-[10px] opacity-50 truncate max-w-[150px]"
+                                            title="{{ $invoice->access_key }}">
+                                            {{ $invoice->access_key }}
+                                        </div>
+                                    @endif
+                                </td>
+                                <td>
+                                    @if ($invoice->service)
+                                        <div class="flex flex-col">
+                                            <span class="font-bold text-sm">{{ $invoice->service->client->name }}</span>
+                                            <span class="text-xs opacity-50">Sérvico #{{ $invoice->service->id }} -
+                                                {{ $invoice->service->description }}</span>
+                                        </div>
+                                    @else
+                                        <span class="text-xs italic opacity-40">Avulsa</span>
+                                    @endif
+                                </td>
+                                <td class="font-bold font-mono text-primary">
+                                    R$ {{ number_format($invoice->amount, 2, ',', '.') }}
+                                </td>
+                                <td class="text-right flex justify-end gap-2">
+                                    <button wire:click="edit({{ $invoice->id }})" class="btn btn-ghost btn-xs">
+                                        Editar
+                                    </button>
+                                    <button wire:confirm="Tem certeza que deseja excluir esta NF?"
+                                        wire:click="delete({{ $invoice->id }})"
+                                        class="btn btn-ghost btn-xs text-error">
+                                        Excluir
+                                    </button>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="5" class="text-center py-8 opacity-50">Nenhuma NF registrada.</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="mt-4">
                 {{ $invoices->links() }}
             </div>
         </div>
@@ -135,7 +137,8 @@
                         <option value="">NF Avulsa (Sem vínculo)</option>
                         @foreach ($services as $service)
                             <option value="{{ $service->id }}">#{{ $service->id }} - {{ $service->client->name }}
-                                ({{ str_limit($service->description, 20) }})</option>
+                                ({{ str_limit($service->description, 20) }})
+                            </option>
                         @endforeach
                     </select>
                     @error('service_id')
