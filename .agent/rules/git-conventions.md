@@ -37,3 +37,9 @@ Format: `<type>(<scope>): <description>`
 
 - Always merge `develop` into your feature branch before requesting a merge into `develop`.
 - Use `git merge --no-ff` to keep track of branch history.
+
+## Safety First
+
+- **Branch Validation**: Before making any modification, the Agent must run `git branch --show-current`.
+- **Forbidden Branches**: No direct commits to `main`, `stage`, or `develop`. All merges into `develop` MUST have user approval.
+- **Work Branches**: All work must happen in dedicated branches (e.g., `feature/*`, `hotfix/*`).

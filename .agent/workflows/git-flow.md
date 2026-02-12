@@ -6,6 +6,9 @@ description: Step-by-step for branch management and Conventional Commits in Ninj
 
 Use this workflow to manage features and releases. The Agent has full autonomy to create feature branches and commit changes following these standards.
 
+> [!CAUTION]
+> **SAFETY CHECK**: Before any modification, the Agent MUST verify it is NOT on `main`, `stage`, or `develop`.
+
 ## Starting a new Feature
 
 1. Switch to the `develop` branch:

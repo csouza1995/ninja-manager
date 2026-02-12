@@ -44,6 +44,7 @@
 - **Features**: Always create branches from `develop`.
 - **Commit Pattern**: Use Conventional Commits (`feat:`, `fix:`, `docs:`, `chore:`, etc.).
 - **Merge Approval**: Agent MUST ask user for approval before merging ANY branch into `develop`.
+- **Branch Safety**: The AI Agent MUST ALWAYS validate it is on a dedicated work branch (`feature/*`, `hotfix/*`, etc.) before making ANY code changes. Direct commits to `main`, `stage`, or `develop` are FORBIDDEN.
 
 # Laravel Boost Guidelines
 
