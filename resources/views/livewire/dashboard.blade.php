@@ -16,7 +16,7 @@
                     </svg>
                 </div>
                 <div class="stat-title font-medium">Negociando</div>
-                <div class="stat-value text-warning">{{ $stats['negotiating'] }}</div>
+                <div class="stat-value text-warning">{{ $this->stats['negotiating'] }}</div>
                 <div class="stat-desc">Aguardando aprovação</div>
             </div>
         </div>
@@ -31,7 +31,7 @@
                     </svg>
                 </div>
                 <div class="stat-title font-medium">Aprovados</div>
-                <div class="stat-value text-secondary">{{ $stats['approved'] }}</div>
+                <div class="stat-value text-secondary">{{ $this->stats['approved'] }}</div>
                 <div class="stat-desc">Acordo fechado</div>
             </div>
         </div>
@@ -46,7 +46,7 @@
                     </svg>
                 </div>
                 <div class="stat-title font-medium">Em Andamento</div>
-                <div class="stat-value text-info">{{ $stats['in_progress'] }}</div>
+                <div class="stat-value text-info">{{ $this->stats['in_progress'] }}</div>
                 <div class="stat-desc">Sendo executados</div>
             </div>
         </div>
@@ -60,7 +60,7 @@
                     </svg>
                 </div>
                 <div class="stat-title font-medium">Entregues</div>
-                <div class="stat-value text-primary">{{ $stats['delivered'] }}</div>
+                <div class="stat-value text-primary">{{ $this->stats['delivered'] }}</div>
                 <div class="stat-desc">Aguardando finalização</div>
             </div>
         </div>
@@ -75,7 +75,7 @@
                     </svg>
                 </div>
                 <div class="stat-title font-medium">Finalizados</div>
-                <div class="stat-value text-success">{{ $stats['finalized_period'] }}</div>
+                <div class="stat-value text-success">{{ $this->stats['finalized_period'] }}</div>
                 <div class="stat-desc">Últimos 6 meses</div>
             </div>
         </div>
@@ -91,7 +91,7 @@
                         <a href="{{ route('services.index') }}" wire:navigate class="btn btn-ghost btn-sm">Ver todos</a>
                     </div>
 
-                    @if ($recentServices->count() > 0)
+                    @if ($this->recentServices->count() > 0)
                         <div class="overflow-x-auto mt-4">
                             <table class="table w-full">
                                 <thead class="bg-base-300/50">
@@ -103,7 +103,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach ($recentServices as $service)
+                                    @foreach ($this->recentServices as $service)
                                         @php
                                             $statusClasses = [
                                                 'negotiating' => 'badge-warning text-warning-content',
@@ -131,8 +131,8 @@
                                             </td>
                                             <td>
                                                 <span
-                                                    class="badge badge-sm font-bold {{ $statusClasses[$service->status] ?? '' }}">
-                                                    {{ $statusLabels[$service->status] ?? $service->status }}
+                                                    class="badge badge-sm font-bold {{ $statusClasses[$service->status->value] ?? '' }}">
+                                                    {{ $statusLabels[$service->status->value] ?? $service->status->value }}
                                                 </span>
                                             </td>
                                             <td class="text-xs opacity-60">
@@ -161,9 +161,9 @@
                         <a href="{{ route('clients.index') }}" wire:navigate class="btn btn-ghost btn-xs">Ver todos</a>
                     </div>
 
-                    @if ($recentClients->count() > 0)
+                    @if ($this->recentClients->count() > 0)
                         <div class="space-y-4">
-                            @foreach ($recentClients as $client)
+                            @foreach ($this->recentClients as $client)
                                 <div class="flex items-center gap-3">
                                     <div class="flex-1 min-w-0">
                                         <div class="text-sm font-bold truncate">
@@ -204,15 +204,15 @@
                     <div class="grid grid-cols-1 gap-4 mt-2">
                         <div class="flex justify-between items-center text-sm">
                             <span class="opacity-70">Total de Clientes</span>
-                            <span class="font-bold">{{ $stats['total_clients'] }}</span>
+                            <span class="font-bold">{{ $this->stats['total_clients'] }}</span>
                         </div>
                         <div class="flex justify-between items-center text-sm">
                             <span class="opacity-70">Executantes</span>
-                            <span class="font-bold">{{ $stats['total_executors'] }}</span>
+                            <span class="font-bold">{{ $this->stats['total_executors'] }}</span>
                         </div>
                         <div class="flex justify-between items-center text-sm">
                             <span class="opacity-70">Itens de Serviço</span>
-                            <span class="font-bold">{{ $stats['total_items'] }}</span>
+                            <span class="font-bold">{{ $this->stats['total_items'] }}</span>
                         </div>
                     </div>
                 </div>

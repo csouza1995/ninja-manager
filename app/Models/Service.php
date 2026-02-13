@@ -21,13 +21,22 @@ class Service extends Model
         'finished_at',
     ];
 
-    protected $casts = [
-        'is_paid' => 'boolean',
-        'is_documented' => 'boolean',
-        'is_invoiced' => 'boolean',
-        'started_at' => 'datetime',
-        'finished_at' => 'datetime',
-    ];
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'status' => \App\Enums\ServiceStatus::class,
+            'is_paid' => 'boolean',
+            'is_documented' => 'boolean',
+            'is_invoiced' => 'boolean',
+            'started_at' => 'datetime',
+            'finished_at' => 'datetime',
+        ];
+    }
 
     // Relationships
     public function client(): BelongsTo
@@ -69,12 +78,12 @@ class Service extends Model
     // Business Logic
     public function canEdit(): bool
     {
-        return !($this->status === 'finalized' || $this->is_invoiced);
+        return !($this->status === \App\Enums\ServiceStatus::Finalized || $this->is_invoiced);
     }
 
     public function canDelete(): bool
     {
-        return $this->status === 'negotiating' && !$this->is_invoiced && !$this->is_documented;
+        return $this->status === \App\Enums\ServiceStatus::Negotiating && !$this->is_invoiced && !$this->is_documented;
     }
 
     // Status Helpers

@@ -1,0 +1,201 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Livewire\Components\Financial;
+
+use App\Models\Revenue;
+use App\Models\Service;
+use App\Models\Tax;
+use App\Models\BankAccount;
+use App\Models\Invoice;
+use Livewire\Component;
+use Livewire\Attributes\Validate;
+use Livewire\Attributes\On;
+
+class RevenueForm extends Component
+{
+    public bool $isOpen = false;
+    public bool $readOnly = false;
+    public ?int $revenueId = null;
+
+    #[Validate('nullable|exists:services,id')]
+    public $service_id = null;
+
+    #[Validate('nullable|required_without:service_id|string|min:2')]
+    public $origin_name = '';
+
+    #[Validate('required|min:2')]
+    public $description = '';
+
+    #[Validate('required')]
+    public $classification = '';
+
+    #[Validate('required|exists:bank_accounts,id')]
+    public $bank_account_id = null;
+
+    #[Validate('required|date')]
+    public $due_date;
+
+    #[Validate('required|numeric|min:0')]
+    public $gross_amount = 0;
+
+    public $invoice_id = null;
+    
+    #[Validate('numeric|min:0|max:100')]
+    public $tax_percentage = 0;
+    
+    public $tax_amount = 0;
+    public $net_amount = 0;
+    public $paid_at = null;
+    public $notes = '';
+
+    public $classificationSuggestions = [];
+
+    public function mount()
+    {
+        $this->due_date = now()->format('Y-m-d');
+        $this->loadSuggestions();
+    }
+
+    #[On('open-revenue-form')]
+    public function open(int $id = null, bool $readOnly = false, int $createFromServiceId = null)
+    {
+        $this->resetForm();
+        $this->isOpen = true;
+        $this->readOnly = $readOnly;
+
+        if ($id) {
+            $this->loadRevenue($id);
+        } elseif ($createFromServiceId) {
+            $this->service_id = $createFromServiceId;
+            $this->updatedServiceId($this->service_id);
+        }
+    }
+
+    public function loadRevenue(int $id)
+    {
+        $revenue = Revenue::findOrFail($id);
+        $this->revenueId = $id;
+        $this->service_id = $revenue->service_id;
+        $this->origin_name = $revenue->origin_name;
+        $this->description = $revenue->description;
+        $this->classification = $revenue->classification;
+        $this->bank_account_id = $revenue->bank_account_id;
+        $this->due_date = $revenue->due_date->format('Y-m-d');
+        $this->gross_amount = $revenue->gross_amount;
+        $this->invoice_id = $revenue->invoice_id;
+        $this->tax_percentage = $revenue->tax_percentage;
+        $this->tax_amount = $revenue->tax_amount;
+        $this->net_amount = $revenue->net_amount;
+        $this->paid_at = $revenue->paid_at ? $revenue->paid_at->format('Y-m-d') : null;
+        $this->notes = $revenue->notes;
+    }
+
+    public function recalculateFromService()
+    {
+        if ($this->service_id) {
+            $service = Service::find($this->service_id);
+            if ($service) {
+                $this->gross_amount = $service->total;
+                $this->description = "Serviço #{$service->id} - {$service->client->name}";
+                $this->calculateTotals();
+            }
+        }
+    }
+
+    public function updatedServiceId($value)
+    {
+        if ($value) {
+            $service = Service::find($value);
+            if ($service) {
+                $this->gross_amount = $service->total;
+                $this->description = "Serviço #{$service->id} - {$service->client->name}";
+                $this->origin_name = $service->client->name;
+                $this->calculateTotals();
+            }
+        }
+    }
+
+    public function updatedGrossAmount() { $this->calculateTotals(); }
+    public function updatedTaxPercentage() { $this->calculateTotals(); }
+
+    public function calculateTotals()
+    {
+        $this->tax_amount = ($this->gross_amount * $this->tax_percentage) / 100;
+        $this->net_amount = $this->gross_amount - $this->tax_amount;
+    }
+
+    public function applyTax($taxId)
+    {
+        $tax = Tax::find($taxId);
+        if ($tax) {
+            $this->tax_percentage = $tax->percentage;
+            $this->calculateTotals();
+        }
+    }
+
+    public function save()
+    {
+        if ($this->readOnly) return;
+        $this->validate();
+        $this->calculateTotals();
+
+        Revenue::updateOrCreate(
+            ['id' => $this->revenueId],
+            [
+                'service_id' => $this->service_id,
+                'origin_name' => $this->origin_name,
+                'description' => $this->description,
+                'classification' => $this->classification,
+                'bank_account_id' => $this->bank_account_id,
+                'due_date' => $this->due_date,
+                'gross_amount' => $this->gross_amount,
+                'invoice_id' => $this->invoice_id,
+                'tax_percentage' => $this->tax_percentage,
+                'tax_amount' => $this->tax_amount,
+                'net_amount' => $this->net_amount,
+                'paid_at' => $this->paid_at,
+                'notes' => $this->notes,
+            ]
+        );
+
+        $this->dispatch('revenue-saved');
+        $this->close();
+    }
+
+    public function close()
+    {
+        $this->isOpen = false;
+        $this->resetForm();
+    }
+
+    private function resetForm()
+    {
+        $this->reset([
+            'revenueId', 'service_id', 'origin_name', 'description', 'classification',
+            'bank_account_id', 'gross_amount', 'invoice_id', 'tax_percentage', 
+            'tax_amount', 'net_amount', 'paid_at', 'notes'
+        ]);
+        $this->due_date = now()->format('Y-m-d');
+        $this->loadSuggestions();
+    }
+
+    private function loadSuggestions()
+    {
+        $this->classificationSuggestions = Revenue::distinct()->pluck('classification')->toArray();
+    }
+
+    public function render()
+    {
+        return view('livewire.components.financial.revenue-form', [
+            'services' => Service::whereNotIn('status', [\App\Enums\ServiceStatus::Negotiating, 'cancelled'])
+                ->whereDoesntHave('revenue')
+                ->latest()
+                ->get(),
+            'bankAccounts' => BankAccount::all(),
+            'availableTaxes' => Tax::where('is_active', true)->get(),
+            'invoices' => Invoice::latest()->get(),
+        ]);
+    }
+}
