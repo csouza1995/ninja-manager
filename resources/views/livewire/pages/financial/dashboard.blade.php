@@ -251,7 +251,7 @@
             Retiradas de Sócios & Colaboradores
         </h2>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-24">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             @foreach ($periods as $label => $data)
                 <div class="card bg-base-200 shadow-xl border border-base-300 overflow-hidden">
                     <div class="bg-base-200 px-4 py-3 border-b border-base-300 flex justify-between items-center">
