@@ -24,6 +24,8 @@ class Dashboard extends Component
 
     public $chartLabels = [];
 
+    public $flowChartData = [];
+
     public function mount()
     {
         $this->calculateFinances();
@@ -213,6 +215,58 @@ class Dashboard extends Component
             'results' => $resultSeries,
             'revenues' => $revenueSeries,
             'expenses' => $expenseSeries,
+        ];
+
+        // 4. Flow Chart Data (Last 6 months — inflows vs stacked outflows)
+        $flowLabels = [];
+        $flowInflows = [];
+        $flowExpenses = [];
+        $flowTaxes = [];
+        $flowWithdrawals = [];
+
+        for ($i = 5; $i >= 0; $i--) {
+            $m = $now->copy()->subMonths($i);
+            $flowLabels[] = $m->translatedFormat('M/Y');
+
+            $flowInflows[] = Revenue::whereMonth(DB::raw('COALESCE(paid_at, due_date)'), $m->month)
+                ->whereYear(DB::raw('COALESCE(paid_at, due_date)'), $m->year)
+                ->whereNotNull('paid_at')
+                ->sum('gross_amount');
+
+            $flowExpenses[] = Expenditure::whereMonth(DB::raw('COALESCE(paid_at, due_date)'), $m->month)
+                ->whereYear(DB::raw('COALESCE(paid_at, due_date)'), $m->year)
+                ->whereNotNull('paid_at')
+                ->where(function ($q) {
+                    $q->where('classification', 'not like', '%Imposto%')
+                        ->where('classification', 'not like', '%INSS%')
+                        ->where('classification', 'not like', '%DAS%');
+                })
+                ->sum('amount');
+
+            $revTax = Revenue::whereMonth(DB::raw('COALESCE(paid_at, due_date)'), $m->month)
+                ->whereYear(DB::raw('COALESCE(paid_at, due_date)'), $m->year)
+                ->whereNotNull('paid_at')
+                ->sum('tax_amount');
+
+            $outTax = Outflow::whereMonth(DB::raw('COALESCE(paid_at, due_date)'), $m->month)
+                ->whereYear(DB::raw('COALESCE(paid_at, due_date)'), $m->year)
+                ->whereNotNull('paid_at')
+                ->sum('tax_amount');
+
+            $flowTaxes[] = $revTax + $outTax;
+
+            $flowWithdrawals[] = Outflow::whereMonth(DB::raw('COALESCE(paid_at, due_date)'), $m->month)
+                ->whereYear(DB::raw('COALESCE(paid_at, due_date)'), $m->year)
+                ->whereNotNull('paid_at')
+                ->sum('amount');
+        }
+
+        $this->flowChartData = [
+            'labels' => $flowLabels,
+            'inflows' => $flowInflows,
+            'expenses' => $flowExpenses,
+            'taxes' => $flowTaxes,
+            'withdrawals' => $flowWithdrawals,
         ];
     }
 
