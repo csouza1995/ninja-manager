@@ -60,36 +60,44 @@
     <!-- Gráfico Principal -->
     <div class="card bg-base-200 border border-base-300 shadow-xl mb-12" wire:ignore x-data="{
         chartData: @entangle('chartData'),
+        chartType: @entangle('chartType'),
+        chart: null,
         init() {
-            let chart = new ApexCharts(this.$refs.mainChart, {
-                series: [{
-                    name: 'Resultado',
-                    data: this.chartData.results
-                }],
+            this.chart = new ApexCharts(this.$refs.mainChart, this.getOptions());
+            this.chart.render();
+    
+            this.$watch('chartData', () => {
+                this.chart.updateOptions(this.getOptions(), true, false);
+            });
+    
+            this.$watch('chartType', () => {
+                this.chart.updateOptions(this.getOptions(), true, false);
+            });
+        },
+        getOptions() {
+            const isComparison = this.chartType === 'comparison';
+    
+            const baseOptions = {
                 chart: {
                     type: 'bar',
                     height: 350,
                     toolbar: { show: false },
-                    background: 'transparent'
+                    background: 'transparent',
+                    animations: { enabled: true }
                 },
                 plotOptions: {
                     bar: {
-                        colors: {
-                            ranges: [{
-                                from: -999999999,
-                                to: 0,
-                                color: '#ef4444'
-                            }, {
-                                from: 0.1,
-                                to: 999999999,
-                                color: '#22c55e'
-                            }]
-                        },
                         columnWidth: '60%',
-                        borderRadius: 4
+                        borderRadius: 4,
+                        dataLabels: { position: 'top' }
                     }
                 },
                 dataLabels: { enabled: false },
+                stroke: {
+                    show: true,
+                    width: 2,
+                    colors: ['transparent']
+                },
                 xaxis: {
                     categories: this.chartData.labels,
                 },
@@ -106,16 +114,78 @@
                         formatter: (val) => 'R$ ' + val.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
                     }
                 },
-                theme: { mode: 'dark' }
-            });
-            chart.render();
+                theme: { mode: 'dark' },
+                legend: {
+                    show: true,
+                    position: 'top'
+                }
+            };
+    
+            if (isComparison) {
+                return {
+                    ...baseOptions,
+                    series: [
+                        { name: 'Receitas', data: this.chartData.revenues },
+                        { name: 'Despesas', data: this.chartData.expenses }
+                    ],
+                    colors: ['#22c55e', '#ef4444'],
+                    plotOptions: {
+                        bar: {
+                            columnWidth: '60%',
+                            borderRadius: 4,
+                            dataLabels: { position: 'top' },
+                            colors: { ranges: [] }
+                        }
+                    },
+                };
+            }
+    
+            return {
+                ...baseOptions,
+                series: [{ name: 'Resultado', data: this.chartData.results }],
+                colors: ['#22c55e'],
+                plotOptions: {
+                    bar: {
+                        columnWidth: '60%',
+                        borderRadius: 4,
+                        dataLabels: { position: 'top' },
+                        colors: {
+                            ranges: [
+                                { from: -999999999, to: -0.01, color: '#ef4444' },
+                                { from: 0, to: 999999999, color: '#22c55e' }
+                            ]
+                        }
+                    }
+                },
+            };
         }
     }">
         <div class="card-body p-6">
-            <h2 class="text-xl font-bold mb-6 flex items-center gap-2">
-                <span class="w-2 h-6 bg-primary rounded-full"></span>
-                Resultado Operacional (Líquido - Despesas)
-            </h2>
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-bold flex items-center gap-2">
+                    <span class="w-2 h-6 bg-primary rounded-full"></span>
+                    @if ($chartType === 'result')
+                        Resultado Operacional (Líquido - Despesas)
+                    @else
+                        Comparativo Receitas x Despesas
+                    @endif
+                </h2>
+
+                <div class="join border border-base-300 shadow-sm">
+                    <button wire:click="$set('chartType', 'result')" @class([
+                        'join-item btn btn-sm',
+                        'btn-active btn-primary' => $chartType === 'result',
+                    ])>
+                        Resultado
+                    </button>
+                    <button wire:click="$set('chartType', 'comparison')" @class([
+                        'join-item btn btn-sm',
+                        'btn-active btn-primary' => $chartType === 'comparison',
+                    ])>
+                        Rec x Desp
+                    </button>
+                </div>
+            </div>
             <div x-ref="mainChart"></div>
         </div>
     </div>
@@ -147,7 +217,7 @@
         </div>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-24">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
         @foreach ($periods as $label => $data)
             <div class="card bg-base-200 shadow-xl border border-base-300 overflow-hidden">
                 <div class="bg-base-200 px-4 py-3 border-b border-base-300 flex justify-between items-center">
@@ -297,5 +367,48 @@
                 </div>
             </div>
         @endforeach
+    </div>
+
+    <!-- Retiradas de Sócios & Colaboradores -->
+    <div class="mb-8">
+        <h2 class="text-2xl font-bold flex items-center gap-2 mb-6">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                stroke="currentColor" class="size-6">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
+            </svg>
+            Retiradas de Sócios & Colaboradores
+        </h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-24">
+            @foreach ($periods as $label => $data)
+                <div class="card bg-base-200 shadow-xl border border-base-300 overflow-hidden">
+                    <div class="bg-base-200 px-4 py-3 border-b border-base-300 flex justify-between items-center">
+                        <span class="font-bold text-sm uppercase tracking-wider opacity-70">{{ $label }}</span>
+                        <div class="badge badge-sm badge-ghost">Total: R$
+                            {{ number_format($data['withdrawals_breakdown']->sum('amount'), 2, ',', '.') }}</div>
+                    </div>
+                    <div class="card-body p-0">
+                        @if (count($data['withdrawals_breakdown']) > 0)
+                            <table class="table table-sm w-full">
+                                <tbody>
+                                    @foreach ($data['withdrawals_breakdown'] as $item)
+                                        <tr class="hover">
+                                            <td class="text-xs font-bold opacity-80 pl-6">{{ $item['name'] }}</td>
+                                            <td class="text-right font-mono text-xs pr-6">R$
+                                                {{ number_format($item['amount'], 2, ',', '.') }}</td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        @else
+                            <div class="p-8 text-center text-xs opacity-40 italic">
+                                Nenhuma retirada registrada.
+                            </div>
+                        @endif
+                    </div>
+                </div>
+            @endforeach
+        </div>
     </div>
 </div>
