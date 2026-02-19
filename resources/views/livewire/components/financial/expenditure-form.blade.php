@@ -1,0 +1,94 @@
+<div>
+    @if ($isOpen)
+        <div class="modal modal-open">
+            <div class="modal-box">
+                <h3 class="font-bold text-lg mb-6 border-b pb-2">
+                    {{ $expenditureId ? 'Editar' : 'Nova' }} Despesa
+                </h3>
+
+                <div class="grid grid-cols-1 gap-4">
+                    <div class="form-control w-full">
+                        <label class="label"><span class="label-text">Favorecido / Destino</span></label>
+                        <input type="text" wire:model="destination" class="input input-bordered w-full"
+                            list="dest-suggestions" placeholder="Quem recebe?" />
+                        <datalist id="dest-suggestions">
+                            @foreach ($destinationSuggestions as $sug)
+                                <option value="{{ $sug }}">
+                            @endforeach
+                        </datalist>
+                        @error('destination')
+                            <span class="text-error text-xs mt-1">{{ $message }}</span>
+                        @enderror
+                    </div>
+
+                    <div class="form-control w-full">
+                        <label class="label"><span class="label-text">Descrição</span></label>
+                        <input type="text" wire:model="description" class="input input-bordered w-full"
+                            placeholder="Do que se trata?" />
+                        @error('description')
+                            <span class="text-error text-xs mt-1">{{ $message }}</span>
+                        @enderror
+                    </div>
+
+                    <div class="form-control w-full">
+                        <label class="label"><span class="label-text">Classificação</span></label>
+                        <input type="text" wire:model="classification" class="input input-bordered w-full"
+                            list="class-suggestions" placeholder="Ex: Material, Aluguel..." />
+                        <datalist id="class-suggestions">
+                            @foreach ($classificationSuggestions as $sug)
+                                <option value="{{ $sug }}">
+                            @endforeach
+                        </datalist>
+                        @error('classification')
+                            <span class="text-error text-xs mt-1">{{ $message }}</span>
+                        @enderror
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="form-control w-full">
+                            <label class="label"><span class="label-text">Valor (R$)</span></label>
+                            <input type="number" step="0.01" wire:model="amount"
+                                class="input input-bordered w-full" />
+                            @error('amount')
+                                <span class="text-error text-xs mt-1">{{ $message }}</span>
+                            @enderror
+                        </div>
+
+                        <div class="form-control w-full">
+                            <label class="label"><span class="label-text">Vencimento</span></label>
+                            <input type="date" wire:model="due_date" class="input input-bordered w-full" />
+                            @error('due_date')
+                                <span class="text-error text-xs mt-1">{{ $message }}</span>
+                            @enderror
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="form-control w-full">
+                            <label class="label"><span class="label-text">Conta de Saída</span></label>
+                            <select wire:model="bank_account_id" class="select select-bordered w-full">
+                                <option value="">--- Selecione ---</option>
+                                @foreach ($bankAccounts as $ba)
+                                    <option value="{{ $ba->id }}">{{ $ba->nickname ?: $ba->bank_name }}</option>
+                                @endforeach
+                            </select>
+                            @error('bank_account_id')
+                                <span class="text-error text-xs mt-1">{{ $message }}</span>
+                            @enderror
+                        </div>
+
+                        <div class="form-control w-full">
+                            <label class="label"><span class="label-text">Pago em (Opcional)</span></label>
+                            <input type="date" wire:model="paid_at" class="input input-bordered w-full" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-action">
+                    <button wire:click="close" class="btn">Cancelar</button>
+                    <button wire:click="save" class="btn btn-primary px-8">Salvar</button>
+                </div>
+            </div>
+        </div>
+    @endif
+</div>

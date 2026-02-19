@@ -46,8 +46,8 @@
                                     'finalized' => 'Finalizado',
                                 ];
                             @endphp
-                            <span class="badge {{ $statusClasses[$service->status] ?? '' }}">
-                                {{ $statusLabels[$service->status] ?? $service->status }}
+                            <span class="badge {{ $statusClasses[$service->status->value] ?? '' }}">
+                                {{ $statusLabels[$service->status->value] ?? $service->status->value }}
                             </span>
                         </td>
                         <td>
@@ -115,7 +115,7 @@
                         <td class="text-right">
                             <div class="flex justify-end gap-1">
                                 <!-- Launch Revenue (Shortcut) -->
-                                @if (in_array($service->status, ['approved', 'in_progress', 'delivered', 'finalized']) && !$service->revenue)
+                                @if (in_array($service->status->value, ['approved', 'in_progress', 'delivered', 'finalized']) && !$service->revenue)
                                     <a href="{{ route('financial.revenues', ['createFromService' => $service->id]) }}"
                                         class="btn btn-square btn-ghost btn-xs text-success" title="Lançar Receita">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
@@ -127,7 +127,7 @@
                                 @endif
 
                                 <!-- Generate Receipt (First Action) -->
-                                @if ($service->status !== 'cancelled' && $service->is_paid && !$service->receipt)
+                                @if ($service->status->value !== 'cancelled' && $service->is_paid && !$service->receipt)
                                     <button
                                         wire:click="$dispatch('generate-receipt', { serviceId: {{ $service->id }} })"
                                         class="btn btn-square btn-ghost btn-xs text-info" title="Gerar Recibo">

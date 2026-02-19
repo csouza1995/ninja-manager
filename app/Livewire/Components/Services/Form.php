@@ -2,21 +2,23 @@
 
 namespace App\Livewire\Components\Services;
 
-use App\Models\Service;
 use App\Models\Client;
 use App\Models\Executor;
 use App\Models\Role;
+use App\Models\Service;
 use App\Models\ServiceItem;
 use App\Models\ServiceItemPivot;
-use Livewire\Component;
-use Livewire\Attributes\On;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\On;
 use Livewire\Attributes\Validate;
+use Livewire\Component;
 
 class Form extends Component
 {
     public ?int $serviceId = null;
+
     public bool $showModal = false;
+
     public bool $readOnly = false;
 
     #[Validate('required')]
@@ -32,14 +34,20 @@ class Form extends Component
     public string $status = 'negotiating';
 
     public bool $is_paid = false;
+
     public bool $is_documented = false;
+
     public bool $is_invoiced = false;
+
     public ?string $started_at = null;
+
     public ?string $finished_at = null;
 
     // Items management
     public array $items = [];
+
     public ?int $selectedServiceItemId = null;
+
     public $quantity = 1;
 
     #[Computed]
@@ -75,8 +83,11 @@ class Form extends Component
     #[Computed]
     public function canEdit()
     {
-        if (!$this->serviceId) return true;
+        if (! $this->serviceId) {
+            return true;
+        }
         $service = $this->service;
+
         return $service ? $service->canEdit() : true;
     }
 
@@ -107,12 +118,12 @@ class Form extends Component
         $this->status = 'negotiating';
         $this->started_at = null;
         $this->finished_at = null;
-        
+
         // Remove individual IDs from items so they are created as new
         foreach ($this->items as &$item) {
             $item['id'] = null;
         }
-        
+
         $this->readOnly = false;
     }
 
@@ -127,7 +138,7 @@ class Form extends Component
             $this->client_id = $service->client_id;
             $this->executor_id = $service->executor_id;
             $this->role_id = $service->role_id;
-            $this->status = $service->status;
+            $this->status = $service->status->value;
             $this->is_paid = $service->is_paid;
             $this->is_documented = $service->is_documented;
             $this->is_invoiced = $service->is_invoiced;
@@ -153,10 +164,14 @@ class Form extends Component
 
     public function addItem()
     {
-        if (!$this->selectedServiceItemId) return;
+        if (! $this->selectedServiceItemId) {
+            return;
+        }
 
         $serviceItem = ServiceItem::find($this->selectedServiceItemId);
-        if (!$serviceItem) return;
+        if (! $serviceItem) {
+            return;
+        }
 
         $this->items[] = [
             'id' => null,
@@ -175,26 +190,33 @@ class Form extends Component
 
     public function removeItem(int $index)
     {
-        if (!$this->canEdit) return;
+        if (! $this->canEdit) {
+            return;
+        }
         unset($this->items[$index]);
         $this->items = array_values($this->items); // Re-index array
     }
 
     public function updateItemQuantity(int $index, $quantity)
     {
-        if (!$this->canEdit || !isset($this->items[$index])) return;
+        if (! $this->canEdit || ! isset($this->items[$index])) {
+            return;
+        }
 
-        $this->items[$index]['quantity'] = (float)$quantity;
+        $this->items[$index]['quantity'] = (float) $quantity;
         $this->items[$index]['total_price'] = $this->items[$index]['unit_price'] * $quantity;
     }
 
     public function save()
     {
-        if ($this->readOnly) return;
+        if ($this->readOnly) {
+            return;
+        }
         $this->validate();
 
         if (empty($this->items)) {
             $this->addError('items', 'Adicione pelo menos um item ao serviço.');
+
             return;
         }
 

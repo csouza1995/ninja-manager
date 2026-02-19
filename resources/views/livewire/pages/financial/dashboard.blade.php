@@ -57,68 +57,9 @@
         </div>
     </div>
 
-    <!-- Gráfico Principal -->
-    <div class="card bg-base-200 border border-base-300 shadow-xl mb-12" wire:ignore x-data="{
-        chartData: @entangle('chartData'),
-        init() {
-            let chart = new ApexCharts(this.$refs.mainChart, {
-                series: [{
-                    name: 'Resultado',
-                    data: this.chartData.results
-                }],
-                chart: {
-                    type: 'bar',
-                    height: 350,
-                    toolbar: { show: false },
-                    background: 'transparent'
-                },
-                plotOptions: {
-                    bar: {
-                        colors: {
-                            ranges: [{
-                                from: -999999999,
-                                to: 0,
-                                color: '#ef4444'
-                            }, {
-                                from: 0.1,
-                                to: 999999999,
-                                color: '#22c55e'
-                            }]
-                        },
-                        columnWidth: '60%',
-                        borderRadius: 4
-                    }
-                },
-                dataLabels: { enabled: false },
-                xaxis: {
-                    categories: this.chartData.labels,
-                },
-                yaxis: {
-                    labels: {
-                        formatter: (val) => 'R$ ' + val.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-                    }
-                },
-                grid: {
-                    borderColor: 'rgba(255, 255, 255, 0.05)',
-                },
-                tooltip: {
-                    y: {
-                        formatter: (val) => 'R$ ' + val.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-                    }
-                },
-                theme: { mode: 'dark' }
-            });
-            chart.render();
-        }
-    }">
-        <div class="card-body p-6">
-            <h2 class="text-xl font-bold mb-6 flex items-center gap-2">
-                <span class="w-2 h-6 bg-primary rounded-full"></span>
-                Resultado Operacional (Líquido - Despesas)
-            </h2>
-            <div x-ref="mainChart"></div>
-        </div>
-    </div>
+
+    {{-- Gráfico Principal --}}
+    <x-financial.main-chart />
 
     <!-- Tabelas de Períodos -->
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
@@ -147,7 +88,7 @@
         </div>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-24">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
         @foreach ($periods as $label => $data)
             <div class="card bg-base-200 shadow-xl border border-base-300 overflow-hidden">
                 <div class="bg-base-200 px-4 py-3 border-b border-base-300 flex justify-between items-center">
@@ -298,4 +239,63 @@
             </div>
         @endforeach
     </div>
+
+    <!-- Retiradas de Sócios & Colaboradores -->
+    <div class="mb-8">
+        <h2 class="text-2xl font-bold flex items-center gap-2 mb-6">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                stroke="currentColor" class="size-6">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
+            </svg>
+            Retiradas de Sócios & Colaboradores
+        </h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            @foreach ($periods as $label => $data)
+                <div class="card bg-base-200 shadow-xl border border-base-300 overflow-hidden">
+                    <div class="bg-base-200 px-4 py-3 border-b border-base-300 flex justify-between items-center">
+                        <span class="font-bold text-sm uppercase tracking-wider opacity-70">{{ $label }}</span>
+                        <div class="badge badge-sm badge-ghost">Total: R$
+                            {{ number_format($data['withdrawals_breakdown']->sum('amount'), 2, ',', '.') }}</div>
+                    </div>
+                    <div class="card-body p-0">
+                        @if (count($data['withdrawals_breakdown']) > 0)
+                            <table class="table table-sm w-full">
+                                <tbody>
+                                    @foreach ($data['withdrawals_breakdown'] as $item)
+                                        <tr class="hover">
+                                            <td class="text-xs font-bold opacity-80 pl-6">{{ $item['name'] }}</td>
+                                            <td class="text-right font-mono text-xs pr-6">R$
+                                                {{ number_format($item['amount'], 2, ',', '.') }}</td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        @else
+                            <div class="p-8 text-center text-xs opacity-40 italic">
+                                Nenhuma retirada registrada.
+                            </div>
+                        @endif
+                    </div>
+                </div>
+            @endforeach
+        </div>
+    </div>
+
+    {{-- Composição das Saídas --}}
+    <div class="mb-8">
+        <h2 class="text-2xl font-bold flex items-center gap-2 mb-6">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                stroke="currentColor" class="size-6">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6a7.5 7.5 0 1 0 7.5 7.5h-7.5V6Z" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 10.5H21A7.5 7.5 0 0 0 13.5 3v7.5Z" />
+            </svg>
+            Composição das Saídas
+        </h2>
+
+        <x-financial.expense-breakdown />
+    </div>
+
+</div>
 </div>
