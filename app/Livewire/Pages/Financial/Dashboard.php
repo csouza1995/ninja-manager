@@ -26,6 +26,8 @@ class Dashboard extends Component
 
     public $flowChartData = [];
 
+    public $pieData = [];
+
     public function mount()
     {
         $this->calculateFinances();
@@ -141,6 +143,16 @@ class Dashboard extends Component
                                                               - $outflows_total
                                                               - $outflow_tax_provision;
         }
+
+        // Build pieData from computed periods
+        $this->pieData = collect($this->periods)->map(function ($data, $label) {
+            return [
+                'label' => $label,
+                'expenses' => round($data['expenses_paid'] + $data['expenses_pending'], 2),
+                'taxes' => round($data['revenue_tax_paid'] + $data['revenue_tax_pending'] + $data['outflow_tax_paid'] + $data['outflow_tax_pending'], 2),
+                'withdrawals' => round($data['outflows_paid'] + $data['outflows_pending'], 2),
+            ];
+        })->values()->toArray();
 
         // 2. Bank Balances (CASH LOGIC with Tax Provision)
         $accounts = BankAccount::all();

@@ -4,19 +4,21 @@ declare(strict_types=1);
 
 namespace App\Livewire\Components\Financial;
 
+use App\Models\BankAccount;
+use App\Models\Invoice;
 use App\Models\Revenue;
 use App\Models\Service;
 use App\Models\Tax;
-use App\Models\BankAccount;
-use App\Models\Invoice;
-use Livewire\Component;
-use Livewire\Attributes\Validate;
 use Livewire\Attributes\On;
+use Livewire\Attributes\Validate;
+use Livewire\Component;
 
 class RevenueForm extends Component
 {
     public bool $isOpen = false;
+
     public bool $readOnly = false;
+
     public ?int $revenueId = null;
 
     #[Validate('nullable|exists:services,id')]
@@ -41,13 +43,16 @@ class RevenueForm extends Component
     public $gross_amount = 0;
 
     public $invoice_id = null;
-    
+
     #[Validate('numeric|min:0|max:100')]
     public $tax_percentage = 0;
-    
+
     public $tax_amount = 0;
+
     public $net_amount = 0;
+
     public $paid_at = null;
+
     public $notes = '';
 
     public $classificationSuggestions = [];
@@ -59,7 +64,7 @@ class RevenueForm extends Component
     }
 
     #[On('open-revenue-form')]
-    public function open(int $id = null, bool $readOnly = false, int $createFromServiceId = null)
+    public function open(?int $id = null, bool $readOnly = false, ?int $createFromServiceId = null)
     {
         $this->resetForm();
         $this->isOpen = true;
@@ -117,8 +122,15 @@ class RevenueForm extends Component
         }
     }
 
-    public function updatedGrossAmount() { $this->calculateTotals(); }
-    public function updatedTaxPercentage() { $this->calculateTotals(); }
+    public function updatedGrossAmount()
+    {
+        $this->calculateTotals();
+    }
+
+    public function updatedTaxPercentage()
+    {
+        $this->calculateTotals();
+    }
 
     public function calculateTotals()
     {
@@ -137,11 +149,13 @@ class RevenueForm extends Component
 
     public function save()
     {
-        if ($this->readOnly) return;
+        if ($this->readOnly) {
+            return;
+        }
         $this->validate();
         $this->calculateTotals();
 
-        Revenue::updateOrCreate(
+        $revenue = Revenue::updateOrCreate(
             ['id' => $this->revenueId],
             [
                 'service_id' => $this->service_id,
@@ -155,10 +169,18 @@ class RevenueForm extends Component
                 'tax_percentage' => $this->tax_percentage,
                 'tax_amount' => $this->tax_amount,
                 'net_amount' => $this->net_amount,
-                'paid_at' => $this->paid_at,
+                'paid_at' => $this->paid_at ?: null,
                 'notes' => $this->notes,
             ]
         );
+
+        // Sync is_paid on the linked Service whenever paid_at changes
+        if ($revenue->service_id) {
+            $service = Service::find($revenue->service_id);
+            if ($service) {
+                $service->update(['is_paid' => ! is_null($revenue->paid_at)]);
+            }
+        }
 
         $this->dispatch('revenue-saved');
         $this->close();
@@ -174,8 +196,8 @@ class RevenueForm extends Component
     {
         $this->reset([
             'revenueId', 'service_id', 'origin_name', 'description', 'classification',
-            'bank_account_id', 'gross_amount', 'invoice_id', 'tax_percentage', 
-            'tax_amount', 'net_amount', 'paid_at', 'notes'
+            'bank_account_id', 'gross_amount', 'invoice_id', 'tax_percentage',
+            'tax_amount', 'net_amount', 'paid_at', 'notes',
         ]);
         $this->due_date = now()->format('Y-m-d');
         $this->loadSuggestions();
