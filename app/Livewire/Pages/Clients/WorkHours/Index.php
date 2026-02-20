@@ -29,7 +29,7 @@ class Index extends Component
     }
 
     #[Computed]
-    public function pendingMinutes(): int
+    public function metrics(): array
     {
         $query = ClientWorkHour::query();
 
@@ -37,18 +37,35 @@ class Index extends Component
             $query->where('client_id', $this->clientId);
         }
 
-        $executed = (clone $query)->where('type', WorkHourType::Executed)->sum('executed_minutes');
-        $paid = (clone $query)->where('type', WorkHourType::Paid)->sum('executed_minutes');
+        $entries = (clone $query)->get();
 
-        return max(0, (int) $executed - (int) $paid);
-    }
+        $executedMinutes = $entries->where('type', WorkHourType::Executed)->sum('executed_minutes');
+        $paidMinutes = $entries->where('type', WorkHourType::Paid)->sum('executed_minutes');
+        $pendingMinutes = max(0, $executedMinutes - $paidMinutes);
 
-    #[Computed]
-    public function pendingFormatted(): string
-    {
-        $minutes = $this->pendingMinutes;
+        $executedValue = $entries->where('type', WorkHourType::Executed)->sum('executed_value');
+        $paidValue = $entries->where('type', WorkHourType::Paid)->sum('executed_value');
+        $pendingValue = max(0, $executedValue - $paidValue);
 
-        return sprintf('%d:%02d', intdiv($minutes, 60), $minutes % 60);
+        // Achievement: Sum of executed / Sum of contract (only for Fixed types that have contract set)
+        $fixedEntries = $entries->where('type', WorkHourType::Executed)
+            ->where('contract_type', \App\Enums\WorkHourContractType::Fixed)
+            ->whereNotNull('contract_minutes');
+
+        $totalContractedMin = $fixedEntries->sum('contract_minutes');
+        $totalExecutedForFixedMin = $fixedEntries->sum('executed_minutes');
+
+        $achievement = $totalContractedMin > 0
+            ? round(($totalExecutedForFixedMin / $totalContractedMin) * 100, 1)
+            : 0;
+
+        return [
+            'pending_minutes' => $pendingMinutes,
+            'pending_formatted' => sprintf('%d:%02d', intdiv($pendingMinutes, 60), $pendingMinutes % 60),
+            'pending_value' => $pendingValue,
+            'executed_value' => $executedValue,
+            'achievement' => $achievement,
+        ];
     }
 
     public function openForm(?int $clientId = null): void
