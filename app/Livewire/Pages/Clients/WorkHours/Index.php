@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire\Pages\Clients\WorkHours;
 
+use App\Enums\WorkHourContractType;
 use App\Enums\WorkHourType;
 use App\Models\Client;
 use App\Models\ClientWorkHour;
@@ -47,15 +48,17 @@ class Index extends Component
         $paidValue = $entries->where('type', WorkHourType::Paid)->sum('executed_value');
         $pendingValue = max(0, $executedValue - $paidValue);
 
-        // Achievement: Sum of executed / Sum of contract (only for Fixed types that have contract set)
-        $fixedEntries = $entries->where('type', WorkHourType::Executed)
-            ->where('contract_type', \App\Enums\WorkHourContractType::Fixed)
+        // Potential Value: Includes both 'Fixed' and 'Current' (Limit)
+        $capacityEntries = $entries->where('type', WorkHourType::Executed)
             ->whereNotNull('contract_minutes');
+
+        $totalContractValue = $capacityEntries->sum(fn ($e) => ($e->contract_minutes / 60) * (float) $e->hourly_rate);
+
+        // Achievement: Focus on 'Fixed' contracts as requested (Indicator 3)
+        $fixedEntries = $capacityEntries->where('contract_type', WorkHourContractType::Fixed);
 
         $totalContractedMin = $fixedEntries->sum('contract_minutes');
         $totalExecutedForFixedMin = $fixedEntries->sum('executed_minutes');
-
-        $totalContractValue = $fixedEntries->sum(fn ($e) => ($e->contract_minutes / 60) * (float) $e->hourly_rate);
 
         $achievement = $totalContractedMin > 0
             ? round(($totalExecutedForFixedMin / $totalContractedMin) * 100, 1)

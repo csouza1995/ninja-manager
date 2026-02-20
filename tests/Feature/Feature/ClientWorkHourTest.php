@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Feature;
 
+use App\Enums\WorkHourContractType;
 use App\Enums\WorkHourMode;
 use App\Enums\WorkHourType;
 use App\Livewire\Components\ClientWorkHours\Form;
@@ -106,6 +107,40 @@ class ClientWorkHourTest extends TestCase
             ->assertSee('1:00')                // Pending hours
             ->assertSee('R$ 50,00')             // Pending value
             ->assertSee('R$ 100,00');           // Total Executed value
+    }
+
+    public function test_index_page_potential_includes_current_type_but_achievement_focuses_fixed(): void
+    {
+        $client = Client::factory()->create();
+
+        // 1h Executed @ R$ 100, Limit (Current) = 5h
+        // Potential should be R$ 500
+        ClientWorkHour::factory()->create([
+            'client_id' => $client->id,
+            'type' => WorkHourType::Executed,
+            'contract_type' => WorkHourContractType::Current,
+            'executed_minutes' => 60,
+            'contract_minutes' => 300,
+            'hourly_rate' => 100.00,
+        ]);
+
+        Livewire::test(Index::class, ['clientId' => $client->id])
+            ->assertSee('R$ 100,00')             // Realized
+            ->assertSee('R$ 500,00')             // Potential
+            ->assertSee('0%');                   // Achievement (because no Fixed contracts)
+
+        // Add a Fixed contract
+        ClientWorkHour::factory()->create([
+            'client_id' => $client->id,
+            'type' => WorkHourType::Executed,
+            'contract_type' => WorkHourContractType::Fixed,
+            'executed_minutes' => 120,
+            'contract_minutes' => 240, // 50% achievement
+            'hourly_rate' => 100.00,
+        ]);
+
+        Livewire::test(Index::class, ['clientId' => $client->id])
+            ->assertSee('50%');                   // Achievement from Fixed only
     }
 
     // ──────────────────────────────────────────────
