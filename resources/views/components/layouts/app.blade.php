@@ -30,6 +30,7 @@
                     <li><a href="{{ route('services.index') }}" wire:navigate>Serviços</a></li>
                     <li><a href="{{ route('receipts.index') }}" wire:navigate>Recibos</a></li>
                     <li><a href="{{ route('clients.index') }}" wire:navigate>Clientes</a></li>
+                    <li><a href="{{ route('clients.work-hours.index') }}" wire:navigate>Horas de Trabalho</a></li>
 
                     <li class="menu-title">Financeiro</li>
                     <li><a href="{{ route('financial.dashboard') }}" wire:navigate>Painel Geral</a></li>
@@ -74,6 +75,7 @@
                         <li><a href="{{ route('services.index') }}" wire:navigate>Serviços</a></li>
                         <li><a href="{{ route('receipts.index') }}" wire:navigate>Recibos</a></li>
                         <li><a href="{{ route('clients.index') }}" wire:navigate>Clientes</a></li>
+                        <li><a href="{{ route('clients.work-hours.index') }}" wire:navigate>Horas de Trabalho</a></li>
                     </ul>
                 </li>
 

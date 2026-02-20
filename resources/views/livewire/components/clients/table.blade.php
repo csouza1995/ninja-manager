@@ -25,6 +25,17 @@
                         <td class="text-base-content/60">{{ $client->created_at->format('d/m/Y') }}</td>
                         <td>
                             <div class="flex justify-end gap-1">
+                                <!-- Work Hours -->
+                                <a href="{{ route('clients.work-hours.index', ['clientId' => $client->id]) }}"
+                                    wire:navigate class="btn btn-square btn-ghost btn-xs text-info"
+                                    title="Horas de Trabalho">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                        stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                                    </svg>
+                                </a>
+
                                 <!-- View Client -->
                                 <button wire:click="$dispatch('show-client', { id: {{ $client->id }} })"
                                     type="button" class="btn btn-square btn-ghost btn-xs text-primary"
