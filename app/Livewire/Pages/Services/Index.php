@@ -2,15 +2,26 @@
 
 namespace App\Livewire\Pages\Services;
 
-use Livewire\Component;
 use Livewire\Attributes\On;
+use Livewire\Attributes\Url;
+use Livewire\Component;
 use Livewire\WithPagination;
 
 class Index extends Component
 {
     use WithPagination;
 
+    #[Url]
+    public ?int $showId = null;
+
     public string $search = '';
+
+    public function mount()
+    {
+        if ($this->showId) {
+            $this->dispatch('show-service', id: $this->showId);
+        }
+    }
 
     #[On('service-saved')]
     #[On('service-deleted')]

@@ -83,7 +83,10 @@
                         <td>
                             <div class="flex flex-wrap gap-1 max-w-[200px]">
                                 @foreach ($entry->services as $service)
-                                    <span class="badge badge-outline badge-xs opacity-70">{{ $service->id }}</span>
+                                    <a href="{{ route('services.index', ['showId' => $service->id]) }}" wire:navigate
+                                        class="badge badge-outline badge-xs opacity-70 hover:badge-primary transition-colors font-mono">
+                                        #{{ str_pad($service->id, 5, '0', STR_PAD_LEFT) }}
+                                    </a>
                                 @endforeach
                             </div>
                         </td>
