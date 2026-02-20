@@ -1,10 +1,10 @@
 <?php
 
 use App\Livewire\Dashboard;
+use App\Livewire\Pages\Clients\Index as ClientsIndex;
 use App\Livewire\Pages\Executors\Index as ExecutorsIndex;
 use App\Livewire\Pages\Roles\Index as RolesIndex;
 use App\Livewire\Pages\ServiceItems\Index as ServiceItemsIndex;
-use App\Livewire\Pages\Clients\Index as ClientsIndex;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', Dashboard::class)->name('dashboard');
@@ -12,6 +12,7 @@ Route::get('/executors', ExecutorsIndex::class)->name('executors.index');
 Route::get('/roles', RolesIndex::class)->name('roles.index');
 Route::get('/service-items', ServiceItemsIndex::class)->name('service-items.index');
 Route::get('/clients', ClientsIndex::class)->name('clients.index');
+Route::get('/clients/work-hours', \App\Livewire\Pages\Clients\WorkHours\Index::class)->name('clients.work-hours.index');
 Route::get('/services', \App\Livewire\Pages\Services\Index::class)->name('services.index');
 Route::get('/receipts', \App\Livewire\Pages\Receipts\Index::class)->name('receipts.index');
 Route::get('/receipts/{receipt}/print', [\App\Http\Controllers\ReceiptController::class, 'print'])->name('receipts.print');
