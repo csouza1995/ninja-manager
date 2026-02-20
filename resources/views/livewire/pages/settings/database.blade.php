@@ -43,180 +43,100 @@
             @endif
         </div>
 
-        {{-- Tabs --}}
-        <div role="tablist" class="tabs tabs-boxed mb-8 bg-base-200/50 p-1">
-            <button role="tab" wire:click="$set('activeTab', 'full')" @class([
-                'tab transition-all font-bold',
-                'tab-active' => $activeTab === 'full',
-            ])>
-                <div class="flex items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                        stroke="currentColor" class="w-4 h-4">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M9 12.75 11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 0 1-1.043 3.296 3.745 3.745 0 0 1-3.296 1.043A3.745 3.745 0 0 1 12 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 0 1-3.296-1.043 3.745 3.745 0 0 1-1.043-3.296A3.745 3.745 0 0 1 3 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 0 1 1.043-3.296 3.746 3.746 0 0 1 3.296-1.043A3.746 3.746 0 0 1 12 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 0 1 3.296 1.043 3.746 3.746 0 0 1 1.043 3.296A3.745 3.745 0 0 1 21 12Z" />
-                    </svg>
-                    Sistema Completo (Recomendado)
-                </div>
-            </button>
-            <button role="tab" wire:click="$set('activeTab', 'partial')" @class([
-                'tab transition-all font-bold',
-                'tab-active' => $activeTab === 'partial',
-            ])>
-                <div class="flex items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                        stroke="currentColor" class="w-4 h-4">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M17.25 6.75 22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3-4.5 16.5" />
-                    </svg>
-                    Exportação de Dados (JSON)
-                </div>
-            </button>
-        </div>
-
         {{-- Content Area --}}
         <div class="space-y-8">
-            @if ($activeTab === 'full')
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    {{-- Full Backup Card --}}
-                    <div class="card bg-base-100 shadow-2xl border border-primary/20 overflow-hidden group">
-                        <div class="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
-                                stroke="currentColor" class="w-48 h-48">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M9 12.75 11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 0 1-1.043 3.296 3.745 3.745 0 0 1-3.296 1.043A3.745 3.745 0 0 1 12 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 0 1-3.296-1.043 3.745 3.745 0 0 1-1.043-3.296A3.745 3.745 0 0 1 3 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 0 1 1.043-3.296 3.746 3.746 0 0 1 3.296-1.043A3.746 3.746 0 0 1 12 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 0 1 3.296 1.043 3.746 3.746 0 0 1 1.043 3.296A3.745 3.745 0 0 1 21 12Z" />
-                            </svg>
-                        </div>
-                        <div class="card-body relative z-10">
-                            <h2 class="card-title text-2xl font-black text-primary mb-2 flex items-center gap-2">
-                                Backup Ninja ZIP
-                                <div class="badge badge-primary badge-sm">PROTEÇÃO TOTAL</div>
-                            </h2>
-                            <p class="text-base-content/70">
-                                Gere um arquivo compactado (ZIP) contendo o banco de dados completo e todos os arquivos,
-                                imagens e anexos da pasta <code class="bg-base-300 px-1 rounded">storage</code>.
-                            </p>
-
-                            <div class="mt-6 flex flex-col gap-2">
-                                <div class="flex items-center gap-2 text-sm font-bold opacity-60">
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
-                                        class="w-4 h-4 text-success">
-                                        <path fill-rule="evenodd"
-                                            d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm3.857-9.809a.75.75 0 0 0-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.06 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5Z"
-                                            clip-rule="evenodd" />
-                                    </svg>
-                                    Banco de Dados (SQL/JSON v1.1)
-                                </div>
-                                <div class="flex items-center gap-2 text-sm font-bold opacity-60">
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
-                                        class="w-4 h-4 text-success">
-                                        <path fill-rule="evenodd"
-                                            d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm3.857-9.809a.75.75 0 0 0-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.06 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5Z"
-                                            clip-rule="evenodd" />
-                                    </svg>
-                                    Arquivos & Anexos (Storage Public)
-                                </div>
-                            </div>
-
-                            <div class="card-actions justify-end mt-8">
-                                <button wire:click="exportFull" wire:loading.attr="disabled"
-                                    class="btn btn-primary btn-lg shadow-xl hover:scale-105 active:scale-95 transition-all">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                        stroke-width="2" stroke="currentColor" class="w-6 h-6 mr-2">
-                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                            d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
-                                    </svg>
-                                    Baixar Sistema Completo (.ZIP)
-                                </button>
-                            </div>
-                        </div>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {{-- Full Backup Card --}}
+                <div class="card bg-base-100 shadow-2xl border border-primary/20 overflow-hidden group">
+                    <div class="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                            stroke="currentColor" class="w-48 h-48">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M9 12.75 11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 0 1-1.043 3.296 3.745 3.745 0 0 1-3.296 1.043A3.745 3.745 0 0 1 12 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 0 1-3.296-1.043 3.745 3.745 0 0 1-1.043-3.296A3.745 3.745 0 0 1 3 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 0 1 1.043-3.296 3.746 3.746 0 0 1 3.296-1.043A3.746 3.746 0 0 1 12 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 0 1 3.296 1.043 3.746 3.746 0 0 1 1.043 3.296A3.745 3.745 0 0 1 21 12Z" />
+                        </svg>
                     </div>
+                    <div class="card-body relative z-10">
+                        <h2 class="card-title text-2xl font-black text-primary mb-2 flex items-center gap-2">
+                            Backup Ninja ZIP
+                            <div class="badge badge-primary badge-sm">PROTEÇÃO TOTAL</div>
+                        </h2>
+                        <p class="text-base-content/70">
+                            Gere um arquivo compactado (ZIP) contendo o banco de dados completo e todos os arquivos,
+                            imagens e anexos da pasta <code class="bg-base-300 px-1 rounded">storage</code>.
+                        </p>
 
-                    {{-- Full Restore Card --}}
-                    <div class="card bg-base-200/50 shadow-xl border border-base-300 border-dashed">
-                        <div class="card-body">
-                            <h2 class="card-title text-xl font-bold flex items-center gap-2">
-                                Restaurar Sistema
-                            </h2>
-                            <p class="text-sm text-base-content/60">
-                                Carregue um backup ZIP anterior para restaurar todo o ambiente Ninja.
-                            </p>
-
-                            <div class="form-control w-full mt-6">
-                                <div class="relative group">
-                                    <input type="file" wire:model="zipFile"
-                                        class="file-input file-input-bordered file-input-primary w-full h-24 bg-base-100/50" />
-                                    <div
-                                        class="absolute inset-x-0 bottom-2 text-center pointer-events-none opacity-40 text-[10px] font-bold uppercase tracking-widest">
-                                        Arraste o arquivo .zip aqui
-                                    </div>
-                                </div>
-                                <div wire:loading wire:target="zipFile"
-                                    class="text-xs text-primary font-bold mt-2 animate-pulse flex items-center gap-2">
-                                    <span class="loading loading-spinner loading-xs font-bold"></span>
-                                    Processando arquivo ZIP...
-                                </div>
+                        <div class="mt-6 flex flex-col gap-2">
+                            <div class="flex items-center gap-2 text-sm font-bold opacity-60">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
+                                    class="w-4 h-4 text-success">
+                                    <path fill-rule="evenodd"
+                                        d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm3.857-9.809a.75.75 0 0 0-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.06 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5Z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                                Banco de Dados (SQL/JSON v1.1)
                             </div>
-
-                            <div class="card-actions justify-end mt-6">
-                                <button wire:click="importFull" wire:loading.attr="disabled"
-                                    wire:confirm="CUIDADO: Isso irá substituir os dados e arquivos atuais. Deseja prosseguir?"
-                                    class="btn btn-neutral px-8">
-                                    <span wire:loading wire:target="importFull"
-                                        class="loading loading-spinner"></span>
-                                    Restaurar Backup Completo
-                                </button>
+                            <div class="flex items-center gap-2 text-sm font-bold opacity-60">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
+                                    class="w-4 h-4 text-success">
+                                    <path fill-rule="evenodd"
+                                        d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm3.857-9.809a.75.75 0 0 0-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.06 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5Z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                                Arquivos & Anexos (Storage Public)
                             </div>
+                        </div>
+
+                        <div class="card-actions justify-end mt-8">
+                            <button wire:click="exportFull" wire:loading.attr="disabled"
+                                class="btn btn-primary btn-lg shadow-xl hover:scale-105 active:scale-95 transition-all">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                    stroke-width="2" stroke="currentColor" class="w-6 h-6 mr-2">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                                </svg>
+                                Baixar Sistema Completo (.ZIP)
+                            </button>
                         </div>
                     </div>
                 </div>
-            @else
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    {{-- JSON Export Card --}}
-                    <div class="card bg-base-100 shadow-xl border border-base-200">
-                        <div class="card-body">
-                            <h2 class="card-title text-primary italic">Exportar JSON</h2>
-                            <p class="text-sm text-base-content/70 italic leading-relaxed">Baixe apenas a estrutura de
-                                dados (Clientes,
-                                Serviços e Horas) em formato legível.</p>
 
-                            <div
-                                class="mt-4 p-4 bg-base-200 rounded-lg text-[10px] font-mono opacity-50 overflow-hidden">
-                                { "version": "1.1", "data": { "client_work_hours": [...] } }
+                {{-- Full Restore Card --}}
+                <div class="card bg-base-200/50 shadow-xl border border-base-300 border-dashed">
+                    <div class="card-body">
+                        <h2 class="card-title text-xl font-bold flex items-center gap-2">
+                            Restaurar Sistema
+                        </h2>
+                        <p class="text-sm text-base-content/60">
+                            Carregue um backup ZIP anterior para restaurar todo o ambiente Ninja.
+                        </p>
+
+                        <div class="form-control w-full mt-6">
+                            <div class="relative group">
+                                <input type="file" wire:model="zipFile"
+                                    class="file-input file-input-bordered file-input-primary w-full h-24 bg-base-100/50" />
+                                <div
+                                    class="absolute inset-x-0 bottom-2 text-center pointer-events-none opacity-40 text-[10px] font-bold uppercase tracking-widest">
+                                    Arraste o arquivo .zip aqui
+                                </div>
                             </div>
-
-                            <div class="card-actions justify-end mt-4">
-                                <button wire:click="exportJson" class="btn btn-primary btn-outline">
-                                    Download JSON
-                                </button>
+                            <div wire:loading wire:target="zipFile"
+                                class="text-xs text-primary font-bold mt-2 animate-pulse flex items-center gap-2">
+                                <span class="loading loading-spinner loading-xs font-bold"></span>
+                                Processando arquivo ZIP...
                             </div>
                         </div>
-                    </div>
 
-                    {{-- JSON Import Card --}}
-                    <div class="card bg-base-100 shadow-xl border border-base-200">
-                        <div class="card-body">
-                            <h2 class="card-title text-secondary italic">Importar JSON</h2>
-                            <p class="text-sm text-base-content/70 italic">Restaure apenas os dados do banco de um
-                                arquivo anterior.
-                            </p>
-
-                            <div class="form-control w-full mt-4">
-                                <input type="file" wire:model="jsonFile"
-                                    class="file-input file-input-bordered file-input-secondary w-full" />
-                            </div>
-
-                            <div class="card-actions justify-end mt-4">
-                                <button wire:click="importJson" wire:loading.attr="disabled"
-                                    class="btn btn-secondary px-8">
-                                    <span wire:loading wire:target="importJson"
-                                        class="loading loading-spinner"></span>
-                                    Importar Dados Parciais
-                                </button>
-                            </div>
+                        <div class="card-actions justify-end mt-6">
+                            <button wire:click="importFull" wire:loading.attr="disabled"
+                                wire:confirm="CUIDADO: Isso irá substituir os dados e arquivos atuais. Deseja prosseguir?"
+                                class="btn btn-neutral px-8">
+                                <span wire:loading wire:target="importFull" class="loading loading-spinner"></span>
+                                Restaurar Backup Completo
+                            </button>
                         </div>
                     </div>
                 </div>
-            @endif
+            </div>
 
             {{-- Import Stats --}}
             @if ($importStats)
