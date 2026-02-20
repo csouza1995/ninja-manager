@@ -12,8 +12,8 @@
                     <th>Tipo</th>
                     <th class="text-center">Duração (H:M)</th>
                     <th class="text-center">Valor Hora</th>
-                    <th class="text-center">Subtotal</th>
-                    <th class="text-center">Contrato/Limite</th>
+                    <th class="text-center">Valor</th>
+                    <th class="text-center">Contrato</th>
                     <th>Serviços</th>
                     <th class="text-right">Ações</th>
                 </tr>
@@ -39,8 +39,8 @@
                             <div class="flex flex-col items-center">
                                 <span @class([
                                     'font-mono text-sm font-bold',
-                                    'text-secondary' =>
-                                        !$isPaid && $contractType === WorkHourContractType::Current,
+                                    'text-success' => $isPaid, {{-- Pago fica verde --}}
+                                    'text-secondary' => !$isPaid && $contractType === WorkHourContractType::Current
                                 ])>
                                     R$ {{ number_format($entry->executed_value, 2, ',', '.') }}
                                 </span>
@@ -57,20 +57,18 @@
                                     <span @class([
                                         'font-mono text-sm',
                                         'text-primary font-bold' => $contractType === WorkHourContractType::Fixed,
-                                        'text-secondary' => $contractType === WorkHourContractType::Current,
+                                        'opacity-50' => $contractType === WorkHourContractType::Current {{-- Branquinho/Neutro --}}
                                     ])>
                                         {{ $entry->toFormattedContractHhMm() }}
                                     </span>
-
+                                    
                                     {{-- Só mostra % se for do tipo Fixo (Contrato) --}}
                                     @if ($contractType === WorkHourContractType::Fixed)
                                         <div class="flex items-center gap-1 mt-0.5">
                                             <div class="w-12 bg-base-300 h-1 rounded-full overflow-hidden">
-                                                <div class="bg-primary h-full rounded-full"
-                                                    style="width: {{ $entry->achievementPercent() }}%"></div>
+                                                <div class="bg-primary h-full rounded-full" style="width: {{ $entry->achievementPercent() }}%"></div>
                                             </div>
-                                            <span
-                                                class="text-[9px] font-bold opacity-40">{{ $entry->achievementPercent() }}%</span>
+                                            <span class="text-[9px] font-bold opacity-40">{{ $entry->achievementPercent() }}%</span>
                                         </div>
                                     @endif
                                 </div>
@@ -83,9 +81,10 @@
                         <td>
                             <div class="flex flex-wrap gap-1 max-w-[200px]">
                                 @foreach ($entry->services as $service)
-                                    <a href="{{ route('services.index', ['showId' => $service->id]) }}" wire:navigate
-                                        class="badge badge-outline badge-xs opacity-70 hover:badge-primary transition-colors font-mono">
-                                        #{{ str_pad($service->id, 5, '0', STR_PAD_LEFT) }}
+                                    <a href="{{ route('services.index', ['showId' => $service->id]) }}" 
+                                       wire:navigate
+                                       class="badge badge-outline badge-xs opacity-70 hover:badge-primary transition-colors font-mono">
+                                       #{{ str_pad($service->id, 5, '0', STR_PAD_LEFT) }}
                                     </a>
                                 @endforeach
                             </div>
