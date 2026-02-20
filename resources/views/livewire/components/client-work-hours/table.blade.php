@@ -72,8 +72,6 @@
                                             <span
                                                 class="text-[9px] font-bold opacity-40">{{ $entry->achievementPercent() }}%</span>
                                         </div>
-                                    @else
-                                        <span class="text-[9px] uppercase font-bold opacity-30 mt-[-2px]">Limite</span>
                                     @endif
                                 </div>
                             @elseif(!$isPaid)
@@ -113,18 +111,6 @@
                     </tr>
                 @endforeach
             </tbody>
-            <tfoot>
-                <tr class="bg-base-300/30 font-bold">
-                    <td colspan="4" class="text-right">TOTAIS</td>
-                    <td class="text-center font-mono">
-                        R$ {{ number_format($entries->sum('executed_value'), 2, ',', '.') }}
-                    </td>
-                    <td class="text-center font-mono">
-                        {{-- Opcional: total de minutos contratados formatado --}}
-                    </td>
-                    <td colspan="2"></td>
-                </tr>
-            </tfoot>
         </table>
     </div>
 </div>
