@@ -23,7 +23,7 @@
         </div>
 
         {{-- Grid de Métricas --}}
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {{-- Card Saldo de Horas --}}
             <div class="card bg-base-200 border border-base-300 shadow-sm">
                 <div class="px-4 py-3 border-b border-base-300 flex justify-between items-center opacity-70">
@@ -37,7 +37,7 @@
                 <div class="card-body p-5">
                     <div class="flex items-end gap-2">
                         <div @class([
-                            'text-4xl font-mono font-black',
+                            'text-3xl font-mono font-black',
                             'text-warning' => $this->metrics['pending_minutes'] > 0,
                             'text-success opacity-80' => $this->metrics['pending_minutes'] <= 0,
                         ])>
@@ -49,7 +49,7 @@
             </div>
 
             {{-- Card Saldo Monetário --}}
-            <div class="card bg-base-200 border border-base-300 shadow-sm border-l-4 border-l-success">
+            <div class="card bg-base-200 border border-base-300 shadow-sm">
                 <div class="px-4 py-3 border-b border-base-300 flex justify-between items-center opacity-70">
                     <span class="font-bold text-[10px] uppercase tracking-wider">Saldo Pendente (Valor Est.)</span>
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24"
@@ -60,7 +60,7 @@
                 </div>
                 <div class="card-body p-5">
                     <div class="flex items-end gap-2">
-                        <div class="text-4xl font-mono font-black text-success">
+                        <div class="text-3xl font-mono font-black text-success">
                             R$ {{ number_format($this->metrics['pending_value'], 2, ',', '.') }}
                         </div>
                     </div>
@@ -70,7 +70,7 @@
             {{-- Card Atingimento / Métricas --}}
             <div class="card bg-base-200 border border-base-300 shadow-sm">
                 <div class="px-4 py-3 border-b border-base-300 flex justify-between items-center opacity-70">
-                    <span class="font-bold text-[10px] uppercase tracking-wider">Atingimento Médio de Contrato</span>
+                    <span class="font-bold text-[10px] uppercase tracking-wider">Atingimento de Contrato</span>
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24"
                         stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -79,17 +79,43 @@
                 </div>
                 <div class="card-body p-5">
                     <div class="flex flex-col gap-1">
-                        <div class="flex items-end gap-2">
-                            <div class="text-4xl font-mono font-black text-primary">
+                        <div class="flex items-center gap-2">
+                            <div class="text-3xl font-mono font-black text-primary">
                                 {{ $this->metrics['achievement'] }}%
                             </div>
-                            <div class="w-full bg-base-300 h-2 rounded-full mb-2 overflow-hidden">
+                            <div class="w-full bg-base-300 h-2 rounded-full overflow-hidden">
                                 <div class="bg-primary h-full rounded-full transition-all duration-500"
                                     style="width: {{ min(100, $this->metrics['achievement']) }}%"></div>
                             </div>
                         </div>
-                        <div class="text-[9px] uppercase font-bold opacity-30">
-                            Total Executado: R$ {{ number_format($this->metrics['executed_value'], 2, ',', '.') }}
+                        <div class="text-[9px] uppercase font-bold opacity-30 mt-1">
+                            Eficiência de entrega
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Card Gap de Oportunidade --}}
+            <div class="card bg-base-200 border border-base-300 shadow-sm">
+                <div class="px-4 py-3 border-b border-base-300 flex justify-between items-center opacity-70">
+                    <span class="font-bold text-[10px] uppercase tracking-wider">Potencial vs Realizado</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                    </svg>
+                </div>
+                <div class="card-body p-5">
+                    <div class="flex flex-col">
+                        <div class="text-2xl font-mono font-black text-secondary">
+                            R$ {{ number_format($this->metrics['executed_value'], 2, ',', '.') }}
+                        </div>
+                        <div class="text-[10px] uppercase font-bold opacity-30">
+                            de R$ {{ number_format($this->metrics['total_contract_value'], 2, ',', '.') }}
+                        </div>
+                        <div class="text-[9px] mt-2 italic opacity-40">
+                            Gap: R$
+                            {{ number_format(max(0, $this->metrics['total_contract_value'] - $this->metrics['executed_value']), 2, ',', '.') }}
                         </div>
                     </div>
                 </div>

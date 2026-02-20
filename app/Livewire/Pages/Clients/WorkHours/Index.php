@@ -55,6 +55,8 @@ class Index extends Component
         $totalContractedMin = $fixedEntries->sum('contract_minutes');
         $totalExecutedForFixedMin = $fixedEntries->sum('executed_minutes');
 
+        $totalContractValue = $fixedEntries->sum(fn ($e) => ($e->contract_minutes / 60) * (float) $e->hourly_rate);
+
         $achievement = $totalContractedMin > 0
             ? round(($totalExecutedForFixedMin / $totalContractedMin) * 100, 1)
             : 0;
@@ -64,6 +66,7 @@ class Index extends Component
             'pending_formatted' => sprintf('%d:%02d', intdiv($pendingMinutes, 60), $pendingMinutes % 60),
             'pending_value' => $pendingValue,
             'executed_value' => $executedValue,
+            'total_contract_value' => $totalContractValue,
             'achievement' => $achievement,
         ];
     }
