@@ -186,22 +186,24 @@
                         </div>
                     @endif
 
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="form-control">
-                            <label class="label py-0"><span
-                                    class="label-text text-xs opacity-50 font-semibold uppercase">H/Dia (Base
-                                    D)</span></label>
-                            <input wire:model="base_d" type="number" min="1" max="24"
-                                class="input input-bordered input-sm font-mono mt-1" />
+                    @if ($mode === 'wdhm')
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="form-control">
+                                <label class="label py-0"><span
+                                        class="label-text text-xs opacity-50 font-semibold uppercase">H/Dia (Base
+                                        D)</span></label>
+                                <input wire:model="base_d" type="number" min="1" max="24"
+                                    class="input input-bordered input-sm font-mono mt-1" />
+                            </div>
+                            <div class="form-control">
+                                <label class="label py-0"><span
+                                        class="label-text text-xs opacity-50 font-semibold uppercase">D/Semana (Base
+                                        W)</span></label>
+                                <input wire:model="base_w" type="number" min="1" max="7"
+                                    class="input input-bordered input-sm font-mono mt-1" />
+                            </div>
                         </div>
-                        <div class="form-control">
-                            <label class="label py-0"><span
-                                    class="label-text text-xs opacity-50 font-semibold uppercase">D/Semana (Base
-                                    W)</span></label>
-                            <input wire:model="base_w" type="number" min="1" max="7"
-                                class="input input-bordered input-sm font-mono mt-1" />
-                        </div>
-                    </div>
+                    @endif
 
                     {{-- Serviços vinculados --}}
                     @if ($availableServices->isNotEmpty())
