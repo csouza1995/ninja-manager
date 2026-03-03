@@ -37,4 +37,9 @@ class Outflow extends Model
     {
         return $this->belongsTo(BankAccount::class, 'destination_bank_account_id');
     }
+
+    public function expenditure(): \Illuminate\Database\Eloquent\Relations\MorphOne
+    {
+        return $this->morphOne(Expenditure::class, 'model');
+    }
 }

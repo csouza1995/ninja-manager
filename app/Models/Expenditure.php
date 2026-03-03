@@ -15,6 +15,8 @@ class Expenditure extends Model
         'due_date',
         'amount',
         'paid_at',
+        'model_id',
+        'model_type',
     ];
 
     protected $casts = [
@@ -26,5 +28,10 @@ class Expenditure extends Model
     public function bankAccount(): BelongsTo
     {
         return $this->belongsTo(BankAccount::class);
+    }
+
+    public function model(): \Illuminate\Database\Eloquent\Relations\MorphTo
+    {
+        return $this->morphTo();
     }
 }

@@ -4,16 +4,22 @@ declare(strict_types=1);
 
 namespace App\Livewire\Components\Financial;
 
-use App\Models\Expenditure;
 use App\Models\BankAccount;
-use Livewire\Component;
-use Livewire\Attributes\Validate;
+use App\Models\Expenditure;
 use Livewire\Attributes\On;
+use Livewire\Attributes\Validate;
+use Livewire\Component;
 
 class ExpenditureForm extends Component
 {
     public bool $isOpen = false;
+
     public ?int $expenditureId = null;
+
+    // Morph link fields
+    public ?string $model_type = null;
+
+    public ?int $model_id = null;
 
     #[Validate('required|min:2')]
     public $destination = '';
@@ -35,9 +41,12 @@ class ExpenditureForm extends Component
 
     public $paid_at = null;
 
-    // Suggestions
+    // Suggestions and Linkables
     public $destinationSuggestions = [];
+
     public $classificationSuggestions = [];
+
+    public $linkables = [];
 
     public function mount()
     {
@@ -45,10 +54,23 @@ class ExpenditureForm extends Component
     }
 
     #[On('open-expenditure-form')]
-    public function open(int $id = null)
+    public function open(?int $id = null, ?string $fromModelType = null, ?int $fromModelId = null, ?float $amount = null, ?string $description = null)
     {
         $this->resetForm();
         $this->updateSuggestions();
+
+        if ($fromModelType && $fromModelId) {
+            $this->model_type = $fromModelType;
+            $this->model_id = $fromModelId;
+            $this->amount = $amount ?? 0;
+            $this->description = $description ?? '';
+            $this->classification = 'Imposto';
+            if ($this->model_type === 'App\Models\Outflow') {
+                $this->classification = 'Imposto S/ Prolabore';
+            }
+        }
+
+        $this->loadLinkables();
         $this->isOpen = true;
 
         if ($id) {
@@ -60,6 +82,8 @@ class ExpenditureForm extends Component
     {
         $exp = Expenditure::findOrFail($id);
         $this->expenditureId = $id;
+        $this->model_type = $exp->model_type;
+        $this->model_id = $exp->model_id;
         $this->destination = $exp->destination;
         $this->description = $exp->description;
         $this->classification = $exp->classification;
@@ -69,6 +93,13 @@ class ExpenditureForm extends Component
         $this->paid_at = $exp->paid_at ? $exp->paid_at->format('Y-m-d') : null;
     }
 
+    public function updatedModelType($value)
+    {
+        if (! $value) {
+            $this->model_id = null;
+        }
+    }
+
     public function save()
     {
         $this->validate();
@@ -76,6 +107,8 @@ class ExpenditureForm extends Component
         Expenditure::updateOrCreate(
             ['id' => $this->expenditureId],
             [
+                'model_type' => $this->model_type,
+                'model_id' => $this->model_id,
                 'destination' => $this->destination,
                 'description' => $this->description,
                 'classification' => $this->classification,
@@ -99,10 +132,53 @@ class ExpenditureForm extends Component
     private function resetForm()
     {
         $this->reset([
-            'expenditureId', 'destination', 'description', 
-            'classification', 'bank_account_id', 'amount', 'paid_at'
+            'expenditureId', 'model_type', 'model_id', 'destination', 'description',
+            'classification', 'bank_account_id', 'amount', 'paid_at', 'linkables',
         ]);
         $this->due_date = now()->format('Y-m-d');
+    }
+
+    private function loadLinkables()
+    {
+        // Get Revenues with tax_amount > 0 and no linked expenditure
+        $revenues = \App\Models\Revenue::where('tax_amount', '>', 0)
+            ->whereDoesntHave('expenditure')
+            ->get()
+            ->map(fn ($r) => [
+                'type' => 'App\Models\Revenue',
+                'id' => $r->id,
+                'label' => "Receita: {$r->description} (R$ ".number_format($r->tax_amount, 2, ',', '.').')',
+            ]);
+
+        // Get Outflows with tax_amount > 0 and no linked expenditure
+        $outflows = \App\Models\Outflow::where('tax_amount', '>', 0)
+            ->whereDoesntHave('expenditure')
+            ->get()
+            ->map(fn ($o) => [
+                'type' => 'App\Models\Outflow',
+                'id' => $o->id,
+                'label' => "Saída: {$o->description} (R$ ".number_format($o->tax_amount, 2, ',', '.').')',
+            ]);
+
+        // Include currently selected item if editing an existing expenditure
+        $current = [];
+        if ($this->model_type && $this->model_id) {
+            $modelClass = $this->model_type;
+            $model = $modelClass::find($this->model_id);
+            if ($model) {
+                $prefix = $this->model_type === 'App\Models\Revenue' ? 'Receita' : 'Saída';
+                $current[] = [
+                    'type' => $this->model_type,
+                    'id' => $this->model_id,
+                    'label' => "{$prefix}: {$model->description} (R$ ".number_format($model->tax_amount, 2, ',', '.').')',
+                    'selected' => true,
+                ];
+            }
+        }
+
+        $this->linkables = collect($current)->merge($revenues)->merge($outflows)->unique(function ($item) {
+            return $item['type'].'-'.$item['id'];
+        })->toArray();
     }
 
     private function updateSuggestions()
