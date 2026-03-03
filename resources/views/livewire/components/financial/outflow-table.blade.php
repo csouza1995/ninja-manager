@@ -9,6 +9,7 @@
                     <th>Banco</th>
                     <th>Valor</th>
                     <th>Imposto (Provisão)</th>
+                    <th>Valor Efetivo</th>
                     <th>Status</th>
                     <th class="text-right">Ações</th>
                 </tr>
@@ -59,6 +60,9 @@
                                 -
                             @endif
                         </td>
+                        <td class="font-bold font-mono text-error">
+                            R$ {{ number_format($outflow->amount - $outflow->tax_amount, 2, ',', '.') }}
+                        </td>
                         <td>
                             @if ($outflow->paid_at)
                                 <div class="badge badge-success badge-outline gap-1 text-[10px] h-auto py-1">
@@ -93,7 +97,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="8" class="text-center py-8 opacity-50 italic">Nenhuma saída registrada.
+                        <td colspan="9" class="text-center py-8 opacity-50 italic">Nenhuma saída registrada.
                         </td>
                     </tr>
                 @endforelse

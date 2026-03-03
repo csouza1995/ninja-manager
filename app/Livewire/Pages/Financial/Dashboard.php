@@ -99,8 +99,8 @@ class Dashboard extends Component
                     })->sum('amount'),
 
                 // 4. Retiradas
-                'outflows_paid' => Outflow::whereBetween(DB::raw('COALESCE(paid_at, due_date)'), $range)->whereNotNull('paid_at')->sum('amount'),
-                'outflows_pending' => Outflow::whereBetween(DB::raw('COALESCE(paid_at, due_date)'), $range)->whereNull('paid_at')->sum('amount'),
+                'outflows_paid' => Outflow::whereBetween(DB::raw('COALESCE(paid_at, due_date)'), $range)->whereNotNull('paid_at')->sum(DB::raw('amount - COALESCE(tax_amount, 0)')),
+                'outflows_pending' => Outflow::whereBetween(DB::raw('COALESCE(paid_at, due_date)'), $range)->whereNull('paid_at')->sum(DB::raw('amount - COALESCE(tax_amount, 0)')),
 
                 // 5. Encargos (Retiradas)
                 'outflow_tax_paid' => Outflow::whereBetween(DB::raw('COALESCE(paid_at, due_date)'), $range)->whereNotNull('paid_at')->sum('tax_amount'),
@@ -109,7 +109,7 @@ class Dashboard extends Component
                 // 6. Withdrawals Breakdown
                 'withdrawals_breakdown' => Outflow::whereBetween(DB::raw('COALESCE(paid_at, due_date)'), $range)
                     ->whereNotNull('person_name')
-                    ->select('person_name', DB::raw('SUM(amount) as total'))
+                    ->select('person_name', DB::raw('SUM(amount - COALESCE(tax_amount, 0)) as total'))
                     ->groupBy('person_name')
                     ->orderByDesc('total')
                     ->get()
@@ -176,13 +176,13 @@ class Dashboard extends Component
                 ->whereNotNull('paid_at')
                 ->sum('amount');
 
-            $outflowExp = Outflow::where('origin_bank_account_id', $account->id)->whereNotNull('paid_at')->sum('amount');
+            $outflowExp = Outflow::where('origin_bank_account_id', $account->id)->whereNotNull('paid_at')->sum(DB::raw('amount - COALESCE(tax_amount, 0)'));
 
             // Add transfers received in this account
             $transfersIn = Outflow::where('destination_bank_account_id', $account->id)
                 ->where('type', 'Transferência')
                 ->whereNotNull('paid_at')
-                ->sum('amount');
+                ->sum(DB::raw('amount - COALESCE(tax_amount, 0)'));
 
             $balance = ($grossRev + $transfersIn) - ($operExp + $outflowExp);
             $taxProvision = max(0, ($taxAccrued + $outflowTaxAccrued) - $taxPaid);
@@ -215,7 +215,7 @@ class Dashboard extends Component
 
             $outSum = Outflow::whereMonth(DB::raw('COALESCE(paid_at, due_date)'), $m->month)
                 ->whereYear(DB::raw('COALESCE(paid_at, due_date)'), $m->year)
-                ->sum('amount');
+                ->sum(DB::raw('amount - COALESCE(tax_amount, 0)'));
 
             $resultSeries[] = $netRevenue - ($expSum + $outSum);
             $revenueSeries[] = $netRevenue;
@@ -270,7 +270,7 @@ class Dashboard extends Component
             $flowWithdrawals[] = Outflow::whereMonth(DB::raw('COALESCE(paid_at, due_date)'), $m->month)
                 ->whereYear(DB::raw('COALESCE(paid_at, due_date)'), $m->year)
                 ->whereNotNull('paid_at')
-                ->sum('amount');
+                ->sum(DB::raw('amount - COALESCE(tax_amount, 0)'));
         }
 
         $this->flowChartData = [
