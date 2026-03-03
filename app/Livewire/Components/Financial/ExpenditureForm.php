@@ -147,7 +147,7 @@ class ExpenditureForm extends Component
             ->map(fn ($r) => [
                 'type' => 'App\Models\Revenue',
                 'id' => $r->id,
-                'label' => "Receita: {$r->description} (R$ ".number_format($r->tax_amount, 2, ',', '.').')',
+                'label' => "Receita: {$r->description} (R$ ".number_format((float) $r->tax_amount, 2, ',', '.').')',
             ]);
 
         // Get Outflows with tax_amount > 0 and no linked expenditure
@@ -157,7 +157,7 @@ class ExpenditureForm extends Component
             ->map(fn ($o) => [
                 'type' => 'App\Models\Outflow',
                 'id' => $o->id,
-                'label' => "Saída: {$o->description} (R$ ".number_format($o->tax_amount, 2, ',', '.').')',
+                'label' => "Saída: {$o->description} (R$ ".number_format((float) $o->tax_amount, 2, ',', '.').')',
             ]);
 
         // Include currently selected item if editing an existing expenditure
@@ -170,7 +170,7 @@ class ExpenditureForm extends Component
                 $current[] = [
                     'type' => $this->model_type,
                     'id' => $this->model_id,
-                    'label' => "{$prefix}: {$model->description} (R$ ".number_format($model->tax_amount, 2, ',', '.').')',
+                    'label' => "{$prefix}: {$model->description} (R$ ".number_format((float) $model->tax_amount, 2, ',', '.').')',
                     'selected' => true,
                 ];
             }
