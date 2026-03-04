@@ -93,8 +93,11 @@ class ExpenditureForm extends Component
             $this->amount = $amount ?? 0;
             $this->description = $description ?? '';
             $this->classification = 'Imposto';
+            $this->destination = 'Receita Federal';
+
             if ($this->model_type === 'App\Models\Outflow') {
                 $this->classification = 'Imposto S/ Prolabore';
+                $this->destination = 'INSS / Receita Federal';
             }
         }
 
