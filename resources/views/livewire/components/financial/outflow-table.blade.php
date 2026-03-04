@@ -1,16 +1,95 @@
 <div>
+    <div class="flex flex-wrap items-center gap-2 mb-6 p-2 bg-base-100/50 rounded-box border border-base-200">
+        <span class="text-sm font-medium text-base-content/70 px-2 flex items-center gap-1">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                stroke="currentColor" class="w-4 h-4">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 0 1-.659 1.591l-5.432 5.432a2.25 2.25 0 0 0-.659 1.591v2.927a2.25 2.25 0 0 1-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 0 0-.659-1.591L3.659 7.409A2.25 2.25 0 0 1 3 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0 1 12 3Z" />
+            </svg>
+            Filtros
+        </span>
+
+        <select wire:model.live="status" class="select select-sm select-bordered bg-base-100">
+            <option value="">Status</option>
+            <option value="pending">Pendente</option>
+            <option value="paid">Pago</option>
+        </select>
+
+        <select wire:model.live="type" class="select select-sm select-bordered bg-base-100">
+            <option value="">Tipo</option>
+            <option value="imposto">Imposto</option>
+            <option value="prolabore">Pró-labore</option>
+            <option value="distribuicao">Distribuição</option>
+            <option value="rescisao">Rescisão</option>
+            <option value="bonus">Bônus</option>
+            <option value="ajuste">Ajuste</option>
+            <option value="outro">Outro</option>
+        </select>
+
+        <select wire:model.live="bank_account_id" class="select select-sm select-bordered bg-base-100">
+            <option value="">Conta Bancária</option>
+            @foreach ($settingsBankAccounts as $bankAccount)
+                <option value="{{ $bankAccount->id }}">{{ $bankAccount->bank_name }}</option>
+            @endforeach
+        </select>
+
+        <div class="join">
+            <span class="join-item btn btn-sm btn-disabled bg-base-100 border-base-300">Inicial</span>
+            <input type="date" wire:model.live="start_date"
+                class="input input-sm input-bordered join-item bg-base-100" />
+            <span class="join-item btn btn-sm btn-disabled bg-base-100 border-base-300 border-l-0">Final</span>
+            <input type="date" wire:model.live="end_date"
+                class="input input-sm input-bordered join-item bg-base-100" />
+        </div>
+    </div>
+
     <div class="overflow-hidden">
         <table class="table w-full">
             <thead>
                 <tr>
-                    <th>Data</th>
-                    <th>Tipo</th>
+                    <th class="cursor-pointer hover:bg-base-200" wire:click="sortBy('due_date')">
+                        <div class="flex items-center gap-1">
+                            Data
+                            @if ($sortField === 'due_date')
+                                <span>{!! $sortDirection === 'asc' ? '&#8593;' : '&#8595;' !!}</span>
+                            @endif
+                        </div>
+                    </th>
+                    <th class="cursor-pointer hover:bg-base-300" wire:click="sortBy('type')">
+                        <div class="flex items-center gap-1">
+                            Tipo
+                            @if ($sortField === 'type')
+                                <span>{!! $sortDirection === 'asc' ? '&#8593;' : '&#8595;' !!}</span>
+                            @endif
+                        </div>
+                    </th>
                     <th>Descrição / Favorecido</th>
                     <th>Banco</th>
-                    <th>Valor</th>
+                    <th class="cursor-pointer hover:bg-base-200" wire:click="sortBy('amount')">
+                        <div class="flex items-center gap-1">
+                            Valor
+                            @if ($sortField === 'amount')
+                                <span>{!! $sortDirection === 'asc' ? '&#8593;' : '&#8595;' !!}</span>
+                            @endif
+                        </div>
+                    </th>
                     <th>Imposto (Provisão)</th>
-                    <th>Valor Efetivo</th>
-                    <th>Status</th>
+                    <th class="cursor-pointer hover:bg-base-300" wire:click="sortBy('net_amount')">
+                        <div class="flex items-center gap-1">
+                            Valor Efetivo
+                            @if ($sortField === 'net_amount')
+                                <span>{!! $sortDirection === 'asc' ? '&#8593;' : '&#8595;' !!}</span>
+                            @endif
+                        </div>
+                    </th>
+                    <th class="cursor-pointer hover:bg-base-300" wire:click="sortBy('status')">
+                        <div class="flex items-center gap-1">
+                            Status
+                            @if ($sortField === 'status')
+                                <span>{!! $sortDirection === 'asc' ? '&#8593;' : '&#8595;' !!}</span>
+                            @endif
+                        </div>
+                    </th>
                     <th class="text-right">Ações</th>
                 </tr>
             </thead>
@@ -79,7 +158,7 @@
                                 <!-- Expenditure Link -->
                                 @if ($outflow->tax_amount > 0)
                                     @if (!$outflow->expenditure)
-                                        <a href="{{ route('financial.expenditures', ['launch' => 'tax', 'fromModelType' => 'App\Models\Outflow', 'fromModelId' => $outflow->id, 'launchAmount' => $outflow->tax_amount, 'launchDescription' => 'Imposto Ref. ' . $outflow->description]) }}"
+                                        <a href="{{ route('financial.expenditures', ['launch' => 'tax','fromModelType' => 'App\Models\Outflow','fromModelId' => $outflow->id,'launchAmount' => $outflow->tax_amount,'launchDescription' =>'Imposto Ref. ' .$outflow->description .' ' .\Carbon\Carbon::parse($outflow->paid_at ?? ($outflow->due_date ?? now()))->addMonth()->format('m/Y') .' (' .\Carbon\Carbon::parse($outflow->paid_at ?? ($outflow->due_date ?? now()))->format('m/Y') .')']) }}"
                                             wire:navigate class="btn btn-square btn-ghost btn-xs text-warning"
                                             title="Lançar Despesa de Imposto">
                                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"

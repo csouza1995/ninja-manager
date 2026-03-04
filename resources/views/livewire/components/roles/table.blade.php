@@ -4,7 +4,14 @@
             <thead>
                 <tr>
                     <th>Nome</th>
-                    <th>Criado em</th>
+                    <th class="cursor-pointer hover:bg-base-300" wire:click="sortBy('created_at')">
+                        <div class="flex items-center gap-1">
+                            Criado em
+                            @if ($sortField === 'created_at')
+                                <span>{!! $sortDirection === 'asc' ? '&#8593;' : '&#8595;' !!}</span>
+                            @endif
+                        </div>
+                    </th>
                     <th class="text-right">Ações</th>
                 </tr>
             </thead>

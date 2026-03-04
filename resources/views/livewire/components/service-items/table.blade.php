@@ -3,7 +3,14 @@
         <table class="table">
             <thead>
                 <tr>
-                    <th>Código</th>
+                    <th class="cursor-pointer hover:bg-base-200" wire:click="sortBy('code')">
+                        <div class="flex items-center gap-1">
+                            Código
+                            @if ($sortField === 'code')
+                                <span>{!! $sortDirection === 'asc' ? '&#8593;' : '&#8595;' !!}</span>
+                            @endif
+                        </div>
+                    </th>
                     <th>Descrição</th>
                     <th>Valor</th>
                     <th>Criado em</th>
