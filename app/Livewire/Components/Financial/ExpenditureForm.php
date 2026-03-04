@@ -7,6 +7,7 @@ namespace App\Livewire\Components\Financial;
 use App\Models\BankAccount;
 use App\Models\Expenditure;
 use Livewire\Attributes\On;
+use Livewire\Attributes\Url;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
 
@@ -15,6 +16,22 @@ class ExpenditureForm extends Component
     public bool $isOpen = false;
 
     public ?int $expenditureId = null;
+
+    // Direct Launch via Query Parameter
+    #[Url]
+    public ?string $launch = null;
+
+    #[Url]
+    public ?string $fromModelType = null;
+
+    #[Url]
+    public ?int $fromModelId = null;
+
+    #[Url]
+    public ?float $launchAmount = null;
+
+    #[Url]
+    public ?string $launchDescription = null;
 
     // Morph link fields
     public ?string $model_type = null;
@@ -51,6 +68,17 @@ class ExpenditureForm extends Component
     public function mount()
     {
         $this->due_date = now()->format('Y-m-d');
+
+        if ($this->launch === 'tax' && $this->fromModelType && $this->fromModelId) {
+            $this->open(null, $this->fromModelType, $this->fromModelId, $this->launchAmount, $this->launchDescription);
+
+            // Clear the URL trace but keep the form open
+            $this->launch = null;
+            $this->fromModelType = null;
+            $this->fromModelId = null;
+            $this->launchAmount = null;
+            $this->launchDescription = null;
+        }
     }
 
     #[On('open-expenditure-form')]
