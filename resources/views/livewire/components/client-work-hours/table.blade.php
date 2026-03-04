@@ -4,6 +4,17 @@
 @endphp
 
 <div>
+    <div class="p-4 bg-base-100 rounded-t-box border-b border-base-300">
+        <div class="form-control max-w-xs">
+            <select wire:model.live="type" class="select select-bordered select-sm">
+                <option value="">Todos os Tipos</option>
+                <option value="bonus">Bônus</option>
+                <option value="service">Serviço/Projeto</option>
+                <option value="package">Pacote de Horas</option>
+                <option value="recurring">Manutenção</option>
+            </select>
+        </div>
+    </div>
     <div class="overflow-x-auto">
         <table class="table w-full">
             <thead>
@@ -114,5 +125,8 @@
                 @endforeach
             </tbody>
         </table>
+    </div>
+    <div class="mt-4 p-4 border-t border-base-300">
+        {{ $entries->links() }}
     </div>
 </div>

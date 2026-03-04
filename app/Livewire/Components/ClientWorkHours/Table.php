@@ -7,13 +7,26 @@ namespace App\Livewire\Components\ClientWorkHours;
 use App\Models\ClientWorkHour;
 use Livewire\Attributes\On;
 use Livewire\Component;
+use Livewire\WithPagination;
 
 class Table extends Component
 {
+    use WithPagination;
+
     public ?int $clientId = null;
 
+    public string $type = '';
+
     #[On('work-hour-saved')]
-    public function refresh(): void {}
+    public function refresh(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatedType()
+    {
+        $this->resetPage();
+    }
 
     public function edit(int $id): void
     {
@@ -28,14 +41,18 @@ class Table extends Component
     public function render(): \Illuminate\Contracts\View\View
     {
         $query = ClientWorkHour::with(['client', 'services'])
-            ->orderBy('created_at', 'desc');
+            ->orderBy('id', 'asc'); // Hidden ID default sorting as requested
 
         if ($this->clientId) {
             $query->where('client_id', $this->clientId);
         }
 
+        if ($this->type !== '') {
+            $query->where('type', $this->type);
+        }
+
         return view('livewire.components.client-work-hours.table', [
-            'entries' => $query->get(),
+            'entries' => $query->paginate(15),
         ]);
     }
 }
