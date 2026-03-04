@@ -3,15 +3,30 @@
 namespace App\Livewire\Components\Clients;
 
 use App\Models\Client;
+use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\WithPagination;
-use Livewire\Attributes\On;
 
 class Table extends Component
 {
     use WithPagination;
 
     public string $search = '';
+
+    // Sorting
+    public string $sortField = 'name';
+
+    public string $sortDirection = 'asc';
+
+    public function sortBy(string $field)
+    {
+        if ($this->sortField === $field) {
+            $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
+        } else {
+            $this->sortField = $field;
+            $this->sortDirection = 'asc';
+        }
+    }
 
     #[On('client-saved')]
     #[On('client-deleted')]
@@ -28,8 +43,8 @@ class Table extends Component
                     ->orWhere('nickname', 'like', "%{$this->search}%")
                     ->orWhere('document', 'like', "%{$this->search}%");
             })
-            ->latest()
-            ->paginate(10);
+            ->orderBy($this->sortField, $this->sortDirection)
+            ->paginate(15);
 
         return view('livewire.components.clients.table', [
             'clients' => $clients,

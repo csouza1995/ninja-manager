@@ -1,13 +1,47 @@
 <div>
+    <div class="flex justify-between items-center mb-6 gap-4">
+        <div class="flex-1 max-w-md">
+            <input type="text" wire:model.live.debounce.300ms="search" placeholder="Procurar clientes..."
+                class="input input-bordered w-full" />
+        </div>
+        <button wire:click="$dispatch('create-client')" type="button" class="btn btn-primary">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+            Novo Cliente
+        </button>
+    </div>
+
     <div class="overflow-x-auto">
         <table class="table">
             <thead>
                 <tr>
-                    <th>Nome</th>
-                    <th>Apelido</th>
+                    <th class="cursor-pointer hover:bg-base-300" wire:click="sortBy('name')">
+                        <div class="flex items-center gap-1">
+                            Nome
+                            @if ($sortField === 'name')
+                                <span>{!! $sortDirection === 'asc' ? '&#8593;' : '&#8595;' !!}</span>
+                            @endif
+                        </div>
+                    </th>
+                    <th class="cursor-pointer hover:bg-base-300" wire:click="sortBy('nickname')">
+                        <div class="flex items-center gap-1">
+                            Apelido
+                            @if ($sortField === 'nickname')
+                                <span>{!! $sortDirection === 'asc' ? '&#8593;' : '&#8595;' !!}</span>
+                            @endif
+                        </div>
+                    </th>
                     <th>Tipo</th>
                     <th>Documento</th>
-                    <th>Criado em</th>
+                    <th class="cursor-pointer hover:bg-base-300" wire:click="sortBy('created_at')">
+                        <div class="flex items-center gap-1">
+                            Criado em
+                            @if ($sortField === 'created_at')
+                                <span>{!! $sortDirection === 'asc' ? '&#8593;' : '&#8595;' !!}</span>
+                            @endif
+                        </div>
+                    </th>
                     <th class="text-right">Ações</th>
                 </tr>
             </thead>
