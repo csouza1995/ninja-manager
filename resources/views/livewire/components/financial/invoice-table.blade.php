@@ -1,12 +1,48 @@
 <div>
+    <div class="flex flex-col gap-4 mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 bg-base-100 rounded-box border border-base-300">
+            <div class="form-control md:col-span-2">
+                <label class="label"><span class="label-text">Cliente</span></label>
+                <select wire:model.live="client_id" class="select select-bordered w-full">
+                    <option value="">Todos</option>
+                    @foreach ($clients as $client)
+                        <option value="{{ $client->id }}">{{ $client->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="form-control">
+                <label class="label"><span class="label-text">Emissão a partir</span></label>
+                <input type="date" wire:model.live="start_date" class="input input-bordered w-full" />
+            </div>
+            <div class="form-control">
+                <label class="label"><span class="label-text">Até</span></label>
+                <input type="date" wire:model.live="end_date" class="input input-bordered w-full" />
+            </div>
+        </div>
+    </div>
+
     <div class="overflow-hidden">
         <table class="table table-zebra w-full">
             <thead>
                 <tr>
-                    <th>Emissão</th>
+                    <th class="cursor-pointer hover:bg-base-200" wire:click="sortBy('issued_at')">
+                        <div class="flex items-center gap-1">
+                            Emissão
+                            @if ($sortField === 'issued_at')
+                                <span>{!! $sortDirection === 'asc' ? '&#8593;' : '&#8595;' !!}</span>
+                            @endif
+                        </div>
+                    </th>
                     <th>Número</th>
                     <th>Cliente / Serviço</th>
-                    <th>Valor</th>
+                    <th class="cursor-pointer hover:bg-base-200" wire:click="sortBy('amount')">
+                        <div class="flex items-center gap-1">
+                            Valor
+                            @if ($sortField === 'amount')
+                                <span>{!! $sortDirection === 'asc' ? '&#8593;' : '&#8595;' !!}</span>
+                            @endif
+                        </div>
+                    </th>
                     <th class="text-right">Ações</th>
                 </tr>
             </thead>
