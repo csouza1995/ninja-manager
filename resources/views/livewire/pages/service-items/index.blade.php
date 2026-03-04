@@ -8,7 +8,7 @@
         <div class="card-body">
             <div class="flex justify-between items-center mb-6 gap-4">
                 <div class="flex-1 max-w-md">
-                    <input type="text" wire:model.live="search" placeholder="Procurar..."
+                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="Procurar..."
                         class="input input-bordered w-full" />
                 </div>
                 <button wire:click="$dispatch('create-service-item')" type="button" class="btn btn-primary">
