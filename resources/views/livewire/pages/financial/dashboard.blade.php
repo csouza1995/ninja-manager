@@ -1,4 +1,5 @@
-<div>
+<div x-data="{ count: @entangle('periodCount') }" x-init="$watch('count', v => $dispatch('ultrawide', v === 7));
+setTimeout(() => $dispatch('ultrawide', count === 7), 50)">
     <div class="mb-6">
         <h2 class="text-3xl font-bold text-primary flex items-center gap-2">
             Painel Financeiro
@@ -58,11 +59,68 @@
     </div>
 
 
+    <!-- Controles de Período Fixados (Sticky) -->
+    <div
+        class="sticky top-[65px] z-40 bg-base-100/90 backdrop-blur pb-4 pt-4 -mx-4 px-4 border-b border-base-200 mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shadow-sm">
+
+        {{-- Navigation Controls (Left) --}}
+        <div class="join shadow-sm">
+            <button wire:click="previousPeriod" class="join-item btn btn-sm bg-base-100 hover:bg-base-200"
+                title="Período Anterior">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                    stroke="currentColor" class="w-4 h-4">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
+                </svg>
+                Anterior
+            </button>
+            <div
+                class="join-item btn btn-sm px-4 bg-base-100 border-base-300 pointer-events-none font-bold text-primary">
+                {{ $currentPeriodLabel }}
+            </div>
+            <button wire:click="nextPeriod" class="join-item btn btn-sm bg-base-100 hover:bg-base-200"
+                title="Próximo Período">
+                Próximo
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                    stroke="currentColor" class="w-4 h-4">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                </svg>
+            </button>
+        </div>
+
+        <div class="flex items-center gap-4">
+            {{-- Card Counts --}}
+            <div class="join shadow-sm">
+                <button wire:click="$set('periodCount', 3)" @class(['join-item btn btn-sm', 'btn-primary' => $periodCount === 3])>3</button>
+                <button wire:click="$set('periodCount', 5)" @class(['join-item btn btn-sm', 'btn-primary' => $periodCount === 5])>5</button>
+                <button wire:click="$set('periodCount', 7)" @class([
+                    'hidden 2xl:inline-flex join-item btn btn-sm',
+                    'btn-primary' => $periodCount === 7,
+                ])>7</button>
+            </div>
+
+            {{-- Filter Types --}}
+            <div class="join shadow-sm">
+                <button wire:click="setFilter('month')" @class([
+                    'join-item btn btn-sm',
+                    'btn-primary' => $activeFilter === 'month',
+                ])>Mensal</button>
+                <button wire:click="setFilter('quarter')" @class([
+                    'join-item btn btn-sm',
+                    'btn-primary' => $activeFilter === 'quarter',
+                ])>Trimestral</button>
+                <button wire:click="setFilter('year')" @class([
+                    'join-item btn btn-sm',
+                    'btn-primary' => $activeFilter === 'year',
+                ])>Anual</button>
+            </div>
+        </div>
+    </div>
+
     {{-- Gráfico Principal --}}
     <x-financial.main-chart />
 
     <!-- Tabelas de Períodos -->
-    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4 mt-8">
         <h2 class="text-2xl font-bold flex items-center gap-2">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                 stroke="currentColor" class="w-6 h-6">
@@ -71,24 +129,16 @@
             </svg>
             Análise de Fluxo
         </h2>
-
-        <div class="join border border-base-300 shadow-sm">
-            <button wire:click="setFilter('month')" @class([
-                'join-item btn btn-sm',
-                'btn-primary' => $activeFilter === 'month',
-            ])>Mensal</button>
-            <button wire:click="setFilter('quarter')" @class([
-                'join-item btn btn-sm',
-                'btn-primary' => $activeFilter === 'quarter',
-            ])>Trimestral</button>
-            <button wire:click="setFilter('year')" @class([
-                'join-item btn btn-sm',
-                'btn-primary' => $activeFilter === 'year',
-            ])>Anual</button>
-        </div>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+
+    @php
+        $gridColsClass =
+            [3 => 'lg:grid-cols-3', 5 => 'lg:grid-cols-5', 7 => 'lg:grid-cols-7'][$periodCount] ?? 'lg:grid-cols-3';
+    @endphp
+
+    <div class="grid grid-cols-1 md:grid-cols-2 {{ $gridColsClass }} gap-6 mb-8"
+        wire:loading.class="opacity-50 transition-opacity duration-300">
         @foreach ($periods as $label => $data)
             <div class="card bg-base-200 shadow-xl border border-base-300 overflow-hidden">
                 <div class="bg-base-200 px-4 py-3 border-b border-base-300 flex justify-between items-center">
@@ -126,15 +176,20 @@
                         <div class="flex justify-between items-center text-[10px] font-bold uppercase opacity-60">
                             <span>Encargos</span>
                             <span class="font-mono text-warning">- R$
-                                {{ number_format($data['revenue_tax_paid'] + $data['revenue_tax_pending'], 2, ',', '.') }}</span>
+                                {{ number_format($data['revenue_tax_total'], 2, ',', '.') }}</span>
                         </div>
                         <div class="flex justify-between items-center text-[11px] opacity-60">
                             <span>Pagos</span>
                             <span class="font-mono">- R$
                                 {{ number_format($data['revenue_tax_paid'], 2, ',', '.') }}</span>
                         </div>
+                        <div class="flex justify-between items-center text-[11px] text-info/80">
+                            <span>Provisionado</span>
+                            <span class="font-mono">- R$
+                                {{ number_format($data['revenue_tax_provisioned'], 2, ',', '.') }}</span>
+                        </div>
                         <div class="flex justify-between items-center text-[11px] opacity-40">
-                            <span>A pagar</span></span>
+                            <span>A pagar</span>
                             <span class="font-mono">- R$
                                 {{ number_format($data['revenue_tax_pending'], 2, ',', '.') }}</span>
                         </div>
@@ -201,12 +256,17 @@
                         <div class="flex justify-between items-center text-[10px] font-bold uppercase opacity-60">
                             <span>Encargos</span>
                             <span class="font-mono text-warning">- R$
-                                {{ number_format($data['outflow_tax_paid'] + $data['outflow_tax_pending'], 2, ',', '.') }}</span>
+                                {{ number_format($data['outflow_tax_total'], 2, ',', '.') }}</span>
                         </div>
                         <div class="flex justify-between items-center text-[11px] opacity-60">
                             <span>Pagos</span>
                             <span class="font-mono">- R$
                                 {{ number_format($data['outflow_tax_paid'], 2, ',', '.') }}</span>
+                        </div>
+                        <div class="flex justify-between items-center text-[11px] text-info/80">
+                            <span>Provisionado</span>
+                            <span class="font-mono">- R$
+                                {{ number_format($data['outflow_tax_provisioned'], 2, ',', '.') }}</span>
                         </div>
                         <div class="flex justify-between items-center text-[11px] opacity-40">
                             <span>A pagar</span>
@@ -227,10 +287,25 @@
                                 R$ {{ number_format($data['final_balance_actual'], 2, ',', '.') }}
                             </span>
                         </div>
-                        <div class="flex justify-between items-center pt-2 border-t border-base-content/5">
-                            <span class="text-xs opacity-50">Previsto</span>
+                        <div class="flex justify-between items-center pt-2 border-t border-base-content/5 mt-1">
+                            <span class="text-[11px] opacity-50">Entradas Previstas</span>
+                            <span class="font-mono text-[11px] opacity-60 text-success">
+                                R$ {{ number_format($data['total_predicted_inflows'], 2, ',', '.') }}
+                            </span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-[11px] opacity-50">Saídas Previstas</span>
+                            <span class="font-mono text-[11px] opacity-60 text-error">
+                                - R$ {{ number_format($data['total_predicted_outflows'], 2, ',', '.') }}
+                            </span>
+                        </div>
+
+                        <div class="divider my-0 mb-1 opacity-20"></div>
+
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs opacity-80 font-bold">Previsto</span>
                             <span
-                                class="font-mono text-sm opacity-60 {{ $data['final_balance_predicted'] >= 0 ? 'text-success' : 'text-error' }}">
+                                class="font-mono text-sm font-bold {{ $data['final_balance_predicted'] >= 0 ? 'text-success' : 'text-error' }}">
                                 R$ {{ number_format($data['final_balance_predicted'], 2, ',', '.') }}
                             </span>
                         </div>
@@ -251,7 +326,8 @@
             Retiradas de Sócios & Colaboradores
         </h2>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 {{ $gridColsClass }} gap-6"
+            wire:loading.class="opacity-50 transition-opacity duration-300">
             @foreach ($periods as $label => $data)
                 <div class="card bg-base-200 shadow-xl border border-base-300 overflow-hidden">
                     <div class="bg-base-200 px-4 py-3 border-b border-base-300 flex justify-between items-center">
@@ -294,7 +370,7 @@
             Composição das Saídas
         </h2>
 
-        <x-financial.expense-breakdown />
+        <x-financial.expense-breakdown :gridColsClass="$gridColsClass" />
     </div>
 
 </div>

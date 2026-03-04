@@ -80,7 +80,6 @@
     <div class="card-body p-6">
         <div class="flex justify-between items-center mb-6">
             <h2 class="text-xl font-bold flex items-center gap-2">
-                <span class="w-2 h-6 bg-primary rounded-full"></span>
                 <span
                     x-text="{
                     result: 'Resultado Operacional (Líquido - Despesas)',
