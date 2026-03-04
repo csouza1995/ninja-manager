@@ -126,15 +126,20 @@
                         <div class="flex justify-between items-center text-[10px] font-bold uppercase opacity-60">
                             <span>Encargos</span>
                             <span class="font-mono text-warning">- R$
-                                {{ number_format($data['revenue_tax_paid'] + $data['revenue_tax_pending'], 2, ',', '.') }}</span>
+                                {{ number_format($data['revenue_tax_total'], 2, ',', '.') }}</span>
                         </div>
                         <div class="flex justify-between items-center text-[11px] opacity-60">
                             <span>Pagos</span>
                             <span class="font-mono">- R$
                                 {{ number_format($data['revenue_tax_paid'], 2, ',', '.') }}</span>
                         </div>
+                        <div class="flex justify-between items-center text-[11px] text-info/80">
+                            <span>Provisionado</span>
+                            <span class="font-mono">- R$
+                                {{ number_format($data['revenue_tax_provisioned'], 2, ',', '.') }}</span>
+                        </div>
                         <div class="flex justify-between items-center text-[11px] opacity-40">
-                            <span>A pagar</span></span>
+                            <span>A pagar</span>
                             <span class="font-mono">- R$
                                 {{ number_format($data['revenue_tax_pending'], 2, ',', '.') }}</span>
                         </div>
@@ -201,12 +206,17 @@
                         <div class="flex justify-between items-center text-[10px] font-bold uppercase opacity-60">
                             <span>Encargos</span>
                             <span class="font-mono text-warning">- R$
-                                {{ number_format($data['outflow_tax_paid'] + $data['outflow_tax_pending'], 2, ',', '.') }}</span>
+                                {{ number_format($data['outflow_tax_total'], 2, ',', '.') }}</span>
                         </div>
                         <div class="flex justify-between items-center text-[11px] opacity-60">
                             <span>Pagos</span>
                             <span class="font-mono">- R$
                                 {{ number_format($data['outflow_tax_paid'], 2, ',', '.') }}</span>
+                        </div>
+                        <div class="flex justify-between items-center text-[11px] text-info/80">
+                            <span>Provisionado</span>
+                            <span class="font-mono">- R$
+                                {{ number_format($data['outflow_tax_provisioned'], 2, ',', '.') }}</span>
                         </div>
                         <div class="flex justify-between items-center text-[11px] opacity-40">
                             <span>A pagar</span>
@@ -227,10 +237,25 @@
                                 R$ {{ number_format($data['final_balance_actual'], 2, ',', '.') }}
                             </span>
                         </div>
-                        <div class="flex justify-between items-center pt-2 border-t border-base-content/5">
-                            <span class="text-xs opacity-50">Previsto</span>
+                        <div class="flex justify-between items-center pt-2 border-t border-base-content/5 mt-1">
+                            <span class="text-[11px] opacity-50">Entradas Previstas</span>
+                            <span class="font-mono text-[11px] opacity-60 text-success">
+                                R$ {{ number_format($data['total_predicted_inflows'], 2, ',', '.') }}
+                            </span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-[11px] opacity-50">Saídas Previstas</span>
+                            <span class="font-mono text-[11px] opacity-60 text-error">
+                                - R$ {{ number_format($data['total_predicted_outflows'], 2, ',', '.') }}
+                            </span>
+                        </div>
+
+                        <div class="divider my-0 mb-1 opacity-20"></div>
+
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs opacity-80 font-bold">Previsto</span>
                             <span
-                                class="font-mono text-sm opacity-60 {{ $data['final_balance_predicted'] >= 0 ? 'text-success' : 'text-error' }}">
+                                class="font-mono text-sm font-bold {{ $data['final_balance_predicted'] >= 0 ? 'text-success' : 'text-error' }}">
                                 R$ {{ number_format($data['final_balance_predicted'], 2, ',', '.') }}
                             </span>
                         </div>
