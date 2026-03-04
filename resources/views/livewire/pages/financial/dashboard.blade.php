@@ -58,11 +58,9 @@
     </div>
 
 
-    {{-- Gráfico Principal --}}
-    <x-financial.main-chart />
-
-    <!-- Tabelas de Períodos -->
-    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+    <!-- Controles de Período Fixados (Sticky) -->
+    <div
+        class="sticky top-[73px] z-40 bg-base-100/90 backdrop-blur pb-4 pt-4 -mx-4 px-4 border-b border-base-200 mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shadow-sm">
         <h2 class="text-2xl font-bold flex items-center gap-2">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                 stroke="currentColor" class="w-6 h-6">
@@ -114,6 +112,10 @@
             </div>
         </div>
     </div>
+    {{-- Gráfico Principal --}}
+    <x-financial.main-chart />
+
+
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8"
         wire:loading.class="opacity-50 transition-opacity duration-300">

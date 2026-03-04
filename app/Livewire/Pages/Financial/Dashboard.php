@@ -248,26 +248,42 @@ class Dashboard extends Component
             ];
         }
 
-        // 3. Chart Data (Last 6 months)
+        // 3. Chart Data (Last 6 periods base on active filter)
         $labels = [];
         $resultSeries = [];
         $revenueSeries = [];
         $expenseSeries = [];
 
         for ($i = 5; $i >= 0; $i--) {
-            $m = $now->copy()->subMonths($i);
-            $labels[] = $m->translatedFormat('M/Y');
+            // Determine the range and label for this point on the chart
+            $m = $now->copy();
+            
+            if ($this->activeFilter === 'month') {
+                $m->subMonths($i);
+                $label = $m->translatedFormat('M/Y');
+                $start = $m->copy()->startOfMonth();
+                $end = $m->copy()->endOfMonth();
+            } elseif ($this->activeFilter === 'quarter') {
+                $m->subQuarters($i);
+                $start = $m->copy()->startOfQuarter();
+                $end = $m->copy()->endOfQuarter();
+                $label = $start->quarter.'Tri/'.$start->year; // e.g. 1Tri/2026
+            } else { // year
+                $m->subYears($i);
+                $label = $m->format('Y');
+                $start = $m->copy()->startOfYear();
+                $end = $m->copy()->endOfYear();
+            }
 
-            $netRevenue = Revenue::whereMonth(DB::raw('COALESCE(paid_at, due_date)'), $m->month)
-                ->whereYear(DB::raw('COALESCE(paid_at, due_date)'), $m->year)
+            $labels[] = $label;
+
+            $netRevenue = Revenue::whereBetween(DB::raw('COALESCE(paid_at, due_date)'), [$start, $end])
                 ->sum('net_amount');
 
-            $expSum = Expenditure::whereMonth(DB::raw('COALESCE(paid_at, due_date)'), $m->month)
-                ->whereYear(DB::raw('COALESCE(paid_at, due_date)'), $m->year)
+            $expSum = Expenditure::whereBetween(DB::raw('COALESCE(paid_at, due_date)'), [$start, $end])
                 ->sum('amount');
 
-            $outSum = Outflow::whereMonth(DB::raw('COALESCE(paid_at, due_date)'), $m->month)
-                ->whereYear(DB::raw('COALESCE(paid_at, due_date)'), $m->year)
+            $outSum = Outflow::whereBetween(DB::raw('COALESCE(paid_at, due_date)'), [$start, $end])
                 ->sum(DB::raw('amount - COALESCE(tax_amount, 0)'));
 
             $resultSeries[] = $netRevenue - ($expSum + $outSum);
@@ -282,7 +298,7 @@ class Dashboard extends Component
             'expenses' => $expenseSeries,
         ];
 
-        // 4. Flow Chart Data (Last 6 months — inflows vs stacked outflows)
+        // 4. Flow Chart Data (Last 6 periods — inflows vs stacked outflows)
         $flowLabels = [];
         $flowInflows = [];
         $flowExpenses = [];
@@ -290,16 +306,32 @@ class Dashboard extends Component
         $flowWithdrawals = [];
 
         for ($i = 5; $i >= 0; $i--) {
-            $m = $now->copy()->subMonths($i);
-            $flowLabels[] = $m->translatedFormat('M/Y');
+            $m = $now->copy();
+            
+            if ($this->activeFilter === 'month') {
+                $m->subMonths($i);
+                $label = $m->translatedFormat('M/Y');
+                $start = $m->copy()->startOfMonth();
+                $end = $m->copy()->endOfMonth();
+            } elseif ($this->activeFilter === 'quarter') {
+                $m->subQuarters($i);
+                $start = $m->copy()->startOfQuarter();
+                $end = $m->copy()->endOfQuarter();
+                $label = $start->quarter.'Tri/'.$start->year;
+            } else { // year
+                $m->subYears($i);
+                $label = $m->format('Y');
+                $start = $m->copy()->startOfYear();
+                $end = $m->copy()->endOfYear();
+            }
 
-            $flowInflows[] = Revenue::whereMonth(DB::raw('COALESCE(paid_at, due_date)'), $m->month)
-                ->whereYear(DB::raw('COALESCE(paid_at, due_date)'), $m->year)
+            $flowLabels[] = $label;
+
+            $flowInflows[] = Revenue::whereBetween(DB::raw('COALESCE(paid_at, due_date)'), [$start, $end])
                 ->whereNotNull('paid_at')
                 ->sum('gross_amount');
 
-            $flowExpenses[] = Expenditure::whereMonth(DB::raw('COALESCE(paid_at, due_date)'), $m->month)
-                ->whereYear(DB::raw('COALESCE(paid_at, due_date)'), $m->year)
+            $flowExpenses[] = Expenditure::whereBetween(DB::raw('COALESCE(paid_at, due_date)'), [$start, $end])
                 ->whereNotNull('paid_at')
                 ->where(function ($q) {
                     $q->where('classification', 'not like', '%Imposto%')
@@ -308,20 +340,17 @@ class Dashboard extends Component
                 })
                 ->sum('amount');
 
-            $revTax = Revenue::whereMonth(DB::raw('COALESCE(paid_at, due_date)'), $m->month)
-                ->whereYear(DB::raw('COALESCE(paid_at, due_date)'), $m->year)
+            $revTax = Revenue::whereBetween(DB::raw('COALESCE(paid_at, due_date)'), [$start, $end])
                 ->whereNotNull('paid_at')
                 ->sum('tax_amount');
 
-            $outTax = Outflow::whereMonth(DB::raw('COALESCE(paid_at, due_date)'), $m->month)
-                ->whereYear(DB::raw('COALESCE(paid_at, due_date)'), $m->year)
+            $outTax = Outflow::whereBetween(DB::raw('COALESCE(paid_at, due_date)'), [$start, $end])
                 ->whereNotNull('paid_at')
                 ->sum('tax_amount');
 
             $flowTaxes[] = $revTax + $outTax;
 
-            $flowWithdrawals[] = Outflow::whereMonth(DB::raw('COALESCE(paid_at, due_date)'), $m->month)
-                ->whereYear(DB::raw('COALESCE(paid_at, due_date)'), $m->year)
+            $flowWithdrawals[] = Outflow::whereBetween(DB::raw('COALESCE(paid_at, due_date)'), [$start, $end])
                 ->whereNotNull('paid_at')
                 ->sum(DB::raw('amount - COALESCE(tax_amount, 0)'));
         }
