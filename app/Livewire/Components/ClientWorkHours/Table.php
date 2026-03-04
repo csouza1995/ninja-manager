@@ -17,6 +17,21 @@ class Table extends Component
 
     public string $type = '';
 
+    // Sorting
+    public string $sortField = 'id';
+
+    public string $sortDirection = 'asc';
+
+    public function sortBy(string $field)
+    {
+        if ($this->sortField === $field) {
+            $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
+        } else {
+            $this->sortField = $field;
+            $this->sortDirection = 'asc';
+        }
+    }
+
     #[On('work-hour-saved')]
     public function refresh(): void
     {
@@ -41,7 +56,7 @@ class Table extends Component
     public function render(): \Illuminate\Contracts\View\View
     {
         $query = ClientWorkHour::with(['client', 'services'])
-            ->orderBy('id', 'asc'); // Hidden ID default sorting as requested
+            ->orderBy($this->sortField, $this->sortDirection);
 
         if ($this->clientId) {
             $query->where('client_id', $this->clientId);
