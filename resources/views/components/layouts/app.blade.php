@@ -143,7 +143,9 @@
         </div>
     </div>
 
-    <main class="container mx-auto px-4 pb-12">
+    <main x-data="{ isUltrawide: false }" @ultrawide.window="isUltrawide = $event.detail"
+        :class="isUltrawide ? 'max-w-screen-4xl' : 'max-w-screen-2xl'"
+        class="w-full mx-auto px-4 pb-12 flex-grow mb-12 transition-all duration-300">
         {{ $slot }}
     </main>
 

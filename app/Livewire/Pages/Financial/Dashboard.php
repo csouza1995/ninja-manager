@@ -32,6 +32,8 @@ class Dashboard extends Component
 
     public $currentPeriodLabel = '';
 
+    public $periodCount = 3;
+
     public function mount()
     {
         $this->calculateFinances();
@@ -41,6 +43,11 @@ class Dashboard extends Component
     {
         $this->activeFilter = $filter;
         $this->dateOffset = 0;
+        $this->calculateFinances();
+    }
+
+    public function updatedPeriodCount()
+    {
         $this->calculateFinances();
     }
 
@@ -70,27 +77,30 @@ class Dashboard extends Component
 
         // 1. Periods mapping grouped by type and ordered Past -> Present -> Future
         $periodsToCalculate = [];
+        $half = floor($this->periodCount / 2);
+
+        $dateRangeOffsets = range(-$half, $half);
 
         if ($this->activeFilter === 'month') {
-            $range = [$now->copy()->subMonth(), $now, $now->copy()->addMonth()];
             $this->currentPeriodLabel = ucfirst($now->translatedFormat('M/Y'));
-            foreach ($range as $date) {
+            foreach ($dateRangeOffsets as $i) {
+                $date = $now->copy()->addMonths($i);
                 $label = $date->translatedFormat('M/Y');
                 $periodsToCalculate[$label] = [$date->copy()->startOfMonth(), $date->copy()->endOfMonth()];
             }
         } elseif ($this->activeFilter === 'quarter') {
-            $range = [$now->copy()->subQuarter(), $now, $now->copy()->addQuarter()];
             $this->currentPeriodLabel = $now->quarter.'ºTri/'.$now->year;
-            foreach ($range as $date) {
+            foreach ($dateRangeOffsets as $i) {
+                $date = $now->copy()->addQuarters($i);
                 $start = $date->copy()->startOfQuarter();
                 $end = $date->copy()->endOfQuarter();
                 $label = ucfirst($start->translatedFormat('M')).'-'.ucfirst($end->translatedFormat('M/Y'));
                 $periodsToCalculate[$label] = [$start, $end];
             }
         } else { // year
-            $range = [$now->copy()->subYear(), $now, $now->copy()->addYear()];
             $this->currentPeriodLabel = $now->format('Y');
-            foreach ($range as $date) {
+            foreach ($dateRangeOffsets as $i) {
+                $date = $now->copy()->addYears($i);
                 $label = $date->format('Y');
                 $periodsToCalculate[$label] = [$date->copy()->startOfYear(), $date->copy()->endOfYear()];
             }
@@ -248,43 +258,18 @@ class Dashboard extends Component
             ];
         }
 
-        // 3. Chart Data (Last 6 periods base on active filter)
+        // 3. Chart Data (Matches the generated periods)
         $labels = [];
         $resultSeries = [];
         $revenueSeries = [];
         $expenseSeries = [];
 
-        for ($i = 5; $i >= 0; $i--) {
-            // Determine the range and label for this point on the chart
-            $m = $now->copy();
-            
-            if ($this->activeFilter === 'month') {
-                $m->subMonths($i);
-                $label = $m->translatedFormat('M/Y');
-                $start = $m->copy()->startOfMonth();
-                $end = $m->copy()->endOfMonth();
-            } elseif ($this->activeFilter === 'quarter') {
-                $m->subQuarters($i);
-                $start = $m->copy()->startOfQuarter();
-                $end = $m->copy()->endOfQuarter();
-                $label = $start->quarter.'Tri/'.$start->year; // e.g. 1Tri/2026
-            } else { // year
-                $m->subYears($i);
-                $label = $m->format('Y');
-                $start = $m->copy()->startOfYear();
-                $end = $m->copy()->endOfYear();
-            }
-
+        foreach ($this->periods as $label => $data) {
             $labels[] = $label;
 
-            $netRevenue = Revenue::whereBetween(DB::raw('COALESCE(paid_at, due_date)'), [$start, $end])
-                ->sum('net_amount');
-
-            $expSum = Expenditure::whereBetween(DB::raw('COALESCE(paid_at, due_date)'), [$start, $end])
-                ->sum('amount');
-
-            $outSum = Outflow::whereBetween(DB::raw('COALESCE(paid_at, due_date)'), [$start, $end])
-                ->sum(DB::raw('amount - COALESCE(tax_amount, 0)'));
+            $netRevenue = $data['billing_paid'] + $data['billing_pending'] - $data['revenue_tax_total'];
+            $expSum = $data['expenses_paid'] + $data['expenses_pending'];
+            $outSum = $data['outflows_paid'] + $data['outflows_pending'];
 
             $resultSeries[] = $netRevenue - ($expSum + $outSum);
             $revenueSeries[] = $netRevenue;
@@ -298,61 +283,21 @@ class Dashboard extends Component
             'expenses' => $expenseSeries,
         ];
 
-        // 4. Flow Chart Data (Last 6 periods — inflows vs stacked outflows)
+        // 4. Flow Chart Data (Inflows vs Stacked Outflows - matches the generated periods)
         $flowLabels = [];
         $flowInflows = [];
         $flowExpenses = [];
         $flowTaxes = [];
         $flowWithdrawals = [];
 
-        for ($i = 5; $i >= 0; $i--) {
-            $m = $now->copy();
-            
-            if ($this->activeFilter === 'month') {
-                $m->subMonths($i);
-                $label = $m->translatedFormat('M/Y');
-                $start = $m->copy()->startOfMonth();
-                $end = $m->copy()->endOfMonth();
-            } elseif ($this->activeFilter === 'quarter') {
-                $m->subQuarters($i);
-                $start = $m->copy()->startOfQuarter();
-                $end = $m->copy()->endOfQuarter();
-                $label = $start->quarter.'Tri/'.$start->year;
-            } else { // year
-                $m->subYears($i);
-                $label = $m->format('Y');
-                $start = $m->copy()->startOfYear();
-                $end = $m->copy()->endOfYear();
-            }
-
+        foreach ($this->periods as $label => $data) {
             $flowLabels[] = $label;
-
-            $flowInflows[] = Revenue::whereBetween(DB::raw('COALESCE(paid_at, due_date)'), [$start, $end])
-                ->whereNotNull('paid_at')
-                ->sum('gross_amount');
-
-            $flowExpenses[] = Expenditure::whereBetween(DB::raw('COALESCE(paid_at, due_date)'), [$start, $end])
-                ->whereNotNull('paid_at')
-                ->where(function ($q) {
-                    $q->where('classification', 'not like', '%Imposto%')
-                        ->where('classification', 'not like', '%INSS%')
-                        ->where('classification', 'not like', '%DAS%');
-                })
-                ->sum('amount');
-
-            $revTax = Revenue::whereBetween(DB::raw('COALESCE(paid_at, due_date)'), [$start, $end])
-                ->whereNotNull('paid_at')
-                ->sum('tax_amount');
-
-            $outTax = Outflow::whereBetween(DB::raw('COALESCE(paid_at, due_date)'), [$start, $end])
-                ->whereNotNull('paid_at')
-                ->sum('tax_amount');
-
-            $flowTaxes[] = $revTax + $outTax;
-
-            $flowWithdrawals[] = Outflow::whereBetween(DB::raw('COALESCE(paid_at, due_date)'), [$start, $end])
-                ->whereNotNull('paid_at')
-                ->sum(DB::raw('amount - COALESCE(tax_amount, 0)'));
+            
+            // Only using PAID amounts for flow chart
+            $flowInflows[] = $data['billing_paid'];
+            $flowExpenses[] = $data['expenses_paid'];
+            $flowTaxes[] = $data['revenue_tax_paid'] + $data['outflow_tax_paid'];
+            $flowWithdrawals[] = $data['outflows_paid'];
         }
 
         $this->flowChartData = [

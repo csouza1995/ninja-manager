@@ -1,4 +1,5 @@
-<div>
+<div x-data="{ count: @entangle('periodCount') }" x-init="$watch('count', v => $dispatch('ultrawide', v === 7));
+setTimeout(() => $dispatch('ultrawide', count === 7), 50)">
     <div class="mb-6">
         <h2 class="text-3xl font-bold text-primary flex items-center gap-2">
             Painel Financeiro
@@ -60,43 +61,45 @@
 
     <!-- Controles de Período Fixados (Sticky) -->
     <div
-        class="sticky top-[73px] z-40 bg-base-100/90 backdrop-blur pb-4 pt-4 -mx-4 px-4 border-b border-base-200 mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shadow-sm">
-        <h2 class="text-2xl font-bold flex items-center gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                stroke="currentColor" class="w-6 h-6">
-                <path stroke-linecap="round" stroke-linejoin="round"
-                    d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5" />
-            </svg>
-            Análise de Fluxo
-        </h2>
+        class="sticky top-[65px] z-40 bg-base-100/90 backdrop-blur pb-4 pt-4 -mx-4 px-4 border-b border-base-200 mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shadow-sm">
+
+        {{-- Navigation Controls (Left) --}}
+        <div class="join shadow-sm">
+            <button wire:click="previousPeriod" class="join-item btn btn-sm bg-base-100 hover:bg-base-200"
+                title="Período Anterior">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                    stroke="currentColor" class="w-4 h-4">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
+                </svg>
+                Anterior
+            </button>
+            <div
+                class="join-item btn btn-sm px-4 bg-base-100 border-base-300 pointer-events-none font-bold text-primary">
+                {{ $currentPeriodLabel }}
+            </div>
+            <button wire:click="nextPeriod" class="join-item btn btn-sm bg-base-100 hover:bg-base-200"
+                title="Próximo Período">
+                Próximo
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                    stroke="currentColor" class="w-4 h-4">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                </svg>
+            </button>
+        </div>
 
         <div class="flex items-center gap-4">
-            {{-- Navigation Controls --}}
-            <div class="join border border-base-300 shadow-sm">
-                <button wire:click="previousPeriod" class="join-item btn btn-sm bg-base-100 hover:bg-base-200"
-                    title="Período Anterior">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                        stroke="currentColor" class="w-4 h-4">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
-                    </svg>
-                    Anterior
-                </button>
-                <div
-                    class="join-item btn btn-sm border-x-0 no-animation bg-base-100 border-base-300 pointer-events-none min-w-[120px] font-bold text-primary">
-                    {{ $currentPeriodLabel }}
-                </div>
-                <button wire:click="nextPeriod" class="join-item btn btn-sm bg-base-100 hover:bg-base-200"
-                    title="Próximo Período">
-                    Próximo
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                        stroke="currentColor" class="w-4 h-4">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-                    </svg>
-                </button>
+            {{-- Card Counts --}}
+            <div class="join shadow-sm">
+                <button wire:click="$set('periodCount', 3)" @class(['join-item btn btn-sm', 'btn-primary' => $periodCount === 3])>3</button>
+                <button wire:click="$set('periodCount', 5)" @class(['join-item btn btn-sm', 'btn-primary' => $periodCount === 5])>5</button>
+                <button wire:click="$set('periodCount', 7)" @class([
+                    'hidden 2xl:inline-flex join-item btn btn-sm',
+                    'btn-primary' => $periodCount === 7,
+                ])>7</button>
             </div>
 
             {{-- Filter Types --}}
-            <div class="join border border-base-300 shadow-sm">
+            <div class="join shadow-sm">
                 <button wire:click="setFilter('month')" @class([
                     'join-item btn btn-sm',
                     'btn-primary' => $activeFilter === 'month',
@@ -112,12 +115,29 @@
             </div>
         </div>
     </div>
+
     {{-- Gráfico Principal --}}
     <x-financial.main-chart />
 
+    <!-- Tabelas de Períodos -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4 mt-8">
+        <h2 class="text-2xl font-bold flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                stroke="currentColor" class="w-6 h-6">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5" />
+            </svg>
+            Análise de Fluxo
+        </h2>
+    </div>
 
 
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8"
+    @php
+        $gridColsClass =
+            [3 => 'lg:grid-cols-3', 5 => 'lg:grid-cols-5', 7 => 'lg:grid-cols-7'][$periodCount] ?? 'lg:grid-cols-3';
+    @endphp
+
+    <div class="grid grid-cols-1 md:grid-cols-2 {{ $gridColsClass }} gap-6 mb-8"
         wire:loading.class="opacity-50 transition-opacity duration-300">
         @foreach ($periods as $label => $data)
             <div class="card bg-base-200 shadow-xl border border-base-300 overflow-hidden">
@@ -306,7 +326,7 @@
             Retiradas de Sócios & Colaboradores
         </h2>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+        <div class="grid grid-cols-1 md:grid-cols-2 {{ $gridColsClass }} gap-6"
             wire:loading.class="opacity-50 transition-opacity duration-300">
             @foreach ($periods as $label => $data)
                 <div class="card bg-base-200 shadow-xl border border-base-300 overflow-hidden">
@@ -350,7 +370,7 @@
             Composição das Saídas
         </h2>
 
-        <x-financial.expense-breakdown />
+        <x-financial.expense-breakdown :gridColsClass="$gridColsClass" />
     </div>
 
 </div>
