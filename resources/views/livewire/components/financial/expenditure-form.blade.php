@@ -7,6 +7,31 @@
                 </h3>
 
                 <div class="grid grid-cols-1 gap-4">
+
+                    <!-- Vínculo (Opcional) -->
+                    <div class="grid grid-cols-5 gap-4">
+                        <div class="form-control col-span-2">
+                            <label class="label"><span class="label-text">Típo de Vínculo</span></label>
+                            <select wire:model.live="model_type" class="select select-bordered w-full">
+                                <option value="">Não Vinculado</option>
+                                <option value="App\Models\Revenue">Receita (NF)</option>
+                                <option value="App\Models\Outflow">Saída/Retirada</option>
+                            </select>
+                        </div>
+                        <div class="form-control col-span-3">
+                            <label class="label"><span class="label-text">Lançamento</span></label>
+                            <select wire:model="model_id" class="select select-bordered w-full"
+                                {{ !$model_type ? 'disabled' : '' }}>
+                                <option value="">Selecione o Item...</option>
+                                @foreach ($linkables as $linkable)
+                                    @if ($linkable['type'] === $model_type)
+                                        <option value="{{ $linkable['id'] }}">{{ $linkable['label'] }}</option>
+                                    @endif
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+
                     <div class="form-control w-full">
                         <label class="label"><span class="label-text">Favorecido / Destino</span></label>
                         <input type="text" wire:model="destination" class="input input-bordered w-full"

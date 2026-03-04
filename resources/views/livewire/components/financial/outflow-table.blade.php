@@ -9,6 +9,7 @@
                     <th>Banco</th>
                     <th>Valor</th>
                     <th>Imposto (Provisão)</th>
+                    <th>Valor Efetivo</th>
                     <th>Status</th>
                     <th class="text-right">Ações</th>
                 </tr>
@@ -59,6 +60,9 @@
                                 -
                             @endif
                         </td>
+                        <td class="font-bold font-mono text-error">
+                            R$ {{ number_format($outflow->amount - $outflow->tax_amount, 2, ',', '.') }}
+                        </td>
                         <td>
                             @if ($outflow->paid_at)
                                 <div class="badge badge-success badge-outline gap-1 text-[10px] h-auto py-1">
@@ -72,6 +76,21 @@
                         </td>
                         <td class="text-right">
                             <div class="flex justify-end gap-1">
+                                <!-- Expenditure Link -->
+                                @if ($outflow->tax_amount > 0)
+                                    @if (!$outflow->expenditure)
+                                        <a href="{{ route('financial.expenditures', ['launch' => 'tax', 'fromModelType' => 'App\Models\Outflow', 'fromModelId' => $outflow->id, 'launchAmount' => $outflow->tax_amount, 'launchDescription' => 'Imposto Ref. ' . $outflow->description]) }}"
+                                            wire:navigate class="btn btn-square btn-ghost btn-xs text-warning"
+                                            title="Lançar Despesa de Imposto">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                                stroke-width="1.5" stroke="currentColor" class="size-4">
+                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                    d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m3.75 9v6m3-3H9m1.5-12H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
+                                            </svg>
+                                        </a>
+                                    @endif
+                                @endif
+
                                 <button wire:click="$dispatch('open-outflow-form', { id: {{ $outflow->id }} })"
                                     class="btn btn-square btn-ghost btn-xs" title="Editar">
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
@@ -93,7 +112,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="8" class="text-center py-8 opacity-50 italic">Nenhuma saída registrada.
+                        <td colspan="9" class="text-center py-8 opacity-50 italic">Nenhuma saída registrada.
                         </td>
                     </tr>
                 @endforelse

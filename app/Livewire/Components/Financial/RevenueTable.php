@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Livewire\Components\Financial;
 
 use App\Models\Revenue;
-use Livewire\Component;
-use Livewire\WithPagination;
 use Livewire\Attributes\On;
 use Livewire\Attributes\Reactive;
+use Livewire\Component;
+use Livewire\WithPagination;
 
 class RevenueTable extends Component
 {
@@ -33,7 +33,7 @@ class RevenueTable extends Component
 
     public function render()
     {
-        $revenues = Revenue::with(['service', 'bankAccount'])
+        $revenues = Revenue::with(['service', 'bankAccount', 'expenditure'])
             ->when($this->search, function ($query) {
                 $query->where('origin_name', 'like', "%{$this->search}%")
                     ->orWhere('description', 'like', "%{$this->search}%")
