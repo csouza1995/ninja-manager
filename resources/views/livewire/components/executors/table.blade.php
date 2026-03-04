@@ -1,12 +1,40 @@
 <div>
+    <div class="flex flex-col gap-4 mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-base-100 rounded-box border border-base-300">
+            <div class="form-control">
+                <label class="label"><span class="label-text">Função</span></label>
+                <select wire:model.live="role_id" class="select select-bordered w-full">
+                    <option value="">Todas</option>
+                    @foreach ($roles as $role)
+                        <option value="{{ $role->id }}">{{ $role->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+        </div>
+    </div>
+
     <div class="overflow-x-auto">
         <table class="table">
             <thead>
                 <tr>
-                    <th>Nome</th>
+                    <th class="cursor-pointer hover:bg-base-200" wire:click="sortBy('name')">
+                        <div class="flex items-center gap-1">
+                            Nome
+                            @if ($sortField === 'name')
+                                <span>{!! $sortDirection === 'asc' ? '&#8593;' : '&#8595;' !!}</span>
+                            @endif
+                        </div>
+                    </th>
                     <th>CPF</th>
                     <th>Funções</th>
-                    <th>Criado em</th>
+                    <th class="cursor-pointer hover:bg-base-200" wire:click="sortBy('created_at')">
+                        <div class="flex items-center gap-1">
+                            Criado em
+                            @if ($sortField === 'created_at')
+                                <span>{!! $sortDirection === 'asc' ? '&#8593;' : '&#8595;' !!}</span>
+                            @endif
+                        </div>
+                    </th>
                     <th class="text-right">Ações</th>
                 </tr>
             </thead>
