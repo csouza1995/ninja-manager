@@ -28,7 +28,7 @@
 
         <select wire:model.live="bank_account_id" class="select select-sm select-bordered bg-base-100">
             <option value="">Conta Bancária</option>
-            @foreach ($this->bankAccounts as $bankAccount)
+            @foreach ($settingsBankAccounts as $bankAccount)
                 <option value="{{ $bankAccount->id }}">{{ $bankAccount->bank_name }}</option>
             @endforeach
         </select>
@@ -158,7 +158,7 @@
                                 <!-- Expenditure Link -->
                                 @if ($outflow->tax_amount > 0)
                                     @if (!$outflow->expenditure)
-                                        <a href="{{ route('financial.expenditures', ['launch' => 'tax', 'fromModelType' => 'App\Models\Outflow', 'fromModelId' => $outflow->id, 'launchAmount' => $outflow->tax_amount, 'launchDescription' => 'Imposto Ref. ' . $outflow->description]) }}"
+                                        <a href="{{ route('financial.expenditures', ['launch' => 'tax','fromModelType' => 'App\Models\Outflow','fromModelId' => $outflow->id,'launchAmount' => $outflow->tax_amount,'launchDescription' =>'Imposto Ref. ' .$outflow->description .' ' .\Carbon\Carbon::parse($outflow->paid_at ?? ($outflow->due_date ?? now()))->addMonth()->format('m/Y') .' (' .\Carbon\Carbon::parse($outflow->paid_at ?? ($outflow->due_date ?? now()))->format('m/Y') .')']) }}"
                                             wire:navigate class="btn btn-square btn-ghost btn-xs text-warning"
                                             title="Lançar Despesa de Imposto">
                                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
