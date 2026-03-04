@@ -1,12 +1,61 @@
 <div>
+    <div class="flex flex-col gap-4 mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-5 gap-4 p-4 bg-base-100 rounded-box border border-base-300">
+            <div class="form-control">
+                <label class="label"><span class="label-text">Status</span></label>
+                <select wire:model.live="status" class="select select-bordered w-full">
+                    <option value="">Todos</option>
+                    <option value="paid">Pago</option>
+                    <option value="pending">Pendente</option>
+                </select>
+            </div>
+            <div class="form-control">
+                <label class="label"><span class="label-text">Classificação</span></label>
+                <input type="text" wire:model.live.debounce.300ms="classification"
+                    class="input input-bordered w-full" placeholder="Ex: Serviços..." />
+            </div>
+            <div class="form-control">
+                <label class="label"><span class="label-text">Conta Bancária</span></label>
+                <select wire:model.live="bank_account_id" class="select select-bordered w-full">
+                    <option value="">Todas</option>
+                    @foreach ($settingsBankAccounts as $bank)
+                        <option value="{{ $bank->id }}">{{ $bank->nickname ?: $bank->bank_name }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="form-control">
+                <label class="label"><span class="label-text">Vencimento a partir</span></label>
+                <input type="date" wire:model.live="start_date" class="input input-bordered w-full" />
+            </div>
+            <div class="form-control">
+                <label class="label"><span class="label-text">Até</span></label>
+                <input type="date" wire:model.live="end_date" class="input input-bordered w-full" />
+            </div>
+        </div>
+    </div>
+
     <div class="overflow-x-auto">
         <table class="table">
             <thead>
                 <tr>
-                    <th>Vencimento</th>
+                    <th class="cursor-pointer hover:bg-base-300" wire:click="sortBy('due_date')">
+                        <div class="flex items-center gap-1">
+                            Vencimento
+                            @if ($sortField === 'due_date')
+                                <span>{!! $sortDirection === 'asc' ? '&#8593;' : '&#8595;' !!}</span>
+                            @endif
+                        </div>
+                    </th>
                     <th>Descrição / Origem</th>
                     <th>Classificação</th>
-                    <th>Valor Bruto</th>
+                    <th class="cursor-pointer hover:bg-base-300" wire:click="sortBy('amount')">
+                        <div class="flex items-center gap-1">
+                            Valor Bruto
+                            @if ($sortField === 'amount')
+                                <span>{!! $sortDirection === 'asc' ? '&#8593;' : '&#8595;' !!}</span>
+                            @endif
+                        </div>
+                    </th>
                     <th>Imposto</th>
                     <th>Valor Liq.</th>
                     <th>Banco</th>
