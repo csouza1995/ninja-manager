@@ -1,14 +1,75 @@
 <div>
+    <div class="flex flex-col gap-4 mb-6">
+        <div class="flex justify-between items-center gap-4">
+            <div class="flex-1 max-w-md">
+                <input type="text" wire:model.live.debounce.300ms="search"
+                    placeholder="Buscar por cliente ou executante..." class="input input-bordered w-full" />
+            </div>
+            <button wire:click="$dispatch('create-service')" type="button" class="btn btn-primary">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+                Novo Serviço
+            </button>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 bg-base-100 rounded-box border border-base-300">
+            <div class="form-control">
+                <label class="label"><span class="label-text">Cliente</span></label>
+                <select wire:model.live="client_id" class="select select-bordered w-full">
+                    <option value="">Todos os Clientes</option>
+                    @foreach ($settingsClients as $client)
+                        <option value="{{ $client->id }}">{{ $client->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="form-control">
+                <label class="label"><span class="label-text">Status</span></label>
+                <select wire:model.live="status" class="select select-bordered w-full">
+                    <option value="">Todos</option>
+                    <option value="negotiating">Negociando</option>
+                    <option value="approved">Aprovado</option>
+                    <option value="in_progress">Em andamento</option>
+                    <option value="delivered">Entregue</option>
+                    <option value="finalized">Finalizado</option>
+                    <option value="cancelled">Cancelado</option>
+                </select>
+            </div>
+            <div class="form-control">
+                <label class="label"><span class="label-text">A partir de</span></label>
+                <input type="date" wire:model.live="start_date" class="input input-bordered w-full" />
+            </div>
+            <div class="form-control">
+                <label class="label"><span class="label-text">Até</span></label>
+                <input type="date" wire:model.live="end_date" class="input input-bordered w-full" />
+            </div>
+        </div>
+    </div>
+
     <div class="overflow-x-auto">
         <table class="table w-full">
             <thead>
                 <tr>
-                    <th>ID</th>
+                    <th class="cursor-pointer hover:bg-base-300" wire:click="sortBy('id')">
+                        <div class="flex items-center gap-1">
+                            ID
+                            @if ($sortField === 'id')
+                                <span>{!! $sortDirection === 'asc' ? '&#8593;' : '&#8595;' !!}</span>
+                            @endif
+                        </div>
+                    </th>
                     <th>Cliente</th>
                     <th>Executante / Função</th>
                     <th>Status Principal</th>
                     <th>Status Extras</th>
-                    <th>Total</th>
+                    <th class="cursor-pointer hover:bg-base-300" wire:click="sortBy('total_amount')">
+                        <div class="flex items-center gap-1">
+                            Total
+                            @if ($sortField === 'total_amount')
+                                <span>{!! $sortDirection === 'asc' ? '&#8593;' : '&#8595;' !!}</span>
+                            @endif
+                        </div>
+                    </th>
                     <th class="text-right">Ações</th>
                 </tr>
             </thead>
