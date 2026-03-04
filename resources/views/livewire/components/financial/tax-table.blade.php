@@ -1,10 +1,36 @@
 <div>
+    <div class="flex flex-col gap-4 mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-base-100 rounded-box border border-base-300">
+            <div class="form-control">
+                <label class="label"><span class="label-text">Status</span></label>
+                <select wire:model.live="status" class="select select-bordered w-full">
+                    <option value="">Todos</option>
+                    <option value="active">Ativo</option>
+                    <option value="inactive">Inativo</option>
+                </select>
+            </div>
+        </div>
+    </div>
     <div class="overflow-x-auto">
         <table class="table">
             <thead>
                 <tr>
-                    <th>Nome</th>
-                    <th>Percentual</th>
+                    <th class="cursor-pointer hover:bg-base-200" wire:click="sortBy('name')">
+                        <div class="flex items-center gap-1">
+                            Nome
+                            @if ($sortField === 'name')
+                                <span>{!! $sortDirection === 'asc' ? '&#8593;' : '&#8595;' !!}</span>
+                            @endif
+                        </div>
+                    </th>
+                    <th class="cursor-pointer hover:bg-base-200" wire:click="sortBy('percentage')">
+                        <div class="flex items-center gap-1">
+                            Percentual
+                            @if ($sortField === 'percentage')
+                                <span>{!! $sortDirection === 'asc' ? '&#8593;' : '&#8595;' !!}</span>
+                            @endif
+                        </div>
+                    </th>
                     <th>Status</th>
                     <th class="text-right">Ações</th>
                 </tr>
