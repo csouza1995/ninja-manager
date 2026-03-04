@@ -28,6 +28,10 @@ class Dashboard extends Component
 
     public $pieData = [];
 
+    public $dateOffset = 0;
+
+    public $currentPeriodLabel = '';
+
     public function mount()
     {
         $this->calculateFinances();
@@ -36,6 +40,19 @@ class Dashboard extends Component
     public function setFilter($filter)
     {
         $this->activeFilter = $filter;
+        $this->dateOffset = 0;
+        $this->calculateFinances();
+    }
+
+    public function previousPeriod()
+    {
+        $this->dateOffset--;
+        $this->calculateFinances();
+    }
+
+    public function nextPeriod()
+    {
+        $this->dateOffset++;
         $this->calculateFinances();
     }
 
@@ -43,17 +60,27 @@ class Dashboard extends Component
     {
         $now = Carbon::now();
 
+        if ($this->activeFilter === 'month') {
+            $now->addMonths($this->dateOffset);
+        } elseif ($this->activeFilter === 'quarter') {
+            $now->addQuarters($this->dateOffset);
+        } else {
+            $now->addYears($this->dateOffset);
+        }
+
         // 1. Periods mapping grouped by type and ordered Past -> Present -> Future
         $periodsToCalculate = [];
 
         if ($this->activeFilter === 'month') {
             $range = [$now->copy()->subMonth(), $now, $now->copy()->addMonth()];
+            $this->currentPeriodLabel = ucfirst($now->translatedFormat('M/Y'));
             foreach ($range as $date) {
                 $label = $date->translatedFormat('M/Y');
                 $periodsToCalculate[$label] = [$date->copy()->startOfMonth(), $date->copy()->endOfMonth()];
             }
         } elseif ($this->activeFilter === 'quarter') {
             $range = [$now->copy()->subQuarter(), $now, $now->copy()->addQuarter()];
+            $this->currentPeriodLabel = $now->quarter.'ºTri/'.$now->year;
             foreach ($range as $date) {
                 $start = $date->copy()->startOfQuarter();
                 $end = $date->copy()->endOfQuarter();
@@ -62,6 +89,7 @@ class Dashboard extends Component
             }
         } else { // year
             $range = [$now->copy()->subYear(), $now, $now->copy()->addYear()];
+            $this->currentPeriodLabel = $now->format('Y');
             foreach ($range as $date) {
                 $label = $date->format('Y');
                 $periodsToCalculate[$label] = [$date->copy()->startOfYear(), $date->copy()->endOfYear()];

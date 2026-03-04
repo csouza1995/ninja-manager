@@ -72,23 +72,51 @@
             Análise de Fluxo
         </h2>
 
-        <div class="join border border-base-300 shadow-sm">
-            <button wire:click="setFilter('month')" @class([
-                'join-item btn btn-sm',
-                'btn-primary' => $activeFilter === 'month',
-            ])>Mensal</button>
-            <button wire:click="setFilter('quarter')" @class([
-                'join-item btn btn-sm',
-                'btn-primary' => $activeFilter === 'quarter',
-            ])>Trimestral</button>
-            <button wire:click="setFilter('year')" @class([
-                'join-item btn btn-sm',
-                'btn-primary' => $activeFilter === 'year',
-            ])>Anual</button>
+        <div class="flex items-center gap-4">
+            {{-- Navigation Controls --}}
+            <div class="join border border-base-300 shadow-sm">
+                <button wire:click="previousPeriod" class="join-item btn btn-sm bg-base-100 hover:bg-base-200"
+                    title="Período Anterior">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                        stroke="currentColor" class="w-4 h-4">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
+                    </svg>
+                    Anterior
+                </button>
+                <div
+                    class="join-item btn btn-sm border-x-0 no-animation bg-base-100 border-base-300 pointer-events-none min-w-[120px] font-bold text-primary">
+                    {{ $currentPeriodLabel }}
+                </div>
+                <button wire:click="nextPeriod" class="join-item btn btn-sm bg-base-100 hover:bg-base-200"
+                    title="Próximo Período">
+                    Próximo
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                        stroke="currentColor" class="w-4 h-4">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                    </svg>
+                </button>
+            </div>
+
+            {{-- Filter Types --}}
+            <div class="join border border-base-300 shadow-sm">
+                <button wire:click="setFilter('month')" @class([
+                    'join-item btn btn-sm',
+                    'btn-primary' => $activeFilter === 'month',
+                ])>Mensal</button>
+                <button wire:click="setFilter('quarter')" @class([
+                    'join-item btn btn-sm',
+                    'btn-primary' => $activeFilter === 'quarter',
+                ])>Trimestral</button>
+                <button wire:click="setFilter('year')" @class([
+                    'join-item btn btn-sm',
+                    'btn-primary' => $activeFilter === 'year',
+                ])>Anual</button>
+            </div>
         </div>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8"
+        wire:loading.class="opacity-50 transition-opacity duration-300">
         @foreach ($periods as $label => $data)
             <div class="card bg-base-200 shadow-xl border border-base-300 overflow-hidden">
                 <div class="bg-base-200 px-4 py-3 border-b border-base-300 flex justify-between items-center">
@@ -276,7 +304,8 @@
             Retiradas de Sócios & Colaboradores
         </h2>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+            wire:loading.class="opacity-50 transition-opacity duration-300">
             @foreach ($periods as $label => $data)
                 <div class="card bg-base-200 shadow-xl border border-base-300 overflow-hidden">
                     <div class="bg-base-200 px-4 py-3 border-b border-base-300 flex justify-between items-center">
