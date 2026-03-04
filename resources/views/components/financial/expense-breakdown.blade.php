@@ -13,7 +13,7 @@
             this.$watch('pieData', () => {
                 this.charts.forEach(c => c.destroy());
                 this.charts = [];
-                this.$nextTick(() => this.renderAll());
+                setTimeout(() => this.renderAll(), 150);
             });
         },
         buildOptions(d) {
@@ -65,6 +65,7 @@
             this.pieData.forEach((d, index) => {
                 const el = document.getElementById('pie-chart-' + index);
                 if (!el || !d) return;
+                el.innerHTML = '';
                 const chart = new ApexCharts(el, this.buildOptions(d));
                 chart.render();
                 this.charts.push(chart);
