@@ -46,4 +46,9 @@ class Revenue extends Model
     {
         return $this->belongsTo(Invoice::class);
     }
+
+    public function expenditure(): \Illuminate\Database\Eloquent\Relations\MorphOne
+    {
+        return $this->morphOne(Expenditure::class, 'model');
+    }
 }
