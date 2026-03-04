@@ -12,7 +12,7 @@
 </head>
 
 <body class="min-h-screen bg-base-100 font-sans antialiased">
-    <div class="navbar bg-base-200 border-b border-base-300 px-4 mb-8">
+    <div class="navbar sticky top-0 z-50 bg-base-200/90 backdrop-blur border-b border-base-300 px-4 mb-8">
         <div class="navbar-start">
             <div class="dropdown">
                 <div tabindex="0" role="button" class="btn btn-ghost lg:hidden">
@@ -143,12 +143,12 @@
         </div>
     </div>
 
-    <main class="container mx-auto px-4 pb-24">
+    <main class="container mx-auto px-4 pb-12">
         {{ $slot }}
     </main>
 
     <footer
-        class="footer items-center p-4 bg-base-200/80 backdrop-blur text-base-content border-t border-base-300 fixed bottom-0 w-full z-10">
+        class="footer items-center p-4 bg-base-200/50 text-base-content border-t border-base-300 w-full sticky top-[100vh] z-10 backdrop-blur">
         <aside class="items-center grid-flow-col">
             <img src="/images/logo.png" alt="Ninja Manager" class="h-6 w-auto grayscale opacity-30 mr-2">
             <p>© {{ date('Y') }} - Ninja Manager - O Futuro da Impressão 3D</p>
