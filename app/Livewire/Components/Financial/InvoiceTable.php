@@ -66,6 +66,11 @@ class InvoiceTable extends Component
         $this->resetPage();
     }
 
+    public function updatedDateRange()
+    {
+        $this->resetPage();
+    }
+
     public function delete(int $id)
     {
         Invoice::findOrFail($id)->delete();

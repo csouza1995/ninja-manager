@@ -50,32 +50,32 @@ class ExpenditureTable extends Component
         $this->resetPage();
     }
 
-    public function updatedSearch()
-    {
-        $this->resetPage();
-    }
-
     public function updatedStatus()
     {
         $this->resetPage();
     }
 
-    public function updatedClassification()
+    public function updatedClass()
     {
         $this->resetPage();
     }
 
-    public function updatedBankAccountId()
+    public function updatedDestination()
     {
         $this->resetPage();
     }
 
-    public function updatedStartDate()
+    public function updatedBank()
     {
         $this->resetPage();
     }
 
-    public function updatedEndDate()
+    public function updatedDateRange()
+    {
+        $this->resetPage();
+    }
+
+    public function getBankAccountsProperty()
     {
         $this->resetPage();
     }
