@@ -26,12 +26,7 @@
             <option value="outro">Outro</option>
         </select>
 
-        <select wire:model.live="owner" class="select select-sm select-bordered bg-base-100">
-            <option value="">Favorecido</option>
-            <option value="other">Outro Favorecido</option>
-        </select>
-
-        <select wire:model.live="bank" class="select select-sm select-bordered bg-base-100">
+        <select wire:model.live="bank_account_id" class="select select-sm select-bordered bg-base-100">
             <option value="">Conta Bancária</option>
             @foreach ($this->bankAccounts as $bankAccount)
                 <option value="{{ $bankAccount->id }}">{{ $bankAccount->bank_name }}</option>
@@ -39,8 +34,11 @@
         </select>
 
         <div class="join">
-            <span class="join-item btn btn-sm btn-disabled bg-base-100 border-base-300">Data</span>
-            <input type="date" wire:model.live="dateRange"
+            <span class="join-item btn btn-sm btn-disabled bg-base-100 border-base-300">Inicial</span>
+            <input type="date" wire:model.live="start_date"
+                class="input input-sm input-bordered join-item bg-base-100" />
+            <span class="join-item btn btn-sm btn-disabled bg-base-100 border-base-300 border-l-0">Final</span>
+            <input type="date" wire:model.live="end_date"
                 class="input input-sm input-bordered join-item bg-base-100" />
         </div>
     </div>
@@ -57,7 +55,14 @@
                             @endif
                         </div>
                     </th>
-                    <th>Tipo</th>
+                    <th class="cursor-pointer hover:bg-base-300" wire:click="sortBy('type')">
+                        <div class="flex items-center gap-1">
+                            Tipo
+                            @if ($sortField === 'type')
+                                <span>{!! $sortDirection === 'asc' ? '&#8593;' : '&#8595;' !!}</span>
+                            @endif
+                        </div>
+                    </th>
                     <th>Descrição / Favorecido</th>
                     <th>Banco</th>
                     <th class="cursor-pointer hover:bg-base-200" wire:click="sortBy('amount')">
@@ -69,8 +74,22 @@
                         </div>
                     </th>
                     <th>Imposto (Provisão)</th>
-                    <th>Valor Efetivo</th>
-                    <th>Status</th>
+                    <th class="cursor-pointer hover:bg-base-300" wire:click="sortBy('net_amount')">
+                        <div class="flex items-center gap-1">
+                            Valor Efetivo
+                            @if ($sortField === 'net_amount')
+                                <span>{!! $sortDirection === 'asc' ? '&#8593;' : '&#8595;' !!}</span>
+                            @endif
+                        </div>
+                    </th>
+                    <th class="cursor-pointer hover:bg-base-300" wire:click="sortBy('status')">
+                        <div class="flex items-center gap-1">
+                            Status
+                            @if ($sortField === 'status')
+                                <span>{!! $sortDirection === 'asc' ? '&#8593;' : '&#8595;' !!}</span>
+                            @endif
+                        </div>
+                    </th>
                     <th class="text-right">Ações</th>
                 </tr>
             </thead>

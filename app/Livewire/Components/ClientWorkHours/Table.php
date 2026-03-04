@@ -13,6 +13,14 @@ class Table extends Component
 {
     use WithPagination;
 
+    public bool $showFilters = false;
+
+    #[On('toggle-filters')]
+    public function toggleFilters()
+    {
+        $this->showFilters = ! $this->showFilters;
+    }
+
     public ?int $clientId = null;
 
     public string $type = '';

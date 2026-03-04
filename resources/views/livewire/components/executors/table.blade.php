@@ -1,5 +1,6 @@
 <div>
-    <div class="flex flex-wrap items-center gap-2 mb-6 p-2 bg-base-100/50 rounded-box border border-base-200">
+    @if ($showFilters)
+<div class="flex flex-wrap items-center gap-2 mb-6 p-2 bg-base-100/50 rounded-box border border-base-200">
         <span class="text-sm font-medium text-base-content/70 px-2 flex items-center gap-1">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                 stroke="currentColor" class="w-4 h-4">
@@ -17,7 +18,8 @@
         </select>
     </div>
 
-    <div class="overflow-x-auto">
+    @endif
+<div class="overflow-x-auto">
         <table class="table">
             <thead>
                 <tr>
@@ -29,7 +31,14 @@
                             @endif
                         </div>
                     </th>
-                    <th>CPF</th>
+                    <th class="cursor-pointer hover:bg-base-300" wire:click="sortBy('document')">
+                        <div class="flex items-center gap-1">
+                            CPF
+                            @if ($sortField === 'document')
+                                <span>{!! $sortDirection === 'asc' ? '&#8593;' : '&#8595;' !!}</span>
+                            @endif
+                        </div>
+                    </th>
                     <th>Funções</th>
                     <th class="cursor-pointer hover:bg-base-200" wire:click="sortBy('created_at')">
                         <div class="flex items-center gap-1">

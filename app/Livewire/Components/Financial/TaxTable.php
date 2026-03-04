@@ -14,6 +14,14 @@ class TaxTable extends Component
 {
     use WithPagination;
 
+    public bool $showFilters = false;
+
+    #[On('toggle-filters')]
+    public function toggleFilters()
+    {
+        $this->showFilters = ! $this->showFilters;
+    }
+
     #[Reactive]
     public string $search = '';
 

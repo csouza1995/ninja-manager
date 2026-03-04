@@ -1,9 +1,16 @@
 <div>
     <div class="flex flex-col gap-4 mb-6">
         <div class="flex justify-between items-center gap-4">
-            <div class="flex-1 max-w-md">
+            <div class="flex-1 max-w-md flex items-center gap-2">
                 <input type="text" wire:model.live.debounce.300ms="search"
                     placeholder="Buscar por cliente ou executante..." class="input input-bordered w-full" />
+                <button wire:click="toggleFilters" class="btn btn-ghost btn-sm" title="Alternar Filtros">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                        stroke="currentColor" class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 0 1-.659 1.591l-5.432 5.432a2.25 2.25 0 0 0-.659 1.591v2.927a2.25 2.25 0 0 1-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 0 0-.659-1.591L3.659 7.409A2.25 2.25 0 0 1 3 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0 1 12 3Z" />
+                    </svg>
+                </button>
             </div>
             <button wire:click="$dispatch('create-service')" type="button" class="btn btn-primary">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -13,20 +20,26 @@
             </button>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 bg-base-100 rounded-box border border-base-300">
-            <div class="form-control">
-                <label class="label"><span class="label-text">Cliente</span></label>
-                <select wire:model.live="client_id" class="select select-bordered w-full">
-                    <option value="">Todos os Clientes</option>
+        @if ($showFilters)
+            <div class="flex flex-wrap items-center gap-2 mt-4 p-2 bg-base-100/50 rounded-box border border-base-200">
+                <span class="text-sm font-medium text-base-content/70 px-2 flex items-center gap-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                        stroke="currentColor" class="w-4 h-4">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 0 1-.659 1.591l-5.432 5.432a2.25 2.25 0 0 0-.659 1.591v2.927a2.25 2.25 0 0 1-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 0 0-.659-1.591L3.659 7.409A2.25 2.25 0 0 1 3 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0 1 12 3Z" />
+                    </svg>
+                    Filtros
+                </span>
+
+                <select wire:model.live="client_id" class="select select-sm select-bordered bg-base-100">
+                    <option value="">Cliente</option>
                     @foreach ($settingsClients as $client)
                         <option value="{{ $client->id }}">{{ $client->name }}</option>
                     @endforeach
                 </select>
-            </div>
-            <div class="form-control">
-                <label class="label"><span class="label-text">Status</span></label>
-                <select wire:model.live="status" class="select select-bordered w-full">
-                    <option value="">Todos</option>
+
+                <select wire:model.live="status" class="select select-sm select-bordered bg-base-100">
+                    <option value="">Status</option>
                     <option value="negotiating">Negociando</option>
                     <option value="approved">Aprovado</option>
                     <option value="in_progress">Em andamento</option>
@@ -34,16 +47,17 @@
                     <option value="finalized">Finalizado</option>
                     <option value="cancelled">Cancelado</option>
                 </select>
+
+                <div class="flex items-center gap-1 ml-auto">
+                    <span class="text-xs text-base-content/50">Data:</span>
+                    <input type="date" wire:model.live="start_date"
+                        class="input input-sm input-bordered bg-base-100 placeholder-transparent" title="A partir de" />
+                    <span class="text-xs text-base-content/50">até</span>
+                    <input type="date" wire:model.live="end_date"
+                        class="input input-sm input-bordered bg-base-100 placeholder-transparent" title="Até" />
+                </div>
             </div>
-            <div class="form-control">
-                <label class="label"><span class="label-text">A partir de</span></label>
-                <input type="date" wire:model.live="start_date" class="input input-bordered w-full" />
-            </div>
-            <div class="form-control">
-                <label class="label"><span class="label-text">Até</span></label>
-                <input type="date" wire:model.live="end_date" class="input input-bordered w-full" />
-            </div>
-        </div>
+        @endif
     </div>
 
     <div class="overflow-x-auto">
@@ -60,8 +74,22 @@
                     </th>
                     <th>Cliente</th>
                     <th>Executante / Função</th>
-                    <th>Status Principal</th>
-                    <th>Status Extras</th>
+                    <th class="cursor-pointer hover:bg-base-300" wire:click="sortBy('status')">
+                        <div class="flex items-center gap-1">
+                            Status Principal
+                            @if ($sortField === 'status')
+                                <span>{!! $sortDirection === 'asc' ? '&#8593;' : '&#8595;' !!}</span>
+                            @endif
+                        </div>
+                    </th>
+                    <th class="cursor-pointer hover:bg-base-300" wire:click="sortBy('is_paid')">
+                        <div class="flex items-center gap-1">
+                            Status Extras
+                            @if ($sortField === 'is_paid')
+                                <span>{!! $sortDirection === 'asc' ? '&#8593;' : '&#8595;' !!}</span>
+                            @endif
+                        </div>
+                    </th>
                     <th class="cursor-pointer hover:bg-base-300" wire:click="sortBy('total_amount')">
                         <div class="flex items-center gap-1">
                             Total

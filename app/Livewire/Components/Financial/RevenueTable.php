@@ -17,6 +17,14 @@ class RevenueTable extends Component
     #[Reactive]
     public string $search = '';
 
+    public bool $showFilters = false;
+
+    #[On('toggle-filters')]
+    public function toggleFilters()
+    {
+        $this->showFilters = ! $this->showFilters;
+    }
+
     // Filters
     public $status = '';
 
@@ -31,7 +39,7 @@ class RevenueTable extends Component
     // Sorting
     public string $sortField = 'due_date';
 
-    public string $sortDirection = 'desc';
+    public string $sortDirection = 'asc';
 
     public function sortBy(string $field)
     {
@@ -55,27 +63,22 @@ class RevenueTable extends Component
         $this->resetPage();
     }
 
-    public function updatedClass()
+    public function updatedClassification()
     {
         $this->resetPage();
     }
 
-    public function updatedOrigin()
+    public function updatedBankAccountId()
     {
         $this->resetPage();
     }
 
-    public function updatedBank()
+    public function updatedStartDate()
     {
         $this->resetPage();
     }
 
-    public function updatedDateRange()
-    {
-        $this->resetPage();
-    }
-
-    public function getBankAccountsProperty()
+    public function updatedEndDate()
     {
         $this->resetPage();
     }

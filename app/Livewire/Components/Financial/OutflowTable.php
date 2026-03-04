@@ -14,6 +14,14 @@ class OutflowTable extends Component
 {
     use WithPagination;
 
+    public bool $showFilters = false;
+
+    #[On('toggle-filters')]
+    public function toggleFilters()
+    {
+        $this->showFilters = ! $this->showFilters;
+    }
+
     #[Reactive]
     public string $search = '';
 
@@ -29,7 +37,7 @@ class OutflowTable extends Component
     public $end_date = '';
 
     // Sorting
-    public string $sortField = 'due_date';
+    public string $sortField = 'payment_date';
 
     public string $sortDirection = 'desc';
 

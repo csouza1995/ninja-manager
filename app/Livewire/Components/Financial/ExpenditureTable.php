@@ -14,6 +14,14 @@ class ExpenditureTable extends Component
 {
     use WithPagination;
 
+    public bool $showFilters = false;
+
+    #[On('toggle-filters')]
+    public function toggleFilters()
+    {
+        $this->showFilters = ! $this->showFilters;
+    }
+
     #[Reactive]
     public string $search = '';
 
@@ -31,7 +39,7 @@ class ExpenditureTable extends Component
     // Sorting
     public string $sortField = 'due_date';
 
-    public string $sortDirection = 'desc';
+    public string $sortDirection = 'asc';
 
     public function sortBy(string $field)
     {
@@ -50,12 +58,17 @@ class ExpenditureTable extends Component
         $this->resetPage();
     }
 
+    public function updatedSearch()
+    {
+        $this->resetPage();
+    }
+
     public function updatedStatus()
     {
         $this->resetPage();
     }
 
-    public function updatedClass()
+    public function updatedClassification()
     {
         $this->resetPage();
     }
@@ -65,17 +78,17 @@ class ExpenditureTable extends Component
         $this->resetPage();
     }
 
-    public function updatedBank()
+    public function updatedBankAccountId()
     {
         $this->resetPage();
     }
 
-    public function updatedDateRange()
+    public function updatedStartDate()
     {
         $this->resetPage();
     }
 
-    public function getBankAccountsProperty()
+    public function updatedEndDate()
     {
         $this->resetPage();
     }

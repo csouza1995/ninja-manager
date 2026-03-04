@@ -16,6 +16,14 @@ class Table extends Component
 
     public string $search = '';
 
+    public bool $showFilters = false;
+
+    #[On('toggle-filters')]
+    public function toggleFilters()
+    {
+        $this->showFilters = !$this->showFilters;
+    }
+
     // Filters
     public $status = '';
 
@@ -26,7 +34,7 @@ class Table extends Component
     public $end_date = '';
 
     // Sorting
-    public string $sortField = 'receipt_number';
+    public string $sortField = 'created_at';
 
     public string $sortDirection = 'desc';
 

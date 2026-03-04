@@ -14,6 +14,14 @@ class InvoiceTable extends Component
 {
     use WithPagination;
 
+    public bool $showFilters = false;
+
+    #[On('toggle-filters')]
+    public function toggleFilters()
+    {
+        $this->showFilters = ! $this->showFilters;
+    }
+
     #[Reactive]
     public string $search = '';
 
@@ -25,7 +33,7 @@ class InvoiceTable extends Component
     public $end_date = '';
 
     // Sorting
-    public string $sortField = 'issued_at';
+    public string $sortField = 'issue_date';
 
     public string $sortDirection = 'desc';
 
@@ -62,11 +70,6 @@ class InvoiceTable extends Component
     }
 
     public function updatedEndDate()
-    {
-        $this->resetPage();
-    }
-
-    public function updatedDateRange()
     {
         $this->resetPage();
     }
