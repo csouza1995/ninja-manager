@@ -12,8 +12,8 @@
         <div class="card-body">
             <div class="flex justify-between items-center mb-6 gap-4">
                 <div class="flex-1 max-w-md">
-                    <input type="text" wire:model.live="search" placeholder="Buscar por banco, titular ou apelido..."
-                        class="input input-bordered w-full" />
+                    <input type="text" wire:model.live.debounce.300ms="search"
+                        placeholder="Buscar por banco, titular ou apelido..." class="input input-bordered w-full" />
                 </div>
                 <button wire:click="create" class="btn btn-primary">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

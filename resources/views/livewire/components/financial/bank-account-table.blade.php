@@ -3,8 +3,22 @@
         <table class="table">
             <thead>
                 <tr>
-                    <th>Banco</th>
-                    <th>Titular</th>
+                    <th class="cursor-pointer hover:bg-base-200" wire:click="sortBy('bank_name')">
+                        <div class="flex items-center gap-1">
+                            Banco
+                            @if ($sortField === 'bank_name')
+                                <span>{!! $sortDirection === 'asc' ? '&#8593;' : '&#8595;' !!}</span>
+                            @endif
+                        </div>
+                    </th>
+                    <th class="cursor-pointer hover:bg-base-200" wire:click="sortBy('owner_name')">
+                        <div class="flex items-center gap-1">
+                            Titular
+                            @if ($sortField === 'owner_name')
+                                <span>{!! $sortDirection === 'asc' ? '&#8593;' : '&#8595;' !!}</span>
+                            @endif
+                        </div>
+                    </th>
                     <th>Apelido</th>
                     <th class="text-right">Ações</th>
                 </tr>
