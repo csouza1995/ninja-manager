@@ -1,13 +1,65 @@
 <div>
+    <div class="flex flex-col gap-4 mb-6">
+        <div class="flex justify-between items-center gap-4">
+            <div class="flex-1 max-w-md">
+                <input type="text" wire:model.live.debounce.300ms="search" placeholder="Buscar por número ou cliente..."
+                    class="input input-bordered w-full" />
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 bg-base-100 rounded-box border border-base-300">
+            <div class="form-control">
+                <label class="label"><span class="label-text">Cliente</span></label>
+                <select wire:model.live="client_id" class="select select-bordered w-full">
+                    <option value="">Todos os Clientes</option>
+                    @foreach ($settingsClients as $client)
+                        <option value="{{ $client->id }}">{{ $client->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="form-control">
+                <label class="label"><span class="label-text">Status</span></label>
+                <select wire:model.live="status" class="select select-bordered w-full">
+                    <option value="">Todos</option>
+                    <option value="generated">Gerado (Não Assinado)</option>
+                    <option value="signed">Assinado</option>
+                    <option value="sent">Enviado</option>
+                </select>
+            </div>
+            <div class="form-control">
+                <label class="label"><span class="label-text">Criado a partir de</span></label>
+                <input type="date" wire:model.live="start_date" class="input input-bordered w-full" />
+            </div>
+            <div class="form-control">
+                <label class="label"><span class="label-text">Até</span></label>
+                <input type="date" wire:model.live="end_date" class="input input-bordered w-full" />
+            </div>
+        </div>
+    </div>
+
     <div class="overflow-x-auto">
         <table class="table w-full">
             <thead>
                 <tr>
-                    <th>Número</th>
+                    <th class="cursor-pointer hover:bg-base-300" wire:click="sortBy('receipt_number')">
+                        <div class="flex items-center gap-1">
+                            Número
+                            @if ($sortField === 'receipt_number')
+                                <span>{!! $sortDirection === 'asc' ? '&#8593;' : '&#8595;' !!}</span>
+                            @endif
+                        </div>
+                    </th>
                     <th>Serviço / Cliente</th>
                     <th>Executante</th>
                     <th>Status</th>
-                    <th>Data</th>
+                    <th class="cursor-pointer hover:bg-base-300" wire:click="sortBy('created_at')">
+                        <div class="flex items-center gap-1">
+                            Data
+                            @if ($sortField === 'created_at')
+                                <span>{!! $sortDirection === 'asc' ? '&#8593;' : '&#8595;' !!}</span>
+                            @endif
+                        </div>
+                    </th>
                     <th class="text-right">Ações</th>
                 </tr>
             </thead>
