@@ -57,6 +57,7 @@
                             @endif
                         </div>
                     </th>
+                    <th>Nota Fiscal</th>
                     <th class="cursor-pointer hover:bg-base-300" wire:click="sortBy('classification')">
                         <div class="flex items-center gap-1">
                             Classificação
@@ -108,12 +109,25 @@
                         <td>
                             <div class="font-bold">{{ $revenue->description }}</div>
                             <div class="text-xs opacity-50">
-                                {{ $revenue->origin_name ?: ($revenue->service ? $revenue->service->client->name : '---') }}
-                                @if ($revenue->invoice)
-                                    <span class="badge badge-xs badge-ghost ml-2">NF:
-                                        {{ $revenue->invoice->number }}</span>
+                                @if ($revenue->service)
+                                    <a href="{{ route('clients.index', ['showId' => $revenue->service->client_id]) }}"
+                                        class="link link-hover text-primary"
+                                        title="Ver Cliente">{{ $revenue->service->client->name }}</a>
+                                @else
+                                    {{ $revenue->origin_name ?: '---' }}
                                 @endif
                             </div>
+                        </td>
+                        <td>
+                            @if ($revenue->invoice)
+                                <a href="{{ route('financial.invoices', ['showId' => $revenue->invoice->id]) }}"
+                                    class="badge badge-xs badge-primary hover:scale-105 transition-transform"
+                                    title="Visualizar Nota Fiscal" wire:navigate>
+                                    NF: {{ $revenue->invoice->number }}
+                                </a>
+                            @else
+                                <span class="text-xs opacity-30">---</span>
+                            @endif
                         </td>
                         <td class="whitespace-nowrap">
                             <span class="badge badge-outline">{{ $revenue->classification }}</span>
@@ -122,13 +136,28 @@
                             R$ {{ number_format($revenue->gross_amount, 2, ',', '.') }}
                         </td>
                         <td class="font-mono font-bold text-error/70">
-                            R$ {{ number_format($revenue->tax_amount, 2, ',', '.') }}
+                            @if ($revenue->tax_amount > 0)
+                                @if ($revenue->expenditure)
+                                    <a href="{{ route('financial.expenditures', ['showId' => $revenue->expenditure->id]) }}"
+                                        class="link link-hover text-error/70" title="Ver Despesa Lançada" wire:navigate>
+                                        R$ {{ number_format($revenue->tax_amount, 2, ',', '.') }}
+                                    </a>
+                                @else
+                                    R$ {{ number_format($revenue->tax_amount, 2, ',', '.') }}
+                                @endif
+                            @else
+                                <span class="opacity-30">---</span>
+                            @endif
                         </td>
                         <td class="font-mono font-bold text-success">
                             R$ {{ number_format($revenue->net_amount, 2, ',', '.') }}
                         </td>
                         <td class="whitespace-nowrap">
-                            {{ $revenue->bankAccount->nickname ?: $revenue->bankAccount->bank_name }}</td>
+                            <a href="{{ route('financial.bank-accounts', ['showId' => $revenue->bank_account_id]) }}"
+                                class="link link-hover" title="Ver Conta">
+                                {{ $revenue->bankAccount->nickname ?: $revenue->bankAccount->bank_name }}
+                            </a>
+                        </td>
                         <td>
                             @if ($revenue->paid_at)
                                 <span class="badge badge-success">Pago</span>
@@ -149,22 +178,23 @@
                                         <path stroke-linecap="round" stroke-linejoin="round"
                                             d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
                                     </svg>
-                                    <!-- Expenditure Link -->
-                                    @if ($revenue->tax_amount > 0)
-                                        @if (!$revenue->expenditure)
-                                            <a href="{{ route('financial.expenditures', ['launch' => 'tax','fromModelType' => 'App\Models\Revenue','fromModelId' => $revenue->id,'launchAmount' => $revenue->tax_amount,'launchDescription' =>'Imposto Ref. ' .$revenue->description .' ' .\Carbon\Carbon::parse($revenue->paid_at ?? ($revenue->due_date ?? now()))->addMonth()->format('m/Y') .' (' .\Carbon\Carbon::parse($revenue->paid_at ?? ($revenue->due_date ?? now()))->format('m/Y') .')']) }}"
-                                                wire:navigate class="btn btn-square btn-ghost btn-xs text-warning"
-                                                title="Lançar Despesa de Imposto">
-                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none"
-                                                    viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
-                                                    class="size-4">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m3.75 9v6m3-3H9m1.5-12H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
-                                                </svg>
-                                            </a>
-                                        @endif
+                                </button>
+                                <!-- Expenditure Link -->
+                                @if ($revenue->tax_amount > 0)
+                                    @if (!$revenue->expenditure)
+                                        <a href="{{ route('financial.expenditures', ['launch' => 'tax','fromModelType' => 'App\Models\Revenue','fromModelId' => $revenue->id,'launchAmount' => $revenue->tax_amount,'launchDescription' =>'Imposto Ref. ' .$revenue->description .' ' .\Carbon\Carbon::parse($revenue->paid_at ?? ($revenue->due_date ?? now()))->addMonth()->format('m/Y') .' (' .\Carbon\Carbon::parse($revenue->paid_at ?? ($revenue->due_date ?? now()))->format('m/Y') .')']) }}"
+                                            wire:navigate class="btn btn-square btn-ghost btn-xs text-warning"
+                                            title="Lançar Despesa de Imposto">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                                stroke-width="1.5" stroke="currentColor" class="size-4">
+                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                    d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m3.75 9v6m3-3H9m1.5-12H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
+                                            </svg>
+                                        </a>
                                     @endif
+                                @endif
 
+                                @if (!$revenue->invoice_id)
                                     <button wire:click="$dispatch('open-revenue-form', { id: {{ $revenue->id }} })"
                                         class="btn btn-square btn-ghost btn-xs" title="Editar">
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
@@ -173,15 +203,16 @@
                                                 d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
                                         </svg>
                                     </button>
+                                @endif
 
-                                    <button wire:click="delete({{ $revenue->id }})" wire:confirm="Tem certeza?"
-                                        class="btn btn-square btn-ghost btn-xs text-error" title="Excluir">
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                            stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
-                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                d="m14.74 9-.34 7m-4.74 0-.34-7m10 4.634V20a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V6.634m12 0a2 2 0 0 0-2-2h-3.366a2 2 0 0 0-1.268.464L9.08 6.634a2 2 0 0 0-2 2h10.74Z" />
-                                        </svg>
-                                    </button>
+                                <button wire:click="delete({{ $revenue->id }})" wire:confirm="Tem certeza?"
+                                    class="btn btn-square btn-ghost btn-xs text-error" title="Excluir">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                        stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="m14.74 9-.34 7m-4.74 0-.34-7m10 4.634V20a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V6.634m12 0a2 2 0 0 0-2-2h-3.366a2 2 0 0 0-1.268.464L9.08 6.634a2 2 0 0 0-2 2h10.74Z" />
+                                    </svg>
+                                </button>
                             </div>
                         </td>
                     </tr>

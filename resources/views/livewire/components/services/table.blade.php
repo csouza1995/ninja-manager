@@ -109,12 +109,22 @@
                     <tr class="hover">
                         <td class="font-mono text-xs">#{{ str_pad($service->id, 5, '0', STR_PAD_LEFT) }}</td>
                         <td>
-                            <div class="font-bold">{{ $service->client->name }}</div>
+                            <div class="font-bold">
+                                <a href="{{ route('clients.index', ['showId' => $service->client_id]) }}"
+                                    class="link link-hover text-primary"
+                                    title="Ver Cliente">{{ $service->client->name }}</a>
+                            </div>
                             <div class="text-xs opacity-50">{{ $service->client->document }}</div>
                         </td>
                         <td>
-                            <div>{{ $service->executor->name }}</div>
-                            <div class="text-xs badge badge-ghost">{{ $service->role->name }}</div>
+                            <div>
+                                <a href="{{ route('executors.index', ['showId' => $service->executor_id]) }}"
+                                    class="link link-hover" title="Ver Executante">{{ $service->executor->name }}</a>
+                            </div>
+                            <div class="text-xs badge badge-ghost">
+                                <a href="{{ route('roles.index', ['showId' => $service->role_id]) }}"
+                                    class="link link-hover" title="Ver Função">{{ $service->role->name }}</a>
+                            </div>
                         </td>
                         <td>
                             @php
@@ -155,8 +165,8 @@
                                         </a>
                                     @else
                                         <span class="badge badge-success badge-sm" title="Pago">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none"
-                                                viewBox="0 0 24 24" stroke="currentColor">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1"
+                                                fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                     d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                             </svg>
@@ -188,8 +198,9 @@
                                     </a>
                                 @endif
                                 @if ($service->revenue?->invoice)
-                                    <a href="{{ route('financial.invoices', ['search' => $service->revenue->invoice->number]) }}"
-                                        class="badge badge-primary badge-sm" title="Faturado (NF)">
+                                    <a href="{{ route('financial.invoices', ['showId' => $service->revenue->invoice->id]) }}"
+                                        class="badge badge-primary badge-sm hover:scale-105 transition-transform"
+                                        title="Faturado (NF)">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none"
                                             viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"

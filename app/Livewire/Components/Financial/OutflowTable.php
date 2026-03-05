@@ -37,17 +37,17 @@ class OutflowTable extends Component
     public $end_date = '';
 
     // Sorting
-    public string $sortField = 'payment_date';
+    public string $sortField = 'due_date';
 
     public string $sortDirection = 'desc';
 
     public function sortBy(string $field)
     {
         if ($this->sortField === $field) {
-            $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
+            $this->sortDirection = $this->sortDirection === 'desc' ? 'asc' : 'desc';
         } else {
             $this->sortField = $field;
-            $this->sortDirection = 'asc';
+            $this->sortDirection = 'desc';
         }
     }
 

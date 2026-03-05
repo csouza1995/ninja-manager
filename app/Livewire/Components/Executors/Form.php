@@ -4,15 +4,18 @@ namespace App\Livewire\Components\Executors;
 
 use App\Models\Executor;
 use App\Models\Role;
-use Livewire\Component;
+use Livewire\Attributes\Computed;
 use Livewire\Attributes\On;
 use Livewire\Attributes\Validate;
-use Livewire\Attributes\Computed;
+use Livewire\Component;
 
 class Form extends Component
 {
     public ?int $executorId = null;
+
     public bool $showModal = false;
+
+    public bool $readOnly = false;
 
     #[Validate('required|min:3')]
     public string $name = '';
@@ -42,23 +45,33 @@ class Form extends Component
         $this->showModal = true;
     }
 
+    #[On('show-executor')]
+    public function show(int $id)
+    {
+        $this->edit($id, true);
+    }
+
     #[On('edit-executor')]
-    public function edit(int $id)
+    public function edit(int $id, bool $readOnly = false)
     {
         $this->executorId = $id;
+        $this->readOnly = $readOnly;
         $executor = $this->executor;
-        
+
         if ($executor) {
             $this->name = $executor->name;
             $this->document = $executor->document;
             $this->selectedRoles = $executor->roles->pluck('id')->toArray();
         }
-        
+
         $this->showModal = true;
     }
 
     public function save()
     {
+        if ($this->readOnly) {
+            return;
+        }
         $this->validate();
 
         $executor = Executor::updateOrCreate(

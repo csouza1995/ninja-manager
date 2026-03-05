@@ -33,7 +33,7 @@ class InvoiceTable extends Component
     public $end_date = '';
 
     // Sorting
-    public string $sortField = 'issue_date';
+    public string $sortField = 'issued_at';
 
     public string $sortDirection = 'desc';
 
@@ -103,6 +103,7 @@ class InvoiceTable extends Component
                 $query->whereDate('issued_at', '<=', $this->end_date);
             })
             ->orderBy($this->sortField, $this->sortDirection)
+            ->orderBy('number', 'desc')
             ->paginate(15);
 
         return view('livewire.components.financial.invoice-table', [

@@ -39,15 +39,15 @@ class ExpenditureTable extends Component
     // Sorting
     public string $sortField = 'due_date';
 
-    public string $sortDirection = 'asc';
+    public string $sortDirection = 'desc';
 
     public function sortBy(string $field)
     {
         if ($this->sortField === $field) {
-            $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
+            $this->sortDirection = $this->sortDirection === 'desc' ? 'asc' : 'desc';
         } else {
             $this->sortField = $field;
-            $this->sortDirection = 'asc';
+            $this->sortDirection = 'desc';
         }
     }
 

@@ -4,16 +4,19 @@ declare(strict_types=1);
 
 namespace App\Livewire\Components\Financial;
 
-use App\Models\Outflow;
 use App\Models\BankAccount;
-use Livewire\Component;
-use Livewire\Attributes\Validate;
-use Livewire\Attributes\On;
+use App\Models\Outflow;
 use Carbon\Carbon;
+use Livewire\Attributes\On;
+use Livewire\Attributes\Validate;
+use Livewire\Component;
 
 class OutflowForm extends Component
 {
     public bool $isOpen = false;
+
+    public bool $readOnly = false;
+
     public ?int $outflowId = null;
 
     #[Validate]
@@ -64,9 +67,10 @@ class OutflowForm extends Component
     }
 
     #[On('open-outflow-form')]
-    public function open(int $id = null)
+    public function open(?int $id = null, bool $readOnly = false)
     {
         $this->resetForm();
+        $this->readOnly = $readOnly;
         $this->isOpen = true;
         $this->updateSuggestions();
 
@@ -78,7 +82,7 @@ class OutflowForm extends Component
             $this->amount = 1621.00;
             $this->tax_percentage = 11.00;
             $this->calculateTax();
-            
+
             $firstBank = BankAccount::first();
             $this->origin_bank_account_id = $firstBank ? $firstBank->id : null;
         }
@@ -102,7 +106,7 @@ class OutflowForm extends Component
 
     public function updated($propertyName)
     {
-        if ($propertyName === 'type' && $this->type === 'Prolabore' && !$this->outflowId) {
+        if ($propertyName === 'type' && $this->type === 'Prolabore' && ! $this->outflowId) {
             $this->amount = 1621.00;
         }
 
@@ -116,10 +120,11 @@ class OutflowForm extends Component
         if ($this->type !== 'Prolabore') {
             $this->tax_percentage = 0;
             $this->tax_amount = 0;
+
             return;
         }
 
-        if (!$this->tax_percentage) {
+        if (! $this->tax_percentage) {
             $this->tax_percentage = 11.00;
         }
 
@@ -129,16 +134,21 @@ class OutflowForm extends Component
 
     public function save()
     {
+        if ($this->readOnly) {
+            return;
+        }
         $this->calculateTax();
         $this->validate();
 
-        if ($this->type === 'Transferência' && !$this->destination_bank_account_id) {
+        if ($this->type === 'Transferência' && ! $this->destination_bank_account_id) {
             $this->addError('destination_bank_account_id', 'Para transferências, selecione o banco de destino.');
+
             return;
         }
 
         if ($this->origin_bank_account_id == $this->destination_bank_account_id) {
             $this->addError('destination_bank_account_id', 'O banco de destino deve ser diferente da origem.');
+
             return;
         }
 
@@ -172,8 +182,8 @@ class OutflowForm extends Component
     private function resetForm()
     {
         $this->reset([
-            'outflowId', 'description', 'destination_bank_account_id', 
-            'person_name', 'amount', 'tax_amount'
+            'outflowId', 'description', 'destination_bank_account_id',
+            'person_name', 'amount', 'tax_amount',
         ]);
         $this->type = 'Prolabore';
         $this->due_date = Carbon::now()->format('Y-m-d');

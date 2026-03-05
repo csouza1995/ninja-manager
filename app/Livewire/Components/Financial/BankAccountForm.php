@@ -5,14 +5,17 @@ declare(strict_types=1);
 namespace App\Livewire\Components\Financial;
 
 use App\Models\BankAccount;
-use Livewire\Component;
-use Livewire\Attributes\Validate;
 use Livewire\Attributes\On;
+use Livewire\Attributes\Validate;
+use Livewire\Component;
 
 class BankAccountForm extends Component
 {
     public bool $isOpen = false;
+
     public ?int $bankAccountId = null;
+
+    public bool $readOnly = false;
 
     #[Validate('required|min:2')]
     public string $bank_name = '';
@@ -24,9 +27,10 @@ class BankAccountForm extends Component
     public string $nickname = '';
 
     #[On('open-bank-account-form')]
-    public function open(int $id = null)
+    public function open(?int $id = null, bool $readOnly = false)
     {
         $this->resetForm();
+        $this->readOnly = $readOnly;
         $this->isOpen = true;
 
         if ($id) {
@@ -45,6 +49,9 @@ class BankAccountForm extends Component
 
     public function save()
     {
+        if ($this->readOnly) {
+            return;
+        }
         $this->validate();
 
         BankAccount::updateOrCreate(

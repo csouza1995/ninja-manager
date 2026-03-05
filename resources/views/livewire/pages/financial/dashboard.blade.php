@@ -158,12 +158,12 @@ setTimeout(() => $dispatch('ultrawide', count === 7), 50)">
                                 {{ number_format($data['billing_paid'] + $data['billing_pending'], 2, ',', '.') }}</span>
                         </div>
                         <div class="bg-base-300/20 rounded-b-lg border border-base-300/30 p-2 space-y-1">
-                            <div class="flex justify-between items-center text-xs opacity-70">
+                            <div class="flex justify-between items-center text-[11px] opacity-40">
                                 <span>Realizado</span>
-                                <span class="font-mono text-success font-bold">R$
+                                <span class="font-mono">R$
                                     {{ number_format($data['billing_paid'], 2, ',', '.') }}</span>
                             </div>
-                            <div class="flex justify-between items-center text-xs opacity-50">
+                            <div class="flex justify-between items-center text-[11px] opacity-40">
                                 <span>A receber</span>
                                 <span class="font-mono">R$
                                     {{ number_format($data['billing_pending'], 2, ',', '.') }}</span>
@@ -171,19 +171,18 @@ setTimeout(() => $dispatch('ultrawide', count === 7), 50)">
                         </div>
                     </div>
 
-                    <!-- ENCARGOS FATURAMENTO -->
-                    <div class="space-y-1 px-1">
-                        <div class="flex justify-between items-center text-[10px] font-bold uppercase opacity-60">
-                            <span>Encargos</span>
+                    <div class="bg-base-300/20 rounded-lg p-2 space-y-1">
+                        <div class="flex justify-between items-center text-[11px] font-bold uppercase">
+                            <span class="opacity-60">Encargos</span>
                             <span class="font-mono text-warning">- R$
                                 {{ number_format($data['revenue_tax_total'], 2, ',', '.') }}</span>
                         </div>
-                        <div class="flex justify-between items-center text-[11px] opacity-60">
+                        <div class="flex justify-between items-center text-[11px] opacity-40">
                             <span>Pagos</span>
                             <span class="font-mono">- R$
                                 {{ number_format($data['revenue_tax_paid'], 2, ',', '.') }}</span>
                         </div>
-                        <div class="flex justify-between items-center text-[11px] text-info/80">
+                        <div class="flex justify-between items-center text-[11px] opacity-40">
                             <span>Provisionado</span>
                             <span class="font-mono">- R$
                                 {{ number_format($data['revenue_tax_provisioned'], 2, ',', '.') }}</span>
@@ -195,14 +194,13 @@ setTimeout(() => $dispatch('ultrawide', count === 7), 50)">
                         </div>
                     </div>
 
-                    <!-- DESPESAS -->
-                    <div class="space-y-1 px-1">
-                        <div class="flex justify-between items-center text-[10px] font-bold uppercase opacity-60">
-                            <span>Despesas</span>
+                    <div class="bg-base-300/20 rounded-lg p-2 space-y-1">
+                        <div class="flex justify-between items-center text-[11px] font-bold uppercase">
+                            <span class="opacity-60">Despesas</span>
                             <span class="font-mono text-error">- R$
                                 {{ number_format($data['expenses_paid'] + $data['expenses_pending'], 2, ',', '.') }}</span>
                         </div>
-                        <div class="flex justify-between items-center text-[11px] opacity-60">
+                        <div class="flex justify-between items-center text-[11px] opacity-40">
                             <span>Pagas</span>
                             <span class="font-mono">- R$
                                 {{ number_format($data['expenses_paid'], 2, ',', '.') }}</span>
@@ -232,14 +230,13 @@ setTimeout(() => $dispatch('ultrawide', count === 7), 50)">
                         </div>
                     </div>
 
-                    <!-- RETIRADAS -->
-                    <div class="space-y-1 px-1 mt-1">
-                        <div class="flex justify-between items-center text-[10px] font-bold uppercase opacity-60">
-                            <span>Retiradas</span>
-                            <span class="font-mono text-error">- R$
+                    <div class="bg-base-300/20 rounded-lg p-2 space-y-1 mt-1">
+                        <div class="flex justify-between items-center text-[11px] font-bold uppercase">
+                            <span class="opacity-60">Retiradas</span>
+                            <span class="font-mono" style="color: #8b5cf6">- R$
                                 {{ number_format($data['outflows_paid'] + $data['outflows_pending'], 2, ',', '.') }}</span>
                         </div>
-                        <div class="flex justify-between items-center text-[11px] opacity-60">
+                        <div class="flex justify-between items-center text-[11px] opacity-40">
                             <span>Realizada</span>
                             <span class="font-mono">- R$
                                 {{ number_format($data['outflows_paid'], 2, ',', '.') }}</span>
@@ -251,19 +248,18 @@ setTimeout(() => $dispatch('ultrawide', count === 7), 50)">
                         </div>
                     </div>
 
-                    <!-- ENCARGOS RETIRADAS -->
-                    <div class="space-y-1 px-1">
-                        <div class="flex justify-between items-center text-[10px] font-bold uppercase opacity-60">
-                            <span>Encargos</span>
+                    <div class="bg-base-300/20 rounded-lg p-2 space-y-1">
+                        <div class="flex justify-between items-center text-[11px] font-bold uppercase">
+                            <span class="opacity-60">Encargos</span>
                             <span class="font-mono text-warning">- R$
                                 {{ number_format($data['outflow_tax_total'], 2, ',', '.') }}</span>
                         </div>
-                        <div class="flex justify-between items-center text-[11px] opacity-60">
+                        <div class="flex justify-between items-center text-[11px] opacity-40">
                             <span>Pagos</span>
                             <span class="font-mono">- R$
                                 {{ number_format($data['outflow_tax_paid'], 2, ',', '.') }}</span>
                         </div>
-                        <div class="flex justify-between items-center text-[11px] text-info/80">
+                        <div class="flex justify-between items-center text-[11px] opacity-40">
                             <span>Provisionado</span>
                             <span class="font-mono">- R$
                                 {{ number_format($data['outflow_tax_provisioned'], 2, ',', '.') }}</span>
@@ -274,8 +270,6 @@ setTimeout(() => $dispatch('ultrawide', count === 7), 50)">
                                 {{ number_format($data['outflow_tax_pending'], 2, ',', '.') }}</span>
                         </div>
                     </div>
-
-                    <div class="divider my-0 mt-1"></div>
 
                     <!-- SALDO FINAL -->
                     <div class="bg-base-300 rounded-lg p-3 space-y-2 border border-base-content/10 shadow-inner">
