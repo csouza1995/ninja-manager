@@ -49,7 +49,7 @@
                 </ul>
             </div>
             <a href="/" wire:navigate class="flex items-center gap-2">
-                <img src="/images/logo.png" alt="Ninja Manager" class="h-10 w-auto">
+                <img src="{{ asset('storage/brand/logo.png') }}" alt="{{ config('app.name') }}" class="h-10 w-auto">
             </a>
         </div>
         <div class="navbar-center hidden lg:flex">
@@ -152,7 +152,8 @@
     <footer
         class="footer items-center p-4 bg-base-200/50 text-base-content border-t border-base-300 w-full sticky top-[100vh] z-10 backdrop-blur">
         <aside class="items-center grid-flow-col">
-            <img src="/images/logo.png" alt="Ninja Manager" class="h-6 w-auto grayscale opacity-30 mr-2">
+            <img src="{{ asset('storage/brand/logo.png') }}" alt="{{ config('app.name') }}"
+                class="h-6 w-auto grayscale opacity-30 mr-2">
             <p>© {{ date('Y') }} -
                 {{ config('app.name') }}{{ config('company.tagline') ? ' - ' . config('company.tagline') : '' }}</p>
         </aside>

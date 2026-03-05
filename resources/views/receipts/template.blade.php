@@ -344,7 +344,7 @@
         <main class="main-content">
             <header class="header">
                 <div class="brand">
-                    <img src="{{ asset('images/logo.png') }}" alt="Logo" class="company-logo">
+                    <img src="{{ asset('storage/brand/logo.png') }}" alt="Logo" class="company-logo">
                     <div>
                         <div class="company-name">{{ config('company.name') }}</div>
                         <div class="company-info">
