@@ -5,13 +5,16 @@ declare(strict_types=1);
 namespace App\Livewire\Components\Financial;
 
 use App\Models\Tax;
-use Livewire\Component;
-use Livewire\Attributes\Validate;
 use Livewire\Attributes\On;
+use Livewire\Attributes\Validate;
+use Livewire\Component;
 
 class TaxForm extends Component
 {
     public bool $isOpen = false;
+
+    public bool $readOnly = false;
+
     public ?int $taxId = null;
 
     #[Validate('required|min:2')]
@@ -23,9 +26,10 @@ class TaxForm extends Component
     public bool $is_active = true;
 
     #[On('open-tax-form')]
-    public function open(int $id = null)
+    public function open(?int $id = null, bool $readOnly = false)
     {
         $this->resetForm();
+        $this->readOnly = $readOnly;
         $this->isOpen = true;
 
         if ($id) {
@@ -44,6 +48,9 @@ class TaxForm extends Component
 
     public function save()
     {
+        if ($this->readOnly) {
+            return;
+        }
         $this->validate();
 
         Tax::updateOrCreate(

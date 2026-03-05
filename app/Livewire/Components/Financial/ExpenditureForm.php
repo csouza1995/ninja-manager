@@ -6,6 +6,7 @@ namespace App\Livewire\Components\Financial;
 
 use App\Models\BankAccount;
 use App\Models\Expenditure;
+use Carbon\Carbon;
 use Livewire\Attributes\On;
 use Livewire\Attributes\Url;
 use Livewire\Attributes\Validate;
@@ -14,6 +15,8 @@ use Livewire\Component;
 class ExpenditureForm extends Component
 {
     public bool $isOpen = false;
+
+    public bool $readOnly = false;
 
     public ?int $expenditureId = null;
 
@@ -82,9 +85,10 @@ class ExpenditureForm extends Component
     }
 
     #[On('open-expenditure-form')]
-    public function open(?int $id = null, ?string $fromModelType = null, ?int $fromModelId = null, ?float $amount = null, ?string $description = null)
+    public function open(?int $id = null, ?string $fromModelType = null, ?int $fromModelId = null, ?float $amount = null, ?string $description = null, bool $readOnly = false)
     {
         $this->resetForm();
+        $this->readOnly = $readOnly;
         $this->updateSuggestions();
 
         if ($fromModelType && $fromModelId) {
@@ -99,14 +103,23 @@ class ExpenditureForm extends Component
                 $this->classification = 'Imposto S/ Prolabore';
                 $this->destination = 'INSS / Receita Federal';
             }
+
+            $modelClass = $this->model_type;
+            $model = $modelClass::find($this->model_id);
+            if ($model) {
+                $baseDate = $model->paid_at ?? $model->due_date ?? now();
+                $this->due_date = Carbon::parse($baseDate)->addMonth()->setDay(15)->format('Y-m-d');
+                $this->description = $this->formatTaxDescription($model, $baseDate);
+            }
         }
 
-        $this->loadLinkables();
         $this->isOpen = true;
 
         if ($id) {
             $this->loadExpenditure($id);
         }
+
+        $this->loadLinkables();
     }
 
     public function loadExpenditure(int $id)
@@ -131,8 +144,46 @@ class ExpenditureForm extends Component
         }
     }
 
+    public function updatedModelId($value)
+    {
+        if ($this->model_type && $value) {
+            $modelClass = $this->model_type;
+            $model = $modelClass::find($value);
+            if ($model) {
+
+                $this->amount = $model->tax_amount ?? 0;
+
+                $this->classification = 'Imposto';
+                $this->destination = 'Receita Federal';
+
+                if ($this->model_type === 'App\Models\Outflow') {
+                    $this->classification = 'Imposto S/ Prolabore';
+                    $this->destination = 'INSS / Receita Federal';
+                }
+
+                $baseDate = $model->paid_at ?? $model->due_date ?? now();
+                $this->due_date = Carbon::parse($baseDate)->addMonth()->setDay(15)->format('Y-m-d');
+                $this->description = $this->formatTaxDescription($model, $baseDate);
+            }
+        }
+    }
+
+    private function formatTaxDescription($model, $baseDate): string
+    {
+        $baseCarbon = Carbon::parse($baseDate);
+        $dueCarbon = $baseCarbon->copy()->addMonth();
+
+        $baseStr = $baseCarbon->format('m/Y');
+        $dueStr = $dueCarbon->format('m/Y');
+
+        return "Imposto Ref. {$model->description} {$dueStr} ({$baseStr})";
+    }
+
     public function save()
     {
+        if ($this->readOnly) {
+            return;
+        }
         $this->validate();
 
         Expenditure::updateOrCreate(
@@ -146,7 +197,7 @@ class ExpenditureForm extends Component
                 'bank_account_id' => $this->bank_account_id,
                 'due_date' => $this->due_date,
                 'amount' => $this->amount,
-                'paid_at' => $this->paid_at,
+                'paid_at' => $this->paid_at === '' ? null : $this->paid_at,
             ]
         );
 

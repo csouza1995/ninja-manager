@@ -149,13 +149,11 @@
                             <div class="form-control">
                                 <label class="label cursor-pointer justify-start gap-4">
                                     <input type="checkbox" wire:model.live="is_invoiced"
-                                        class="checkbox checkbox-primary" @disabled(
-                                            $readOnly ||
-                                                ($serviceId && \App\Models\Revenue::where('service_id', $serviceId)->whereNotNull('invoice_id')->exists())) />
+                                        class="checkbox checkbox-primary" @disabled($readOnly || ($serviceId && \App\Models\Invoice::where('service_id', $serviceId)->exists())) />
                                     <span class="label-text">
                                         <span class="font-medium text-primary">Faturado (NF)</span>
                                         <br>
-                                        @if ($serviceId && \App\Models\Revenue::where('service_id', $serviceId)->whereNotNull('invoice_id')->exists())
+                                        @if ($serviceId && \App\Models\Invoice::where('service_id', $serviceId)->exists())
                                             <span class="text-xs opacity-50 italic">
                                                 Bloqueado por NF vinculada.
                                             </span>

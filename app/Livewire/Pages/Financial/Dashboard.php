@@ -28,6 +28,12 @@ class Dashboard extends Component
 
     public $pieData = [];
 
+    public $dateOffset = 0;
+
+    public $currentPeriodLabel = '';
+
+    public $periodCount = 3;
+
     public function mount()
     {
         $this->calculateFinances();
@@ -36,6 +42,24 @@ class Dashboard extends Component
     public function setFilter($filter)
     {
         $this->activeFilter = $filter;
+        $this->dateOffset = 0;
+        $this->calculateFinances();
+    }
+
+    public function updatedPeriodCount()
+    {
+        $this->calculateFinances();
+    }
+
+    public function previousPeriod()
+    {
+        $this->dateOffset--;
+        $this->calculateFinances();
+    }
+
+    public function nextPeriod()
+    {
+        $this->dateOffset++;
         $this->calculateFinances();
     }
 
@@ -43,26 +67,40 @@ class Dashboard extends Component
     {
         $now = Carbon::now();
 
+        if ($this->activeFilter === 'month') {
+            $now->addMonths($this->dateOffset);
+        } elseif ($this->activeFilter === 'quarter') {
+            $now->addQuarters($this->dateOffset);
+        } else {
+            $now->addYears($this->dateOffset);
+        }
+
         // 1. Periods mapping grouped by type and ordered Past -> Present -> Future
         $periodsToCalculate = [];
+        $half = floor($this->periodCount / 2);
+
+        $dateRangeOffsets = range(-$half, $half);
 
         if ($this->activeFilter === 'month') {
-            $range = [$now->copy()->subMonth(), $now, $now->copy()->addMonth()];
-            foreach ($range as $date) {
+            $this->currentPeriodLabel = ucfirst($now->translatedFormat('M/Y'));
+            foreach ($dateRangeOffsets as $i) {
+                $date = $now->copy()->addMonths($i);
                 $label = $date->translatedFormat('M/Y');
                 $periodsToCalculate[$label] = [$date->copy()->startOfMonth(), $date->copy()->endOfMonth()];
             }
         } elseif ($this->activeFilter === 'quarter') {
-            $range = [$now->copy()->subQuarter(), $now, $now->copy()->addQuarter()];
-            foreach ($range as $date) {
+            $this->currentPeriodLabel = $now->quarter.'ºTri/'.$now->year;
+            foreach ($dateRangeOffsets as $i) {
+                $date = $now->copy()->addQuarters($i);
                 $start = $date->copy()->startOfQuarter();
                 $end = $date->copy()->endOfQuarter();
                 $label = ucfirst($start->translatedFormat('M')).'-'.ucfirst($end->translatedFormat('M/Y'));
                 $periodsToCalculate[$label] = [$start, $end];
             }
         } else { // year
-            $range = [$now->copy()->subYear(), $now, $now->copy()->addYear()];
-            foreach ($range as $date) {
+            $this->currentPeriodLabel = $now->format('Y');
+            foreach ($dateRangeOffsets as $i) {
+                $date = $now->copy()->addYears($i);
                 $label = $date->format('Y');
                 $periodsToCalculate[$label] = [$date->copy()->startOfYear(), $date->copy()->endOfYear()];
             }
@@ -79,8 +117,13 @@ class Dashboard extends Component
                 'billing_pending' => Revenue::whereBetween(DB::raw('COALESCE(paid_at, due_date)'), $range)->whereNull('paid_at')->sum('gross_amount'),
 
                 // 2. Encargos (Faturamento)
-                'revenue_tax_paid' => Revenue::whereBetween(DB::raw('COALESCE(paid_at, due_date)'), $range)->whereNotNull('paid_at')->sum('tax_amount'),
-                'revenue_tax_pending' => Revenue::whereBetween(DB::raw('COALESCE(paid_at, due_date)'), $range)->whereNull('paid_at')->sum('tax_amount'),
+                'revenue_tax_total' => Revenue::whereBetween(DB::raw('COALESCE(paid_at, due_date)'), $range)->sum('tax_amount'),
+                'revenue_tax_paid' => Expenditure::where('model_type', 'App\Models\Revenue')
+                    ->whereIn('model_id', Revenue::whereBetween(DB::raw('COALESCE(paid_at, due_date)'), $range)->select('id'))
+                    ->whereNotNull('paid_at')->sum('amount'),
+                'revenue_tax_provisioned' => Expenditure::where('model_type', 'App\Models\Revenue')
+                    ->whereIn('model_id', Revenue::whereBetween(DB::raw('COALESCE(paid_at, due_date)'), $range)->select('id'))
+                    ->whereNull('paid_at')->sum('amount'),
 
                 // 3. Despesas
                 'expenses_paid' => Expenditure::whereBetween(DB::raw('COALESCE(paid_at, due_date)'), $range)
@@ -103,8 +146,13 @@ class Dashboard extends Component
                 'outflows_pending' => Outflow::whereBetween(DB::raw('COALESCE(paid_at, due_date)'), $range)->whereNull('paid_at')->sum(DB::raw('amount - COALESCE(tax_amount, 0)')),
 
                 // 5. Encargos (Retiradas)
-                'outflow_tax_paid' => Outflow::whereBetween(DB::raw('COALESCE(paid_at, due_date)'), $range)->whereNotNull('paid_at')->sum('tax_amount'),
-                'outflow_tax_pending' => Outflow::whereBetween(DB::raw('COALESCE(paid_at, due_date)'), $range)->whereNull('paid_at')->sum('tax_amount'),
+                'outflow_tax_total' => Outflow::whereBetween(DB::raw('COALESCE(paid_at, due_date)'), $range)->sum('tax_amount'),
+                'outflow_tax_paid' => Expenditure::where('model_type', 'App\Models\Outflow')
+                    ->whereIn('model_id', Outflow::whereBetween(DB::raw('COALESCE(paid_at, due_date)'), $range)->select('id'))
+                    ->whereNotNull('paid_at')->sum('amount'),
+                'outflow_tax_provisioned' => Expenditure::where('model_type', 'App\Models\Outflow')
+                    ->whereIn('model_id', Outflow::whereBetween(DB::raw('COALESCE(paid_at, due_date)'), $range)->select('id'))
+                    ->whereNull('paid_at')->sum('amount'),
 
                 // 6. Withdrawals Breakdown
                 'withdrawals_breakdown' => Outflow::whereBetween(DB::raw('COALESCE(paid_at, due_date)'), $range)
@@ -115,6 +163,10 @@ class Dashboard extends Component
                     ->get()
                     ->map(fn ($item) => ['name' => $item->person_name, 'amount' => $item->total]),
             ];
+
+            // Calculate pending taxes based on totals - paid - provisioned
+            $this->periods[$label]['revenue_tax_pending'] = $this->periods[$label]['revenue_tax_total'] - $this->periods[$label]['revenue_tax_paid'] - $this->periods[$label]['revenue_tax_provisioned'];
+            $this->periods[$label]['outflow_tax_pending'] = $this->periods[$label]['outflow_tax_total'] - $this->periods[$label]['outflow_tax_paid'] - $this->periods[$label]['outflow_tax_provisioned'];
 
             // Totais Referenciais (para o Previsto)
             $billing_total = $this->periods[$label]['billing_paid'] + $this->periods[$label]['billing_pending'];
@@ -142,6 +194,17 @@ class Dashboard extends Component
             $this->periods[$label]['final_balance_predicted'] = $this->periods[$label]['partial_balance_predicted']
                                                               - $outflows_total
                                                               - $outflow_tax_provision;
+
+            // VARIÁVEIS INTERMEDIÁRIAS (Demonstrativo Entradas/Saídas pendentes)
+            // Apenas o que falta receber (Faturamento Pendente)
+            $this->periods[$label]['total_predicted_inflows'] = $this->periods[$label]['billing_pending'];
+            // Apenas o que falta pagar (Despesas Pendentes + Retiradas Pendentes + Encargos Provisionados e Pendentes)
+            $this->periods[$label]['total_predicted_outflows'] = $this->periods[$label]['expenses_pending']
+                                                               + $this->periods[$label]['outflows_pending']
+                                                               + $this->periods[$label]['revenue_tax_provisioned']
+                                                               + $this->periods[$label]['revenue_tax_pending']
+                                                               + $this->periods[$label]['outflow_tax_provisioned']
+                                                               + $this->periods[$label]['outflow_tax_pending'];
         }
 
         // Build pieData from computed periods
@@ -149,7 +212,7 @@ class Dashboard extends Component
             return [
                 'label' => $label,
                 'expenses' => round($data['expenses_paid'] + $data['expenses_pending'], 2),
-                'taxes' => round($data['revenue_tax_paid'] + $data['revenue_tax_pending'] + $data['outflow_tax_paid'] + $data['outflow_tax_pending'], 2),
+                'taxes' => round($data['revenue_tax_total'] + $data['outflow_tax_total'], 2),
                 'withdrawals' => round($data['outflows_paid'] + $data['outflows_pending'], 2),
             ];
         })->values()->toArray();
@@ -195,27 +258,18 @@ class Dashboard extends Component
             ];
         }
 
-        // 3. Chart Data (Last 6 months)
+        // 3. Chart Data (Matches the generated periods)
         $labels = [];
         $resultSeries = [];
         $revenueSeries = [];
         $expenseSeries = [];
 
-        for ($i = 5; $i >= 0; $i--) {
-            $m = $now->copy()->subMonths($i);
-            $labels[] = $m->translatedFormat('M/Y');
+        foreach ($this->periods as $label => $data) {
+            $labels[] = $label;
 
-            $netRevenue = Revenue::whereMonth(DB::raw('COALESCE(paid_at, due_date)'), $m->month)
-                ->whereYear(DB::raw('COALESCE(paid_at, due_date)'), $m->year)
-                ->sum('net_amount');
-
-            $expSum = Expenditure::whereMonth(DB::raw('COALESCE(paid_at, due_date)'), $m->month)
-                ->whereYear(DB::raw('COALESCE(paid_at, due_date)'), $m->year)
-                ->sum('amount');
-
-            $outSum = Outflow::whereMonth(DB::raw('COALESCE(paid_at, due_date)'), $m->month)
-                ->whereYear(DB::raw('COALESCE(paid_at, due_date)'), $m->year)
-                ->sum(DB::raw('amount - COALESCE(tax_amount, 0)'));
+            $netRevenue = $data['billing_paid'] + $data['billing_pending'] - $data['revenue_tax_total'];
+            $expSum = $data['expenses_paid'] + $data['expenses_pending'];
+            $outSum = $data['outflows_paid'] + $data['outflows_pending'];
 
             $resultSeries[] = $netRevenue - ($expSum + $outSum);
             $revenueSeries[] = $netRevenue;
@@ -229,48 +283,21 @@ class Dashboard extends Component
             'expenses' => $expenseSeries,
         ];
 
-        // 4. Flow Chart Data (Last 6 months — inflows vs stacked outflows)
+        // 4. Flow Chart Data (Inflows vs Stacked Outflows - matches the generated periods)
         $flowLabels = [];
         $flowInflows = [];
         $flowExpenses = [];
         $flowTaxes = [];
         $flowWithdrawals = [];
 
-        for ($i = 5; $i >= 0; $i--) {
-            $m = $now->copy()->subMonths($i);
-            $flowLabels[] = $m->translatedFormat('M/Y');
-
-            $flowInflows[] = Revenue::whereMonth(DB::raw('COALESCE(paid_at, due_date)'), $m->month)
-                ->whereYear(DB::raw('COALESCE(paid_at, due_date)'), $m->year)
-                ->whereNotNull('paid_at')
-                ->sum('gross_amount');
-
-            $flowExpenses[] = Expenditure::whereMonth(DB::raw('COALESCE(paid_at, due_date)'), $m->month)
-                ->whereYear(DB::raw('COALESCE(paid_at, due_date)'), $m->year)
-                ->whereNotNull('paid_at')
-                ->where(function ($q) {
-                    $q->where('classification', 'not like', '%Imposto%')
-                        ->where('classification', 'not like', '%INSS%')
-                        ->where('classification', 'not like', '%DAS%');
-                })
-                ->sum('amount');
-
-            $revTax = Revenue::whereMonth(DB::raw('COALESCE(paid_at, due_date)'), $m->month)
-                ->whereYear(DB::raw('COALESCE(paid_at, due_date)'), $m->year)
-                ->whereNotNull('paid_at')
-                ->sum('tax_amount');
-
-            $outTax = Outflow::whereMonth(DB::raw('COALESCE(paid_at, due_date)'), $m->month)
-                ->whereYear(DB::raw('COALESCE(paid_at, due_date)'), $m->year)
-                ->whereNotNull('paid_at')
-                ->sum('tax_amount');
-
-            $flowTaxes[] = $revTax + $outTax;
-
-            $flowWithdrawals[] = Outflow::whereMonth(DB::raw('COALESCE(paid_at, due_date)'), $m->month)
-                ->whereYear(DB::raw('COALESCE(paid_at, due_date)'), $m->year)
-                ->whereNotNull('paid_at')
-                ->sum(DB::raw('amount - COALESCE(tax_amount, 0)'));
+        foreach ($this->periods as $label => $data) {
+            $flowLabels[] = $label;
+            
+            // Only using PAID amounts for flow chart
+            $flowInflows[] = $data['billing_paid'];
+            $flowExpenses[] = $data['expenses_paid'];
+            $flowTaxes[] = $data['revenue_tax_paid'] + $data['outflow_tax_paid'];
+            $flowWithdrawals[] = $data['outflows_paid'];
         }
 
         $this->flowChartData = [

@@ -1,16 +1,97 @@
 <div>
+    @if ($showFilters)
+        <div class="flex flex-wrap items-center gap-2 mb-6 p-2 bg-base-100/50 rounded-box border border-base-200">
+            <span class="text-sm font-medium text-base-content/70 px-2 flex items-center gap-1">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                    stroke="currentColor" class="w-4 h-4">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 0 1-.659 1.591l-5.432 5.432a2.25 2.25 0 0 0-.659 1.591v2.927a2.25 2.25 0 0 1-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 0 0-.659-1.591L3.659 7.409A2.25 2.25 0 0 1 3 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0 1 12 3Z" />
+                </svg>
+                Filtros
+            </span>
+
+            <select wire:model.live="status" class="select select-sm select-bordered bg-base-100">
+                <option value="">Status</option>
+                <option value="pending">Pendente</option>
+                <option value="paid">Pago</option>
+            </select>
+
+            <select wire:model.live="type" class="select select-sm select-bordered bg-base-100">
+                <option value="">Tipo</option>
+                <option value="imposto">Imposto</option>
+                <option value="prolabore">Pró-labore</option>
+                <option value="distribuicao">Distribuição</option>
+                <option value="rescisao">Rescisão</option>
+                <option value="bonus">Bônus</option>
+                <option value="ajuste">Ajuste</option>
+                <option value="outro">Outro</option>
+            </select>
+
+            <select wire:model.live="bank_account_id" class="select select-sm select-bordered bg-base-100">
+                <option value="">Conta Bancária</option>
+                @foreach ($settingsBankAccounts as $bankAccount)
+                    <option value="{{ $bankAccount->id }}">{{ $bankAccount->bank_name }}</option>
+                @endforeach
+            </select>
+
+            <div class="join">
+                <span class="join-item btn btn-sm btn-disabled bg-base-100 border-base-300">Inicial</span>
+                <input type="date" wire:model.live="start_date"
+                    class="input input-sm input-bordered join-item bg-base-100" />
+                <span class="join-item btn btn-sm btn-disabled bg-base-100 border-base-300 border-l-0">Final</span>
+                <input type="date" wire:model.live="end_date"
+                    class="input input-sm input-bordered join-item bg-base-100" />
+            </div>
+        </div>
+    @endif
+
     <div class="overflow-hidden">
         <table class="table w-full">
             <thead>
                 <tr>
-                    <th>Data</th>
-                    <th>Tipo</th>
+                    <th class="cursor-pointer hover:bg-base-200" wire:click="sortBy('due_date')">
+                        <div class="flex items-center gap-1">
+                            Data
+                            @if ($sortField === 'due_date')
+                                <span>{!! $sortDirection === 'asc' ? '&#8593;' : '&#8595;' !!}</span>
+                            @endif
+                        </div>
+                    </th>
+                    <th class="cursor-pointer hover:bg-base-300" wire:click="sortBy('type')">
+                        <div class="flex items-center gap-1">
+                            Tipo
+                            @if ($sortField === 'type')
+                                <span>{!! $sortDirection === 'asc' ? '&#8593;' : '&#8595;' !!}</span>
+                            @endif
+                        </div>
+                    </th>
                     <th>Descrição / Favorecido</th>
                     <th>Banco</th>
-                    <th>Valor</th>
+                    <th class="cursor-pointer hover:bg-base-200" wire:click="sortBy('amount')">
+                        <div class="flex items-center gap-1">
+                            Valor
+                            @if ($sortField === 'amount')
+                                <span>{!! $sortDirection === 'asc' ? '&#8593;' : '&#8595;' !!}</span>
+                            @endif
+                        </div>
+                    </th>
                     <th>Imposto (Provisão)</th>
-                    <th>Valor Efetivo</th>
-                    <th>Status</th>
+                    <th class="cursor-pointer hover:bg-base-300" wire:click="sortBy('net_amount')">
+                        <div class="flex items-center gap-1">
+                            Valor Efetivo
+                            @if ($sortField === 'net_amount')
+                                <span>{!! $sortDirection === 'asc' ? '&#8593;' : '&#8595;' !!}</span>
+                            @endif
+                        </div>
+                    </th>
+                    <th class="cursor-pointer hover:bg-base-300" wire:click="sortBy('status')">
+                        <div class="flex items-center gap-1">
+                            Status
+                            @if ($sortField === 'status')
+                                <span>{!! $sortDirection === 'asc' ? '&#8593;' : '&#8595;' !!}</span>
+                            @endif
+                        </div>
+                    </th>
                     <th class="text-right">Ações</th>
                 </tr>
             </thead>
@@ -42,10 +123,15 @@
                         </td>
                         <td>
                             <div class="flex flex-col">
-                                <span class="text-xs font-mono font-bold">{{ $outflow->originBankAccount->name }}</span>
+                                <a href="{{ route('financial.bank-accounts', ['showId' => $outflow->origin_bank_account_id]) }}"
+                                    class="text-xs font-mono font-bold link link-hover text-primary"
+                                    title="Ver Conta Origem">{{ $outflow->originBankAccount->name }}</a>
                                 @if ($outflow->type === 'Transferência' && $outflow->destinationBankAccount)
                                     <span class="text-[10px] opacity-40">➔
-                                        {{ $outflow->destinationBankAccount->name }}</span>
+                                        <a href="{{ route('financial.bank-accounts', ['showId' => $outflow->destination_bank_account_id]) }}"
+                                            class="link link-hover"
+                                            title="Ver Conta Destino">{{ $outflow->destinationBankAccount->name }}</a>
+                                    </span>
                                 @endif
                             </div>
                         </td>
@@ -79,7 +165,7 @@
                                 <!-- Expenditure Link -->
                                 @if ($outflow->tax_amount > 0)
                                     @if (!$outflow->expenditure)
-                                        <a href="{{ route('financial.expenditures', ['launch' => 'tax', 'fromModelType' => 'App\Models\Outflow', 'fromModelId' => $outflow->id, 'launchAmount' => $outflow->tax_amount, 'launchDescription' => 'Imposto Ref. ' . $outflow->description]) }}"
+                                        <a href="{{ route('financial.expenditures', ['launch' => 'tax','fromModelType' => 'App\Models\Outflow','fromModelId' => $outflow->id,'launchAmount' => $outflow->tax_amount,'launchDescription' =>'Imposto Ref. ' .$outflow->description .' ' .\Carbon\Carbon::parse($outflow->paid_at ?? ($outflow->due_date ?? now()))->addMonth()->format('m/Y') .' (' .\Carbon\Carbon::parse($outflow->paid_at ?? ($outflow->due_date ?? now()))->format('m/Y') .')']) }}"
                                             wire:navigate class="btn btn-square btn-ghost btn-xs text-warning"
                                             title="Lançar Despesa de Imposto">
                                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
@@ -91,6 +177,17 @@
                                     @endif
                                 @endif
 
+                                <button
+                                    wire:click="$dispatch('open-outflow-form', { id: {{ $outflow->id }}, readOnly: true })"
+                                    class="btn btn-square btn-ghost btn-xs text-primary" title="Visualizar">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                        stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                                    </svg>
+                                </button>
                                 <button wire:click="$dispatch('open-outflow-form', { id: {{ $outflow->id }} })"
                                     class="btn btn-square btn-ghost btn-xs" title="Editar">
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
@@ -99,7 +196,8 @@
                                             d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
                                     </svg>
                                 </button>
-                                <button wire:confirm="Excluir este registro?" wire:click="delete({{ $outflow->id }})"
+                                <button wire:confirm="Excluir este registro?"
+                                    wire:click="delete({{ $outflow->id }})"
                                     class="btn btn-square btn-ghost btn-xs text-error" title="Excluir">
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                         stroke-width="1.5" stroke="currentColor" class="w-4 h-4">

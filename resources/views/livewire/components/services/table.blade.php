@@ -1,14 +1,103 @@
 <div>
+    <div class="flex flex-col gap-4 mb-6">
+        <div class="flex justify-between items-center gap-4">
+            <div class="flex-1 max-w-md flex items-center gap-2">
+                <input type="text" wire:model.live.debounce.300ms="search"
+                    placeholder="Buscar por cliente ou executante..." class="input input-bordered w-full" />
+                <button wire:click="toggleFilters" class="btn btn-ghost btn-sm" title="Alternar Filtros">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                        stroke="currentColor" class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 0 1-.659 1.591l-5.432 5.432a2.25 2.25 0 0 0-.659 1.591v2.927a2.25 2.25 0 0 1-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 0 0-.659-1.591L3.659 7.409A2.25 2.25 0 0 1 3 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0 1 12 3Z" />
+                    </svg>
+                </button>
+            </div>
+            <button wire:click="$dispatch('create-service')" type="button" class="btn btn-primary">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+                Novo Serviço
+            </button>
+        </div>
+
+        @if ($showFilters)
+            <div class="flex flex-wrap items-center gap-2 mt-4 p-2 bg-base-100/50 rounded-box border border-base-200">
+                <span class="text-sm font-medium text-base-content/70 px-2 flex items-center gap-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                        stroke="currentColor" class="w-4 h-4">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 0 1-.659 1.591l-5.432 5.432a2.25 2.25 0 0 0-.659 1.591v2.927a2.25 2.25 0 0 1-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 0 0-.659-1.591L3.659 7.409A2.25 2.25 0 0 1 3 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0 1 12 3Z" />
+                    </svg>
+                    Filtros
+                </span>
+
+                <select wire:model.live="client_id" class="select select-sm select-bordered bg-base-100">
+                    <option value="">Cliente</option>
+                    @foreach ($settingsClients as $client)
+                        <option value="{{ $client->id }}">{{ $client->name }}</option>
+                    @endforeach
+                </select>
+
+                <select wire:model.live="status" class="select select-sm select-bordered bg-base-100">
+                    <option value="">Status</option>
+                    <option value="negotiating">Negociando</option>
+                    <option value="approved">Aprovado</option>
+                    <option value="in_progress">Em andamento</option>
+                    <option value="delivered">Entregue</option>
+                    <option value="finalized">Finalizado</option>
+                    <option value="cancelled">Cancelado</option>
+                </select>
+
+                <div class="flex items-center gap-1 ml-auto">
+                    <span class="text-xs text-base-content/50">Data:</span>
+                    <input type="date" wire:model.live="start_date"
+                        class="input input-sm input-bordered bg-base-100 placeholder-transparent" title="A partir de" />
+                    <span class="text-xs text-base-content/50">até</span>
+                    <input type="date" wire:model.live="end_date"
+                        class="input input-sm input-bordered bg-base-100 placeholder-transparent" title="Até" />
+                </div>
+            </div>
+        @endif
+    </div>
+
     <div class="overflow-x-auto">
         <table class="table w-full">
             <thead>
                 <tr>
-                    <th>ID</th>
+                    <th class="cursor-pointer hover:bg-base-300" wire:click="sortBy('id')">
+                        <div class="flex items-center gap-1">
+                            ID
+                            @if ($sortField === 'id')
+                                <span>{!! $sortDirection === 'asc' ? '&#8593;' : '&#8595;' !!}</span>
+                            @endif
+                        </div>
+                    </th>
                     <th>Cliente</th>
                     <th>Executante / Função</th>
-                    <th>Status Principal</th>
-                    <th>Status Extras</th>
-                    <th>Total</th>
+                    <th class="cursor-pointer hover:bg-base-300" wire:click="sortBy('status')">
+                        <div class="flex items-center gap-1">
+                            Status Principal
+                            @if ($sortField === 'status')
+                                <span>{!! $sortDirection === 'asc' ? '&#8593;' : '&#8595;' !!}</span>
+                            @endif
+                        </div>
+                    </th>
+                    <th class="cursor-pointer hover:bg-base-300" wire:click="sortBy('is_paid')">
+                        <div class="flex items-center gap-1">
+                            Status Extras
+                            @if ($sortField === 'is_paid')
+                                <span>{!! $sortDirection === 'asc' ? '&#8593;' : '&#8595;' !!}</span>
+                            @endif
+                        </div>
+                    </th>
+                    <th class="cursor-pointer hover:bg-base-300" wire:click="sortBy('total_amount')">
+                        <div class="flex items-center gap-1">
+                            Total
+                            @if ($sortField === 'total_amount')
+                                <span>{!! $sortDirection === 'asc' ? '&#8593;' : '&#8595;' !!}</span>
+                            @endif
+                        </div>
+                    </th>
                     <th class="text-right">Ações</th>
                 </tr>
             </thead>
@@ -20,12 +109,22 @@
                     <tr class="hover">
                         <td class="font-mono text-xs">#{{ str_pad($service->id, 5, '0', STR_PAD_LEFT) }}</td>
                         <td>
-                            <div class="font-bold">{{ $service->client->name }}</div>
+                            <div class="font-bold">
+                                <a href="{{ route('clients.index', ['showId' => $service->client_id]) }}"
+                                    class="link link-hover text-primary"
+                                    title="Ver Cliente">{{ $service->client->name }}</a>
+                            </div>
                             <div class="text-xs opacity-50">{{ $service->client->document }}</div>
                         </td>
                         <td>
-                            <div>{{ $service->executor->name }}</div>
-                            <div class="text-xs badge badge-ghost">{{ $service->role->name }}</div>
+                            <div>
+                                <a href="{{ route('executors.index', ['showId' => $service->executor_id]) }}"
+                                    class="link link-hover" title="Ver Executante">{{ $service->executor->name }}</a>
+                            </div>
+                            <div class="text-xs badge badge-ghost">
+                                <a href="{{ route('roles.index', ['showId' => $service->role_id]) }}"
+                                    class="link link-hover" title="Ver Função">{{ $service->role->name }}</a>
+                            </div>
                         </td>
                         <td>
                             @php
@@ -66,8 +165,8 @@
                                         </a>
                                     @else
                                         <span class="badge badge-success badge-sm" title="Pago">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none"
-                                                viewBox="0 0 24 24" stroke="currentColor">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1"
+                                                fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                     d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                             </svg>
@@ -99,8 +198,9 @@
                                     </a>
                                 @endif
                                 @if ($service->revenue?->invoice)
-                                    <a href="{{ route('financial.invoices', ['search' => $service->revenue->invoice->number]) }}"
-                                        class="badge badge-primary badge-sm" title="Faturado (NF)">
+                                    <a href="{{ route('financial.invoices', ['showId' => $service->revenue->invoice->id]) }}"
+                                        class="badge badge-primary badge-sm hover:scale-105 transition-transform"
+                                        title="Faturado (NF)">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none"
                                             viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
