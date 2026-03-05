@@ -37,7 +37,9 @@
                         </div>
                     </th>
                     <th>Número</th>
-                    <th>Cliente / Serviço</th>
+                    <th>Cliente</th>
+                    <th>Serviço Vinculado</th>
+                    <th>Chave de Acesso</th>
                     <th class="cursor-pointer hover:bg-base-200" wire:click="sortBy('amount')">
                         <div class="flex items-center gap-1">
                             Valor
@@ -51,30 +53,51 @@
             </thead>
             <tbody>
                 @forelse($invoices as $invoice)
-                    <tr>
+                    <tr class="hover">
                         <td class="font-mono text-xs">{{ $invoice->issued_at->format('d/m/Y') }}</td>
                         <td>
                             @if ($invoice->number)
-                                <span class="badge badge-outline badge-sm">{{ $invoice->number }}</span>
+                                <div class="tooltip tooltip-right"
+                                    data-tip="{{ \Illuminate\Support\Str::limit($invoice->description ?? 'Sem descrição', 50) }}">
+                                    <span class="badge badge-outline badge-sm cursor-help">{{ $invoice->number }}</span>
+                                </div>
                             @else
                                 <span class="opacity-30">-</span>
                             @endif
-                            @if ($invoice->access_key)
-                                <div class="text-[10px] opacity-50 truncate max-w-[150px]"
-                                    title="{{ $invoice->access_key }}">
-                                    {{ $invoice->access_key }}
+                        </td>
+                        <td>
+                            @if ($invoice->client)
+                                <div class="flex flex-col">
+                                    <span class="font-bold text-sm">{{ $invoice->client->name }}</span>
+                                    <span
+                                        class="text-xs opacity-50">{{ $invoice->client->document ?? 'Sem documento' }}</span>
                                 </div>
+                            @else
+                                <span class="text-xs italic opacity-40">Cliente não associado</span>
                             @endif
                         </td>
                         <td>
                             @if ($invoice->service)
-                                <div class="flex flex-col">
-                                    <span class="font-bold text-sm">{{ $invoice->service->client->name }}</span>
-                                    <span class="text-xs opacity-50">Sérvico #{{ $invoice->service->id }} -
-                                        {{ $invoice->service->description }}</span>
-                                </div>
+                                <a href="{{ route('services.index', ['service' => $invoice->service_id]) }}"
+                                    class="link link-primary font-bold text-sm">
+                                    #{{ str_pad($invoice->service->id, 5, '0', STR_PAD_LEFT) }}
+                                </a>
+                                <div class="text-[10px] opacity-70 w-32 truncate">
+                                    {{ $invoice->service->role->name ?? 'Serviço' }}</div>
                             @else
                                 <span class="text-xs italic opacity-40">Avulsa</span>
+                            @endif
+                        </td>
+                        <td>
+                            @if ($invoice->access_key)
+                                <a href="https://www.nfse.gov.br/ConsultaPublica/?tpc=1&chave={{ $invoice->access_key }}"
+                                    target="_blank"
+                                    class="text-[10px] opacity-70 hover:opacity-100 truncate w-32 inline-block link link-primary font-mono"
+                                    title="Consultar Chave no Portal Nacional">
+                                    {{ $invoice->access_key }}
+                                </a>
+                            @else
+                                <span class="text-[10px] opacity-30">-</span>
                             @endif
                         </td>
                         <td class="font-bold font-mono text-primary">
@@ -82,6 +105,30 @@
                         </td>
                         <td class="text-right">
                             <div class="flex justify-end gap-1">
+                                <!-- PDF Button -->
+                                @if ($invoice->hasMedia('pdf_files'))
+                                    <a href="{{ $invoice->getFirstMediaUrl('pdf_files') }}" target="_blank"
+                                        class="btn btn-square btn-ghost btn-xs text-error" title="Visualizar PDF">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                            stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
+                                        </svg>
+                                    </a>
+                                @endif
+
+                                <!-- XML Button -->
+                                @if ($invoice->hasMedia('xml_files'))
+                                    <a href="{{ $invoice->getFirstMediaUrl('xml_files') }}" target="_blank"
+                                        class="btn btn-square btn-ghost btn-xs text-info" title="Visualizar XML">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                            stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M17.25 6.75 22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3-4.5 16.5" />
+                                        </svg>
+                                    </a>
+                                @endif
+
                                 <button wire:click="$dispatch('open-invoice-form', { id: {{ $invoice->id }} })"
                                     class="btn btn-square btn-ghost btn-xs" title="Editar">
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
@@ -104,7 +151,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="5" class="text-center py-8 opacity-50">Nenhuma NF registrada.</td>
+                        <td colspan="7" class="text-center py-8 opacity-50">Nenhuma NF registrada.</td>
                     </tr>
                 @endforelse
             </tbody>
