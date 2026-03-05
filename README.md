@@ -43,7 +43,8 @@ Sistema de gestão empresarial desenvolvido com Laravel 12, Livewire 4 e TallSta
 
 ```bash
 # Clonar o repositório
-cd /home/csouza/projects/ninja3d/docs/ninja-manager
+git clone https://github.com/your-org/ninja-manager.git
+cd ninja-manager
 
 # Instalar dependências PHP
 composer install
