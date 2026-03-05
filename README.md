@@ -1,117 +1,140 @@
 # Ninja Manager
 
-Sistema de gestão empresarial desenvolvido com Laravel 12, Livewire 4 e TallStackUI.
+Sistema de gestão empresarial completo, desenvolvido com **Laravel 12**, **Livewire 3** e **Tailwind CSS 4**. Cobre desde o controle operacional de serviços e equipe até um módulo financeiro completo com dashboard analítico.
 
-## 🚀 Tecnologias
+---
 
-- **Laravel 12** - Framework PHP
-- **Livewire 3** - Framework full-stack reativo
-- **TallStackUI** - Componentes UI prontos
-- **Tailwind CSS** - Framework CSS utility-first
-- **SQLite** - Banco de dados
+## 🚀 Stack Tecnológica
 
-## 📋 Funcionalidades
+| Camada           | Tecnologia                     |
+| ---------------- | ------------------------------ |
+| Backend          | PHP 8.4 + Laravel 12           |
+| Frontend reativo | Livewire 3 + Alpine.js         |
+| Estilo           | Tailwind CSS 4 + DaisyUI 5     |
+| Banco de dados   | SQLite (portável, zero config) |
+| Testes           | PHPUnit 11                     |
+| Media / Uploads  | Spatie Media Library           |
 
-### Gestão de Executantes
+---
 
-- Cadastro de colaboradores executantes
-- Vinculação com múltiplas funções
-- Busca por nome ou CPF
-- Validação de documento único
+## 📋 Módulos
 
-### Gestão de Funções
+### 👥 Gestão de Equipe
 
-- Cadastro de funções/cargos
-- Contagem de executantes por função
-- CRUD completo
+- **Funções** — Cadastro de cargos/funções com contagem de executantes
+- **Executantes** — Colaboradores com múltiplas funções, busca por CPF/nome
+- **Horas Trabalhadas** — Controle de horas por cliente, modalidade e contrato
 
-### Gestão de Itens de Serviço
+### 🧑‍💼 Gestão de Clientes
 
-- Cadastro de serviços com código único
-- Descrição pública e interna
-- Valor unitário com 4 casas decimais
-- Busca por código ou descrição
-
-### Gestão de Clientes
-
-- Cadastro de Pessoa Física (PF) e Jurídica (PJ)
+- Pessoa Física e Jurídica (CPF/CNPJ único)
 - Endereço completo com todos os campos
-- Validação de CPF/CNPJ único
-- Busca por nome ou documento
+- Busca filtrada por nome ou documento
+
+### 🔧 Gestão de Serviços
+
+- Vinculação cliente × executante × função
+- Itens de serviço com código, descrição interna/pública e valor unitário
+- Status e flags de pagamento, documentação e emissão de NF
+- Geração de **Recibos** impressos em PDF (template A4 profissional)
+
+### 💰 Módulo Financeiro
+
+- **Dashboard Analítico** — Análise de fluxo de caixa por período (mensal/trimestral), gráficos, saldo parcial e final real e previsto
+- **Receitas** — Receitas manuais e vinculadas a serviços/NFs, com controle de imposto e data de recebimento
+- **Despesas** — Despesas classificadas, com conta bancária e controle de pagamento. Suporte a despesas geradas automaticamente (impostos de receitas)
+- **Saídas (Outflows)** — Retiradas e pro-labore, com suporte a transferências entre contas e tributação
+- **Notas Fiscais** — Registro de NF-e com chave de acesso, XML/PDF anexado, vinculação a serviço/cliente
+- **Contas Bancárias** — Cadastro de contas para reconciliação de pagamentos
+- **Impostos** — Visão consolidada de impostos pagos, provisionados e pendentes
+
+### ⚙️ Configurações
+
+- **Backup & Restore** — Exporta um `.zip` completo (banco de dados JSON v2.0 + arquivos de storage). Importação inteligente com ID remapping e relatório de restauração
+
+---
 
 ## 🛠️ Instalação
 
 ```bash
-# Clonar o repositório
-cd /home/csouza/projects/ninja3d/docs/ninja-manager
+# 1. Clonar o repositório
+git clone https://github.com/your-org/ninja-manager.git
+cd ninja-manager
 
-# Instalar dependências PHP
+# 2. Instalar dependências
 composer install
-
-# Instalar dependências Node
 npm install
 
-# Configurar ambiente
+# 3. Configurar ambiente
 cp .env.example .env
 php artisan key:generate
 
-# Executar migrations
+# 4. Configurar dados da empresa (recibos, branding)
+# Edite o .env com os valores da sua empresa:
+# COMPANY_NAME, COMPANY_DOCUMENT, COMPANY_ADDRESS, COMPANY_EMAIL
+# COMPANY_OWNER_NAME, COMPANY_OWNER_DOCUMENT, APP_TAGLINE
+
+# 5. Banco de dados
 php artisan migrate
 
-# Compilar assets
+# 6. Symlink de storage (para logos e uploads)
+php artisan storage:link
+
+# 7. Compilar assets
 npm run build
 
-# Iniciar servidor
+# 8. Iniciar
 php artisan serve
 ```
 
-## 📁 Estrutura do Banco de Dados
+---
 
-### Tabelas
+## 🗂️ Rotas Principais
 
-- **executors** - Executantes/Colaboradores
-- **roles** - Funções/Cargos
-- **executor_role** - Relacionamento many-to-many
-- **service_items** - Itens de serviço
-- **clients** - Clientes (PF/PJ)
+| Rota                       | Descrição            |
+| -------------------------- | -------------------- |
+| `/`                        | Dashboard geral      |
+| `/services`                | Gestão de serviços   |
+| `/clients`                 | Gestão de clientes   |
+| `/clients/work-hours`      | Horas trabalhadas    |
+| `/executors`               | Executantes          |
+| `/roles`                   | Funções/Cargos       |
+| `/service-items`           | Itens de serviço     |
+| `/receipts`                | Recibos              |
+| `/financial/dashboard`     | Dashboard financeiro |
+| `/financial/revenues`      | Receitas             |
+| `/financial/expenditures`  | Despesas             |
+| `/financial/outflows`      | Saídas / Retiradas   |
+| `/financial/invoices`      | Notas Fiscais        |
+| `/financial/taxes`         | Impostos             |
+| `/financial/bank-accounts` | Contas Bancárias     |
+| `/settings/database`       | Backup & Restore     |
 
-### Relacionamentos
+---
 
-- Um executante pode ter múltiplas funções
-- Uma função pode ter múltiplos executantes
-- Documentos (CPF/CNPJ) são únicos em todo o sistema
+## 🔒 Dados Sensíveis
 
-## 🎨 Interface
+Este projeto usa `config/company.php` para dados específicos de cada instalação (nome da empresa, CNPJ, endereço, etc.). Esses valores são lidos exclusivamente do `.env` e **nunca devem ser commitados**.
 
-- Dashboard com estatísticas
-- Navegação intuitiva
-- Modais para criar/editar
-- Tabelas responsivas
-- Busca em tempo real
-- Feedback visual com toasts
+Copie `.env.example` e preencha as variáveis `COMPANY_*` com os dados da sua empresa.
 
-## 🔧 Desenvolvimento
+---
+
+## 🧪 Testes
 
 ```bash
-# Modo desenvolvimento (watch)
-npm run dev
+# Todos os testes
+php artisan test --compact
 
-# Em outro terminal
-php artisan serve
+# Filtro por nome
+php artisan test --compact --filter=NomeDoTeste
 ```
 
-## 📝 Rotas
+---
 
-- `/` - Dashboard
-- `/executors` - Gestão de Executantes
-- `/roles` - Gestão de Funções
-- `/service-items` - Gestão de Itens de Serviço
-- `/clients` - Gestão de Clientes
+## 🗃️ Backup & Restore
 
-## 🎯 Próximos Passos
+O sistema possui backup integrado em `settings/database`:
 
-- [ ] Integração com template de recibos
-- [ ] API REST para consumo externo
-- [ ] Autenticação de usuários
-- [ ] Relatórios e exportações
-- [ ] Backup automático
+- **Exportar** → gera um `.zip` com `database.json` (todos os dados) + arquivos de storage
+- **Importar** → restaura o ambiente completo com remapeamento inteligente de IDs e suporte a morphs
