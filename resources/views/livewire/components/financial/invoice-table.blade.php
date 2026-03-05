@@ -28,7 +28,7 @@
         <table class="table table-zebra w-full">
             <thead>
                 <tr>
-                    <th class="cursor-pointer hover:bg-base-200" wire:click="sortBy('issued_at')">
+                    <th class="cursor-pointer hover:bg-base-300" wire:click="sortBy('issued_at')">
                         <div class="flex items-center gap-1">
                             Emissão
                             @if ($sortField === 'issued_at')
@@ -105,6 +105,18 @@
                         </td>
                         <td class="text-right">
                             <div class="flex justify-end gap-1">
+                                <button
+                                    wire:click="$dispatch('open-invoice-form', { id: {{ $invoice->id }}, readOnly: true })"
+                                    class="btn btn-square btn-ghost btn-xs text-primary" title="Visualizar">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                        stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                                    </svg>
+                                </button>
+
                                 <!-- PDF Button -->
                                 @if ($invoice->hasMedia('pdf_files'))
                                     <a href="{{ $invoice->getFirstMediaUrl('pdf_files') }}" target="_blank"
@@ -128,7 +140,6 @@
                                         </svg>
                                     </a>
                                 @endif
-
                                 <button wire:click="$dispatch('open-invoice-form', { id: {{ $invoice->id }} })"
                                     class="btn btn-square btn-ghost btn-xs" title="Editar">
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"

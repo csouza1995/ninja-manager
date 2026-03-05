@@ -3,15 +3,18 @@
 namespace App\Livewire\Components\ServiceItems;
 
 use App\Models\ServiceItem;
-use Livewire\Component;
+use Livewire\Attributes\Computed;
 use Livewire\Attributes\On;
 use Livewire\Attributes\Validate;
-use Livewire\Attributes\Computed;
+use Livewire\Component;
 
 class Form extends Component
 {
     public ?int $itemId = null;
+
     public bool $showModal = false;
+
+    public bool $readOnly = false;
 
     #[Validate('required')]
     public string $code = '';
@@ -35,23 +38,33 @@ class Form extends Component
         $this->showModal = true;
     }
 
+    #[On('show-service-item')]
+    public function show(int $id)
+    {
+        $this->edit($id, true);
+    }
+
     #[On('edit-service-item')]
-    public function edit(int $id)
+    public function edit(int $id, bool $readOnly = false)
     {
         $this->itemId = $id;
+        $this->readOnly = $readOnly;
         $item = $this->item;
-        
+
         if ($item) {
             $this->code = $item->code;
             $this->description = $item->description;
             $this->unit_price = number_format($item->unit_price, 2, '.', '');
         }
-        
+
         $this->showModal = true;
     }
 
     public function save()
     {
+        if ($this->readOnly) {
+            return;
+        }
         $this->validate();
 
         ServiceItem::updateOrCreate(

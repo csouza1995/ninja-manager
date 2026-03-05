@@ -65,6 +65,8 @@ class InvoiceForm extends Component
 
     public $pdf_file;
 
+    public bool $readOnly = false;
+
     public function mount()
     {
         $this->issued_at = Carbon::now()->format('Y-m-d');
@@ -78,13 +80,30 @@ class InvoiceForm extends Component
     }
 
     #[On('open-invoice-form')]
-    public function open(?int $id = null)
+    public function open(?int $id = null, bool $readOnly = false)
     {
         $this->resetForm();
         $this->isOpen = true;
+        $this->readOnly = $readOnly;
 
         if ($id) {
             $this->loadInvoice($id);
+        }
+    }
+
+    public function removeMedia(int $mediaId)
+    {
+        if ($this->readOnly) {
+            return;
+        }
+
+        $invoice = Invoice::find($this->invoiceId);
+        if ($invoice) {
+            $media = $invoice->media()->find($mediaId);
+            if ($media) {
+                $media->delete();
+                session()->flash('success', 'Arquivo removido com sucesso!');
+            }
         }
     }
 

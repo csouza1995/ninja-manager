@@ -16,6 +16,8 @@ class ExpenditureForm extends Component
 {
     public bool $isOpen = false;
 
+    public bool $readOnly = false;
+
     public ?int $expenditureId = null;
 
     // Direct Launch via Query Parameter
@@ -83,9 +85,10 @@ class ExpenditureForm extends Component
     }
 
     #[On('open-expenditure-form')]
-    public function open(?int $id = null, ?string $fromModelType = null, ?int $fromModelId = null, ?float $amount = null, ?string $description = null)
+    public function open(?int $id = null, ?string $fromModelType = null, ?int $fromModelId = null, ?float $amount = null, ?string $description = null, bool $readOnly = false)
     {
         $this->resetForm();
+        $this->readOnly = $readOnly;
         $this->updateSuggestions();
 
         if ($fromModelType && $fromModelId) {
@@ -178,6 +181,9 @@ class ExpenditureForm extends Component
 
     public function save()
     {
+        if ($this->readOnly) {
+            return;
+        }
         $this->validate();
 
         Expenditure::updateOrCreate(
