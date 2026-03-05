@@ -73,7 +73,7 @@
                                         d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm3.857-9.809a.75.75 0 0 0-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.06 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5Z"
                                         clip-rule="evenodd" />
                                 </svg>
-                                Banco de Dados (SQL/JSON v1.1)
+                                Banco de Dados (JSON v2.0)
                             </div>
                             <div class="flex items-center gap-2 text-sm font-bold opacity-60">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
@@ -148,18 +148,24 @@
                             <div class="badge badge-success font-bold">SUCESSO</div>
                         </div>
 
-                        <div class="grid grid-cols-2 lg:grid-cols-5 gap-6">
+                        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
                             @foreach ([
         'Clientes' => $importStats['clients'],
         'Serviços' => $importStats['services'],
-        'Horas Trab.' => $importStats['work_hours'] ?? 0,
-        'Itens Reg.' => $importStats['items_registered'],
         'Equipe' => $importStats['roles'] + $importStats['executors'],
+        'Horas Trab.' => $importStats['work_hours'] ?? 0,
+        'Contas Banc.' => $importStats['bank_accounts'] ?? 0,
+        'Notas Fiscais' => $importStats['invoices'] ?? 0,
+        'Receitas' => $importStats['revenues'] ?? 0,
+        'Despesas' => $importStats['expenditures'] ?? 0,
+        'Retiradas' => $importStats['outflows'] ?? 0,
+        'Recibos' => $importStats['receipts'] ?? 0,
+        'Itens Reg.' => $importStats['items_registered'],
     ] as $label => $val)
                                 <div class="bg-base-100/10 p-4 rounded-2xl border border-white/5 backdrop-blur-sm">
                                     <div class="text-[10px] font-black uppercase opacity-60 tracking-widest mb-1">
                                         {{ $label }}</div>
-                                    <div class="text-4xl font-black text-white italic drop-shadow-lg">
+                                    <div class="text-3xl font-black text-white italic drop-shadow-lg">
                                         {{ $val }}</div>
                                 </div>
                             @endforeach
