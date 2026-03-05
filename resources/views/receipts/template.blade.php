@@ -338,7 +338,7 @@
 
     <div class="receipt-page">
         <aside class="sidebar">
-            <div class="vertical-text">EMPRESA OFICIAL</div>
+            <div class="vertical-text">{{ strtoupper(config('company.name')) }}</div>
         </aside>
 
         <main class="main-content">
@@ -346,11 +346,11 @@
                 <div class="brand">
                     <img src="{{ asset('images/logo.png') }}" alt="Logo" class="company-logo">
                     <div>
-                        <div class="company-name">Empresa LTDA</div>
+                        <div class="company-name">{{ config('company.name') }}</div>
                         <div class="company-info">
-                            CNPJ XX.XXX.XXX/0001-XX<br>
-                            Rua Exemplo, 123 - Cidade/UF<br>
-                            contato@empresa.com
+                            CNPJ {{ config('company.document') }}<br>
+                            {{ config('company.address') }}<br>
+                            {{ config('company.email') }}
                         </div>
                     </div>
                 </div>
@@ -455,7 +455,8 @@
                     na data de
                     <strong>{{ $service->created_at->format('d/m/Y') }}</strong>,
                 @endif
-                atuando em nome da <strong>Ninja 3D</strong> (Contratado), conforme especificado neste documento.
+                atuando em nome da <strong>{{ config('company.name') }}</strong> (Contratado), conforme especificado
+                neste documento.
             </p>
 
             <div class="section-title">Nota de Compromisso</div>
@@ -467,7 +468,8 @@
                 parte do <strong>Contratado</strong>.
                 Fica estabelecido que cabe ao <strong>Contratado</strong> fornecer o respectivo documento fiscal
                 pendente — a Nota Fiscal eletrônica —
-                assim que for concluído o processamento cadastral da <strong>Ninja 3D</strong> junto aos órgãos
+                assim que for concluído o processamento cadastral da <strong>{{ config('company.name') }}</strong>
+                junto aos órgãos
                 competentes.
             </p>
 
@@ -485,9 +487,9 @@
                 <div class="signature-box">
                     <div class="signature-line"></div>
                     <div class="signature-info">
-                        <div class="signature-name">Nome do Responsável</div>
+                        <div class="signature-name">{{ config('company.owner_name') }}</div>
                         <div class="signature-role">Sócio Administrativo</div>
-                        <div class="signature-doc">CPF: XXX.XXX.XXX-XX</div>
+                        <div class="signature-doc">CPF: {{ config('company.owner_document') }}</div>
                     </div>
                 </div>
             </div>
