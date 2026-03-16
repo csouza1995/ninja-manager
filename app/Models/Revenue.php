@@ -15,10 +15,8 @@ class Revenue extends Model
         'bank_account_id',
         'due_date',
         'gross_amount',
-        'invoice_id',
         'tax_percentage',
-        'tax_amount',
-        'net_amount',
+        'invoice_id',
         'paid_at',
         'notes',
     ];
@@ -28,8 +26,6 @@ class Revenue extends Model
         'paid_at' => 'date',
         'gross_amount' => 'decimal:2',
         'tax_percentage' => 'decimal:2',
-        'tax_amount' => 'decimal:2',
-        'net_amount' => 'decimal:2',
     ];
 
     public function service(): BelongsTo

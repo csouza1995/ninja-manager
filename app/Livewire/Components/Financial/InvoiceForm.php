@@ -58,6 +58,10 @@ class InvoiceForm extends Component
     #[Validate('nullable|numeric|min:0')]
     public $tax_rate;
 
+    public $tax_amount = 0;
+
+    public $net_amount = 0;
+
     #[Validate('nullable|string')]
     public $notes;
 
@@ -117,6 +121,8 @@ class InvoiceForm extends Component
         $this->issued_at = $invoice->issued_at ? $invoice->issued_at->format('Y-m-d\TH:i') : null;
         $this->competence_date = $invoice->competence_date ? $invoice->competence_date->format('Y-m-d') : null;
         $this->tax_rate = $invoice->tax_rate;
+        $this->tax_amount = $invoice->tax_amount;
+        $this->net_amount = $invoice->net_amount;
         $this->client_id = $invoice->client_id;
         $this->service_id = $invoice->service_id;
         $this->description = $invoice->description;
@@ -141,6 +147,8 @@ class InvoiceForm extends Component
                 'issued_at' => $this->issued_at,
                 'competence_date' => $this->competence_date,
                 'tax_rate' => $this->tax_rate,
+                'tax_amount' => $this->tax_amount,
+                'net_amount' => $this->net_amount,
                 'client_id' => $this->client_id,
                 'service_id' => $this->service_id,
                 'description' => $this->description,
@@ -203,12 +211,29 @@ class InvoiceForm extends Component
         $this->service_id = null;
     }
 
+    public function updatedAmount()
+    {
+        $this->calculateTotals();
+    }
+
+    public function updatedTaxRate()
+    {
+        $this->calculateTotals();
+    }
+
+    private function calculateTotals()
+    {
+        $this->tax_amount = ($this->amount * (float) $this->tax_rate) / 100;
+        $this->net_amount = $this->amount - $this->tax_amount;
+    }
+
     public function updatedServiceId()
     {
         if ($this->service_id && empty($this->amount)) {
             $service = Service::find($this->service_id);
             if ($service && $service->total) {
                 $this->amount = $service->total;
+                $this->calculateTotals();
             }
         }
     }
@@ -218,6 +243,7 @@ class InvoiceForm extends Component
         $this->reset([
             'invoiceId', 'number', 'access_key', 'amount', 'service_id', 'client_id',
             'description', 'ctn', 'ctm', 'competence_date', 'tax_rate', 'notes',
+            'tax_amount', 'net_amount',
             'xml_file', 'pdf_file',
         ]);
         $this->issued_at = Carbon::now()->format('Y-m-d\TH:i');
@@ -276,6 +302,8 @@ class InvoiceForm extends Component
                     if (isset($dps->valores->trib->totTrib->pTotTribSN)) {
                         $this->tax_rate = (float) $dps->valores->trib->totTrib->pTotTribSN;
                     }
+
+                    $this->calculateTotals();
 
                     // 6. Tomador / Cliente (Movemos para cima para garantir que os serviços filtrem corretamente)
                     if (isset($dps->toma)) {

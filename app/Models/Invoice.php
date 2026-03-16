@@ -23,6 +23,8 @@ class Invoice extends Model implements HasMedia
         'ctm',
         'amount',
         'tax_rate',
+        'tax_amount',
+        'net_amount',
         'issued_at',
         'competence_date',
         'notes',
@@ -31,13 +33,15 @@ class Invoice extends Model implements HasMedia
     protected $casts = [
         'amount' => 'decimal:2',
         'tax_rate' => 'decimal:2',
+        'tax_amount' => 'decimal:2',
+        'net_amount' => 'decimal:2',
         'issued_at' => 'datetime',
         'competence_date' => 'date',
     ];
 
-    public function revenue(): \Illuminate\Database\Eloquent\Relations\HasOne
+    public function revenues(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
-        return $this->hasOne(Revenue::class);
+        return $this->hasMany(Revenue::class);
     }
 
     public function client(): BelongsTo

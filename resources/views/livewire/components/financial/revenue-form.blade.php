@@ -90,8 +90,7 @@
                             @disabled($readOnly) />
                     </div>
 
-                    <div class="divider md:col-span-2 italic text-base-content/40 text-sm font-bold">VALORES E
-                        IMPOSTOS</div>
+                    <div class="divider md:col-span-2 italic text-base-content/40 text-sm font-bold">VALOR DO RECEBIMENTO</div>
 
                     <div class="form-control w-full">
                         <label class="label w-full flex justify-between">
@@ -116,42 +115,44 @@
                     </div>
 
                     <div class="form-control w-full">
-                        <label class="label"><span class="label-text">Alíquota de Imposto (%)</span></label>
-                        <div class="join w-full">
-                            <input type="number" step="0.01" wire:model.live="tax_percentage"
-                                class="input input-bordered w-full join-item" @disabled($readOnly) />
+                        <label class="label">
+                            <span class="label-text">% Imposto Esperado</span>
                             @if (!$readOnly)
-                                <div class="dropdown dropdown-end join-item">
-                                    <div tabindex="0" role="button"
-                                        class="btn btn-neutral btn-sm rounded-none h-full">Sugerir</div>
-                                    <ul tabindex="0"
-                                        class="dropdown-content z-[1] menu p-2 shadow bg-base-200 rounded-box w-52">
-                                        @foreach ($availableTaxes as $tax)
-                                            <li><a wire:click.prevent="applyTax({{ $tax->id }})">{{ $tax->name }}
-                                                    ({{ $tax->percentage }}%)
-                                                </a></li>
-                                        @endforeach
-                                    </ul>
-                                </div>
+                                <span class="flex gap-1">
+                                    @foreach ($availableTaxes as $tax)
+                                        <button type="button" wire:click="applyTax({{ $tax->id }})"
+                                            class="btn btn-xs {{ $tax_percentage == $tax->percentage ? 'btn-primary' : 'btn-ghost' }}">
+                                            {{ $tax->name }}
+                                        </button>
+                                    @endforeach
+                                </span>
                             @endif
+                        </label>
+                        <div class="join w-full">
+                            <input type="number" step="0.01" wire:model="tax_percentage"
+                                class="input input-bordered w-full join-item" @disabled($readOnly) />
+                            <span class="join-item btn btn-disabled">%</span>
+                        </div>
+                        @error('tax_percentage')
+                            <span class="text-error text-xs mt-1">{{ $message }}</span>
+                        @enderror
+                    </div>
+
+                    <div class="col-span-1 md:col-span-2 flex gap-4">
+                        <div class="form-control w-full">
+                            <label class="label"><span class="label-text">Valor Imposto</span></label>
+                            <div class="p-3 bg-base-200 rounded-lg text-error font-mono font-bold text-sm truncate">
+                                R$ {{ number_format($gross_amount * ($tax_percentage / 100), 2, ',', '.') }}
+                            </div>
+                        </div>
+                        <div class="form-control w-full">
+                            <label class="label"><span class="label-text">Valor Líquido</span></label>
+                            <div class="p-3 bg-base-200 rounded-lg text-success font-mono font-bold text-sm truncate">
+                                R$ {{ number_format($gross_amount - ($gross_amount * ($tax_percentage / 100)), 2, ',', '.') }}
+                            </div>
                         </div>
                     </div>
 
-                    <div class="form-control w-full">
-                        <label class="label"><span class="label-text text-error font-bold">Valor
-                                Imposto</span></label>
-                        <div class="p-3 bg-base-200 rounded-lg text-error font-mono font-bold">
-                            R$ {{ number_format($tax_amount, 2, ',', '.') }}
-                        </div>
-                    </div>
-
-                    <div class="form-control w-full">
-                        <label class="label"><span class="label-text text-success font-bold">Valor
-                                Líquido</span></label>
-                        <div class="p-3 bg-base-200 rounded-lg text-success font-mono font-bold">
-                            R$ {{ number_format($net_amount, 2, ',', '.') }}
-                        </div>
-                    </div>
 
                     <div class="form-control w-full">
                         <label class="label">

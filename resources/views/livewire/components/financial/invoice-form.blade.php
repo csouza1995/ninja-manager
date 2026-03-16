@@ -155,16 +155,16 @@
 
                     <!-- Row 3: Tax Rate (25%), Access Key (75%) -->
                     <div class="col-span-1 md:col-span-2 flex flex-col md:flex-row gap-4">
-                        <div class="form-control w-full md:w-1/4">
-                            <label class="label"><span class="label-text">Taxa Tributos (%)</span></label>
-                            <input type="number" step="0.01" wire:model="tax_rate"
+                        <div class="form-control w-full md:w-1/6">
+                            <label class="label"><span class="label-text">Taxa Trib. (%)</span></label>
+                            <input type="number" step="0.01" wire:model.live="tax_rate"
                                 class="input input-bordered w-full" @disabled($readOnly) />
                             @error('tax_rate')
                                 <span class="text-error text-xs p-1">{{ $message }}</span>
                             @enderror
                         </div>
 
-                        <div class="form-control w-full md:w-3/4">
+                        <div class="form-control w-full md:w-1/3">
                             <label class="label"><span class="label-text">Chave de Acesso (44 dígitos)</span></label>
                             <input type="text" wire:model="access_key"
                                 class="input input-bordered w-full font-mono text-sm"

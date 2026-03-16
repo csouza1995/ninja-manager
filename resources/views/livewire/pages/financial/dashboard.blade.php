@@ -149,11 +149,12 @@ setTimeout(() => $dispatch('ultrawide', count === 7), 50)">
                     </div>
                 </div>
                 <div class="card-body p-4 gap-3">
-                    <!-- FATURAMENTO -->
+                <div class="card-body p-4 gap-3">
+                    <!-- RECEBIMENTOS (CAIXA) -->
                     <div>
                         <div
                             class="flex justify-between items-center bg-success/10 p-2 rounded-t-lg border-x border-t border-success/20">
-                            <span class="text-[11px] font-black uppercase text-success">Faturamento</span>
+                            <span class="text-[11px] font-black uppercase text-success" title="Entradas no Caixa">Recebimentos</span>
                             <span class="font-mono text-success font-bold text-sm">R$
                                 {{ number_format($data['billing_paid'] + $data['billing_pending'], 2, ',', '.') }}</span>
                         </div>
@@ -171,29 +172,26 @@ setTimeout(() => $dispatch('ultrawide', count === 7), 50)">
                         </div>
                     </div>
 
-                    <div class="bg-base-300/20 rounded-lg p-2 space-y-1">
+                    <!-- ENCARGOS PARA FATURAMENTO (RESERVAR) -->
+                    <div class="bg-warning/5 rounded-lg border border-warning/15 p-2 space-y-1">
                         <div class="flex justify-between items-center text-[11px] font-bold uppercase">
-                            <span class="opacity-60">Encargos</span>
-                            <span class="font-mono text-warning">- R$
-                                {{ number_format($data['revenue_tax_total'], 2, ',', '.') }}</span>
-                        </div>
-                        <div class="flex justify-between items-center text-[11px] opacity-40">
-                            <span>Pagos</span>
-                            <span class="font-mono">- R$
-                                {{ number_format($data['revenue_tax_paid'], 2, ',', '.') }}</span>
+                            <span class="text-warning/80" title="Impostos que serão cobrados no mês seguinte. Separe esse valor!">Encargos para Faturamento (reservar)</span>
+                            <span class="font-mono text-warning font-bold">R$
+                                {{ number_format($data['reserve_billing_total'], 2, ',', '.') }}</span>
                         </div>
                         <div class="flex justify-between items-center text-[11px] opacity-40">
                             <span>Provisionado</span>
-                            <span class="font-mono">- R$
-                                {{ number_format($data['revenue_tax_provisioned'], 2, ',', '.') }}</span>
+                            <span class="font-mono">R$
+                                {{ number_format($data['reserve_provisioned'], 2, ',', '.') }}</span>
                         </div>
                         <div class="flex justify-between items-center text-[11px] opacity-40">
-                            <span>A pagar</span>
-                            <span class="font-mono">- R$
-                                {{ number_format($data['revenue_tax_pending'], 2, ',', '.') }}</span>
+                            <span>Em Aberto</span>
+                            <span class="font-mono">R$
+                                {{ number_format($data['reserve_pending'], 2, ',', '.') }}</span>
                         </div>
                     </div>
 
+                    <!-- DESPESAS -->
                     <div class="bg-base-300/20 rounded-lg p-2 space-y-1">
                         <div class="flex justify-between items-center text-[11px] font-bold uppercase">
                             <span class="opacity-60">Despesas</span>
@@ -230,6 +228,7 @@ setTimeout(() => $dispatch('ultrawide', count === 7), 50)">
                         </div>
                     </div>
 
+                    <!-- RETIRADAS -->
                     <div class="bg-base-300/20 rounded-lg p-2 space-y-1 mt-1">
                         <div class="flex justify-between items-center text-[11px] font-bold uppercase">
                             <span class="opacity-60">Retiradas</span>
@@ -246,28 +245,43 @@ setTimeout(() => $dispatch('ultrawide', count === 7), 50)">
                             <span class="font-mono">- R$
                                 {{ number_format($data['outflows_pending'], 2, ',', '.') }}</span>
                         </div>
+
+                        <!-- Sugestão de Pró-labore -->
+                        <div class="border-t border-base-content/10 pt-1.5 mt-1.5 space-y-1">
+                            <div class="flex justify-between items-center text-[11px]">
+                                <span class="flex items-center gap-1">
+                                    @if ($data['prolabore_met'])
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5 text-success">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                                        </svg>
+                                    @else
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5 text-error">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                                        </svg>
+                                    @endif
+                                    <span class="{{ $data['prolabore_met'] ? 'text-success' : 'text-error' }} font-bold" title="28% do Faturamento ou Salário Mínimo (o que for maior)">Prolabore Sugerido</span>
+                                </span>
+                                <span class="font-mono {{ $data['prolabore_met'] ? 'text-success' : 'text-error' }} font-bold">R$
+                                    {{ number_format($data['suggested_prolabore'], 2, ',', '.') }}</span>
+                            </div>
+                            <div class="flex justify-between items-center text-[11px] opacity-50 pl-5">
+                                <span>Realizado</span>
+                                @if ($data['prolabore_paid'] > 0)
+                                    <span class="font-mono">R$
+                                        {{ number_format($data['prolabore_paid'], 2, ',', '.') }}</span>
+                                @else
+                                    <span class="font-mono italic">Não Realizado</span>
+                                @endif
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="bg-base-300/20 rounded-lg p-2 space-y-1">
+                    <!-- ENCARGOS PARA RETIRADAS (RESERVAR) -->
+                    <div class="bg-warning/5 rounded-lg border border-warning/15 p-2 space-y-1">
                         <div class="flex justify-between items-center text-[11px] font-bold uppercase">
-                            <span class="opacity-60">Encargos</span>
-                            <span class="font-mono text-warning">- R$
-                                {{ number_format($data['outflow_tax_total'], 2, ',', '.') }}</span>
-                        </div>
-                        <div class="flex justify-between items-center text-[11px] opacity-40">
-                            <span>Pagos</span>
-                            <span class="font-mono">- R$
-                                {{ number_format($data['outflow_tax_paid'], 2, ',', '.') }}</span>
-                        </div>
-                        <div class="flex justify-between items-center text-[11px] opacity-40">
-                            <span>Provisionado</span>
-                            <span class="font-mono">- R$
-                                {{ number_format($data['outflow_tax_provisioned'], 2, ',', '.') }}</span>
-                        </div>
-                        <div class="flex justify-between items-center text-[11px] opacity-40">
-                            <span>A pagar</span>
-                            <span class="font-mono">- R$
-                                {{ number_format($data['outflow_tax_pending'], 2, ',', '.') }}</span>
+                            <span class="text-warning/80" title="Reserva de 11% (INSS) sobre o valor do Prolabore. Separe esse valor!">Encargos para Retiradas (reservar)</span>
+                            <span class="font-mono text-warning font-bold">R$
+                                {{ number_format($data['reserve_outflow_total'], 2, ',', '.') }}</span>
                         </div>
                     </div>
 
@@ -281,28 +295,108 @@ setTimeout(() => $dispatch('ultrawide', count === 7), 50)">
                                 R$ {{ number_format($data['final_balance_actual'], 2, ',', '.') }}
                             </span>
                         </div>
-                        <div class="flex justify-between items-center pt-2 border-t border-base-content/5 mt-1">
-                            <span class="text-[11px] opacity-50">Entradas Previstas</span>
-                            <span class="font-mono text-[11px] opacity-60 text-success">
-                                R$ {{ number_format($data['total_predicted_inflows'], 2, ',', '.') }}
-                            </span>
-                        </div>
-                        <div class="flex justify-between items-center">
-                            <span class="text-[11px] opacity-50">Saídas Previstas</span>
-                            <span class="font-mono text-[11px] opacity-60 text-error">
-                                - R$ {{ number_format($data['total_predicted_outflows'], 2, ',', '.') }}
-                            </span>
+                        
+                        <div class="border-t border-base-content/5 pt-2 mt-1 space-y-1">
+                            <div class="flex justify-between items-center">
+                                <span class="text-[10px] font-bold opacity-30 uppercase">Status Previsto</span>
+                                <span class="font-mono text-xs opacity-50 italic">
+                                    R$ {{ number_format($data['final_balance_predicted'], 2, ',', '.') }}
+                                </span>
+                            </div>
+
+                            <div class="flex justify-between items-center">
+                                <span class="text-[11px] opacity-50">Entradas Previstas</span>
+                                <span class="font-mono text-[11px] opacity-60 text-success">
+                                    R$ {{ number_format($data['total_predicted_inflows'], 2, ',', '.') }}
+                                </span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-[11px] opacity-50">Saídas Previstas</span>
+                                <span class="font-mono text-[11px] opacity-60 text-error">
+                                    - R$ {{ number_format($data['total_predicted_outflows'], 2, ',', '.') }}
+                                </span>
+                            </div>
                         </div>
 
                         <div class="divider my-0 mb-1 opacity-20"></div>
 
                         <div class="flex justify-between items-center">
-                            <span class="text-xs opacity-80 font-bold">Previsto</span>
+                            <span class="text-xs opacity-80 font-bold">Saldo Final Previsto</span>
                             <span
                                 class="font-mono text-sm font-bold {{ $data['final_balance_predicted'] >= 0 ? 'text-success' : 'text-error' }}">
                                 R$ {{ number_format($data['final_balance_predicted'], 2, ',', '.') }}
                             </span>
                         </div>
+                    </div>
+
+                    <!-- DIVISOR -->
+                    <div class="border-t border-dashed border-base-content/10 my-1"></div>
+
+                    <!-- FATURAMENTO DO MÊS (informativo, isolado) -->
+                    <div class="bg-secondary/5 rounded-lg border border-secondary/15 p-2 space-y-1">
+                        <div class="flex justify-between items-center text-[11px] font-bold uppercase">
+                            <span class="text-secondary/80" title="Total faturado (NFs emitidas) neste mês">Faturamento do Mês</span>
+                            <span class="font-mono text-secondary font-bold">R$
+                                {{ number_format($data['invoiced_total'], 2, ',', '.') }}</span>
+                        </div>
+                        <div class="flex justify-between items-center text-[11px] opacity-40">
+                            <span>Imposto s/ Faturamento ({{ number_format($data['invoiced_tax_rate'], 1, ',', '.') }}%)</span>
+                            <span class="font-mono">R$
+                                {{ number_format($data['invoiced_tax_total'], 2, ',', '.') }}</span>
+                        </div>
+                    </div>
+
+                    <!-- SEÇÃO DE ENCARGOS (A pagar este mês - ref. anterior) -->
+                    <div class="bg-base-300/20 rounded-lg p-2 space-y-2">
+                        <div class="flex justify-between items-center text-[10px] font-black uppercase text-base-content/40">
+                            <span>Encargos (A pagar este mês)</span>
+                            <span class="font-mono">R$ {{ number_format($data['billing_tax_total'] + $data['outflow_tax_total'], 2, ',', '.') }}</span>
+                        </div>
+
+                        <!-- Subseção INSS -->
+                        <div class="space-y-1 border-t border-base-content/5 pt-1">
+                            <div class="flex justify-between items-center text-[11px] font-bold">
+                                <span class="opacity-70">INSS (ref. anterior)</span>
+                                <span class="font-mono text-warning">R$ {{ number_format($data['outflow_tax_total'], 2, ',', '.') }}</span>
+                            </div>
+                            <div class="space-y-0.5 px-1">
+                                <div class="flex justify-between items-center text-[10px] opacity-40">
+                                    <span>Pago</span>
+                                    <span>R$ {{ number_format($data['outflow_tax_paid'], 2, ',', '.') }}</span>
+                                </div>
+                                <div class="flex justify-between items-center text-[10px] opacity-40">
+                                    <span>Provisionado</span>
+                                    <span>R$ {{ number_format($data['outflow_tax_provisioned'], 2, ',', '.') }}</span>
+                                </div>
+                                <div class="flex justify-between items-center text-[10px] opacity-40">
+                                    <span>A pagar</span>
+                                    <span>R$ {{ number_format($data['outflow_tax_pending'], 2, ',', '.') }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Subseção DAS -->
+                        <div class="space-y-1 border-t border-base-content/5 pt-1">
+                            <div class="flex justify-between items-center text-[11px] font-bold">
+                                <span class="opacity-70">DAS (ref. anterior)</span>
+                                <span class="font-mono text-warning">R$ {{ number_format($data['billing_tax_total'], 2, ',', '.') }}</span>
+                            </div>
+                            <div class="space-y-0.5 px-1">
+                                <div class="flex justify-between items-center text-[10px] opacity-40">
+                                    <span>Pago</span>
+                                    <span>R$ {{ number_format($data['billing_tax_paid'], 2, ',', '.') }}</span>
+                                </div>
+                                <div class="flex justify-between items-center text-[10px] opacity-40">
+                                    <span>Provisionado</span>
+                                    <span>R$ {{ number_format($data['billing_tax_provisioned'], 2, ',', '.') }}</span>
+                                </div>
+                                <div class="flex justify-between items-center text-[10px] opacity-40">
+                                    <span>A pagar</span>
+                                    <span>R$ {{ number_format($data['billing_tax_pending'], 2, ',', '.') }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     </div>
                 </div>
             </div>
