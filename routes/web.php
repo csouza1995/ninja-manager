@@ -17,6 +17,7 @@ Route::get('/services', \App\Livewire\Pages\Services\Index::class)->name('servic
 Route::get('/receipts', \App\Livewire\Pages\Receipts\Index::class)->name('receipts.index');
 Route::get('/receipts/{receipt}/print', [\App\Http\Controllers\ReceiptController::class, 'print'])->name('receipts.print');
 Route::get('/settings/database', \App\Livewire\Pages\Settings\Database::class)->name('settings.database');
+Route::get('/settings/minimum-wages', \App\Livewire\Pages\Settings\MinimumWages::class)->name('settings.minimum-wages');
 
 Route::prefix('financial')->group(function () {
     Route::get('/dashboard', App\Livewire\Pages\Financial\Dashboard::class)->name('financial.dashboard');

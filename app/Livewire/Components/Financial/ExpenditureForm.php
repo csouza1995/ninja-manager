@@ -222,14 +222,14 @@ class ExpenditureForm extends Component
 
     private function loadLinkables()
     {
-        // Get Revenues with tax_amount > 0 and no linked expenditure
-        $revenues = \App\Models\Revenue::where('tax_amount', '>', 0)
+        // Get Invoices with tax_amount > 0 and no linked expenditure
+        $invoices = \App\Models\Invoice::where('tax_amount', '>', 0)
             ->whereDoesntHave('expenditure')
             ->get()
             ->map(fn ($r) => [
-                'type' => 'App\Models\Revenue',
+                'type' => 'App\Models\Invoice',
                 'id' => $r->id,
-                'label' => "Receita: {$r->description} (R$ ".number_format((float) $r->tax_amount, 2, ',', '.').')',
+                'label' => "Fatura: {$r->description} (R$ ".number_format((float) $r->tax_amount, 2, ',', '.').')',
             ]);
 
         // Get Outflows with tax_amount > 0 and no linked expenditure
@@ -248,7 +248,7 @@ class ExpenditureForm extends Component
             $modelClass = $this->model_type;
             $model = $modelClass::find($this->model_id);
             if ($model) {
-                $prefix = $this->model_type === 'App\Models\Revenue' ? 'Receita' : 'Saída';
+                $prefix = $this->model_type === 'App\Models\Invoice' ? 'Fatura' : 'Saída';
                 $current[] = [
                     'type' => $this->model_type,
                     'id' => $this->model_id,
@@ -258,7 +258,7 @@ class ExpenditureForm extends Component
             }
         }
 
-        $this->linkables = collect($current)->merge($revenues)->merge($outflows)->unique(function ($item) {
+        $this->linkables = collect($current)->merge($invoices)->merge($outflows)->unique(function ($item) {
             return $item['type'].'-'.$item['id'];
         })->toArray();
     }

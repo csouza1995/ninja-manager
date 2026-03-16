@@ -42,14 +42,10 @@ class RevenueForm extends Component
     #[Validate('required|numeric|min:0')]
     public $gross_amount = 0;
 
-    public $invoice_id = null;
-
-    #[Validate('numeric|min:0|max:100')]
+    #[Validate('required|numeric|min:0|max:100')]
     public $tax_percentage = 0;
 
-    public $tax_amount = 0;
-
-    public $net_amount = 0;
+    public $invoice_id = null;
 
     public $paid_at = null;
 
@@ -89,10 +85,8 @@ class RevenueForm extends Component
         $this->bank_account_id = $revenue->bank_account_id;
         $this->due_date = $revenue->due_date->format('Y-m-d');
         $this->gross_amount = $revenue->gross_amount;
-        $this->invoice_id = $revenue->invoice_id;
         $this->tax_percentage = $revenue->tax_percentage;
-        $this->tax_amount = $revenue->tax_amount;
-        $this->net_amount = $revenue->net_amount;
+        $this->invoice_id = $revenue->invoice_id;
         $this->paid_at = $revenue->paid_at ? $revenue->paid_at->format('Y-m-d') : null;
         $this->notes = $revenue->notes;
     }
@@ -124,26 +118,14 @@ class RevenueForm extends Component
 
     public function updatedGrossAmount()
     {
-        $this->calculateTotals();
+        // Totals recalculation is no longer needed since tax was moved to Invoice
     }
 
-    public function updatedTaxPercentage()
-    {
-        $this->calculateTotals();
-    }
-
-    public function calculateTotals()
-    {
-        $this->tax_amount = ($this->gross_amount * $this->tax_percentage) / 100;
-        $this->net_amount = $this->gross_amount - $this->tax_amount;
-    }
-
-    public function applyTax($taxId)
+    public function applyTax($taxId): void
     {
         $tax = Tax::find($taxId);
         if ($tax) {
             $this->tax_percentage = $tax->percentage;
-            $this->calculateTotals();
         }
     }
 
@@ -153,7 +135,6 @@ class RevenueForm extends Component
             return;
         }
         $this->validate();
-        $this->calculateTotals();
 
         $revenue = Revenue::updateOrCreate(
             ['id' => $this->revenueId],
@@ -165,10 +146,8 @@ class RevenueForm extends Component
                 'bank_account_id' => $this->bank_account_id,
                 'due_date' => $this->due_date,
                 'gross_amount' => $this->gross_amount,
-                'invoice_id' => $this->invoice_id,
                 'tax_percentage' => $this->tax_percentage,
-                'tax_amount' => $this->tax_amount,
-                'net_amount' => $this->net_amount,
+                'invoice_id' => $this->invoice_id,
                 'paid_at' => $this->paid_at ?: null,
                 'notes' => $this->notes,
             ]
@@ -196,8 +175,8 @@ class RevenueForm extends Component
     {
         $this->reset([
             'revenueId', 'service_id', 'origin_name', 'description', 'classification',
-            'bank_account_id', 'gross_amount', 'invoice_id', 'tax_percentage',
-            'tax_amount', 'net_amount', 'paid_at', 'notes',
+            'bank_account_id', 'gross_amount', 'tax_percentage', 'invoice_id',
+            'paid_at', 'notes',
         ]);
         $this->due_date = now()->format('Y-m-d');
         $this->loadSuggestions();
