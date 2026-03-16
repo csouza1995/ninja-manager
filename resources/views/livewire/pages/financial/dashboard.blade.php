@@ -12,7 +12,17 @@ setTimeout(() => $dispatch('ultrawide', count === 7), 50)">
         @foreach ($bankBalances as $bank)
             <div class="stats shadow bg-base-200 border border-base-300">
                 <div class="stat p-4">
-                    <div class="stat-title text-[10px] font-bold uppercase opacity-50">{{ $bank['name'] }}</div>
+                    <div class="stat-title text-[10px] font-bold uppercase opacity-50 flex justify-between items-center">
+                        {{ $bank['name'] }}
+                        <a href="{{ route('financial.bank-accounts.statement', $bank['id']) }}"
+                            class="btn btn-ghost btn-xs btn-square text-info -mt-1 -mr-1" title="Ver Extrato" wire:navigate>
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                                stroke="currentColor" class="w-3.5 h-3.5">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0ZM3.75 12h.007v.008H3.75V12Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm-3.375 5.25h.007v.008H3.75v-.008Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
+                            </svg>
+                        </a>
+                    </div>
                     <div
                         class="stat-value text-xl font-mono {{ $bank['balance'] >= 0 ? 'text-success' : 'text-error' }}">
                         R$ {{ number_format($bank['balance'], 2, ',', '.') }}

@@ -26,6 +26,12 @@ class BankAccountForm extends Component
     #[Validate('nullable|min:2')]
     public string $nickname = '';
 
+    #[Validate('required|numeric|min:0')]
+    public float $opening_balance = 0;
+
+    #[Validate('required|date')]
+    public string $opening_balance_date = '';
+
     #[On('open-bank-account-form')]
     public function open(?int $id = null, bool $readOnly = false)
     {
@@ -45,6 +51,8 @@ class BankAccountForm extends Component
         $this->bank_name = $account->bank_name;
         $this->owner_name = $account->owner_name;
         $this->nickname = $account->nickname ?? '';
+        $this->opening_balance = (float) $account->opening_balance;
+        $this->opening_balance_date = $account->opening_balance_date ? $account->opening_balance_date->format('Y-m-d') : '';
     }
 
     public function save()
@@ -60,6 +68,8 @@ class BankAccountForm extends Component
                 'bank_name' => $this->bank_name,
                 'owner_name' => $this->owner_name,
                 'nickname' => $this->nickname,
+                'opening_balance' => $this->opening_balance,
+                'opening_balance_date' => $this->opening_balance_date,
             ]
         );
 
@@ -75,7 +85,7 @@ class BankAccountForm extends Component
 
     private function resetForm()
     {
-        $this->reset(['bankAccountId', 'bank_name', 'owner_name', 'nickname']);
+        $this->reset(['bankAccountId', 'bank_name', 'owner_name', 'nickname', 'opening_balance', 'opening_balance_date']);
     }
 
     public function render()

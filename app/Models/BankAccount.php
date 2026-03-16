@@ -11,6 +11,13 @@ class BankAccount extends Model
         'bank_name',
         'owner_name',
         'nickname',
+        'opening_balance',
+        'opening_balance_date',
+    ];
+
+    protected $casts = [
+        'opening_balance' => 'decimal:2',
+        'opening_balance_date' => 'date',
     ];
 
     public function getNameAttribute(): string

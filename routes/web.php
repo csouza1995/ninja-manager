@@ -23,6 +23,7 @@ Route::prefix('financial')->group(function () {
     Route::get('/dashboard', App\Livewire\Pages\Financial\Dashboard::class)->name('financial.dashboard');
     Route::get('/taxes', App\Livewire\Pages\Financial\Taxes\Index::class)->name('financial.taxes');
     Route::get('/bank-accounts', App\Livewire\Pages\Financial\BankAccounts\Index::class)->name('financial.bank-accounts');
+    Route::get('/bank-accounts/{bank_account}/statement', App\Livewire\Pages\Financial\BankAccounts\Statement::class)->name('financial.bank-accounts.statement');
     Route::get('/revenues', App\Livewire\Pages\Financial\Revenues\Index::class)->name('financial.revenues');
     Route::get('/expenditures', App\Livewire\Pages\Financial\Expenditures\Index::class)->name('financial.expenditures');
     Route::get('/invoices', App\Livewire\Pages\Financial\Invoices\Index::class)->name('financial.invoices');

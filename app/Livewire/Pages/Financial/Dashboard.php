@@ -340,6 +340,7 @@ class Dashboard extends Component
                 if ($rate <= 0 && $rev->invoice && $rev->invoice->amount > 0) {
                     $rate = ($rev->invoice->tax_amount / $rev->invoice->amount) * 100;
                 }
+
                 return $rev->gross_amount * ($rate / 100);
             });
 
@@ -371,14 +372,15 @@ class Dashboard extends Component
                 ->whereNotNull('paid_at')
                 ->sum(DB::raw('amount - COALESCE(tax_amount, 0)'));
 
-            // Saldo consolidado na conta (Caixa Real)
-            $balance = ($grossRev + $transfersIn) - ($operExp + $outflowExp);
+            // Saldo consolidado na conta (Caixa Real: Saldo Inicial + Entradas - Saídas)
+            $balance = ($account->opening_balance + $grossRev + $transfersIn) - ($operExp + $outflowExp);
 
             // Provisão de Imposto (Acumulado que ainda não foi pago desta conta)
             // O imposto fica "bloqueado" aqui pois ainda não saiu via Expenditure
             $taxProvision = max(0, ($taxAccrued + $outflowTaxAccrued) - $taxPaid);
 
             $this->bankBalances[] = [
+                'id' => $account->id,
                 'name' => $account->nickname ?: $account->bank_name,
                 'balance' => $balance,
                 'tax_provision' => $taxProvision,

@@ -37,6 +37,26 @@
                     @enderror
                 </div>
 
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div class="form-control w-full">
+                        <label class="label"><span class="label-text">Saldo Inicial</span></label>
+                        <input type="number" step="0.01" wire:model="opening_balance" class="input input-bordered w-full"
+                            placeholder="0.00" @disabled($readOnly) />
+                        @error('opening_balance')
+                            <span class="text-error text-xs mt-1">{{ $message }}</span>
+                        @enderror
+                    </div>
+
+                    <div class="form-control w-full">
+                        <label class="label"><span class="label-text">Data do Saldo</span></label>
+                        <input type="date" wire:model="opening_balance_date" class="input input-bordered w-full"
+                             @disabled($readOnly) />
+                        @error('opening_balance_date')
+                            <span class="text-error text-xs mt-1">{{ $message }}</span>
+                        @enderror
+                    </div>
+                </div>
+
                 <div class="modal-action">
                     <button wire:click="close" class="btn">{{ $readOnly ? 'Fechar' : 'Cancelar' }}</button>
                     @if (!$readOnly)
