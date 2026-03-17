@@ -53,4 +53,9 @@ class Invoice extends Model implements HasMedia
     {
         return $this->belongsTo(Service::class);
     }
+
+    public function expenditure(): \Illuminate\Database\Eloquent\Relations\MorphOne
+    {
+        return $this->morphOne(Expenditure::class, 'model');
+    }
 }

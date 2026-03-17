@@ -115,23 +115,32 @@
                     </div>
 
                     <div class="form-control w-full">
-                        <label class="label">
-                            <span class="label-text">% Imposto Esperado</span>
+                        <label class="label pb-1.5 flex justify-between items-center">
+                            <span class="label-text group inline-flex items-center gap-1.5">
+                                % Imposto Esperado
+                                <div class="tooltip tooltip-right" data-tip="Selecione um anexo para aplicar a alíquota automaticamente">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 opacity-20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                </div>
+                            </span>
                             @if (!$readOnly)
-                                <span class="flex gap-1">
+                                <select class="select select-bordered select-xs w-40 bg-base-200 border-base-300 font-normal" 
+                                    wire:change="applyTax($event.target.value)">
+                                    <option value="">Atalhos (Anexos)...</option>
                                     @foreach ($availableTaxes as $tax)
-                                        <button type="button" wire:click="applyTax({{ $tax->id }})"
-                                            class="btn btn-xs {{ $tax_percentage == $tax->percentage ? 'btn-primary' : 'btn-ghost' }}">
-                                            {{ $tax->name }}
-                                        </button>
+                                        <option value="{{ $tax->id }}" {{ $tax_percentage == $tax->percentage ? 'selected' : '' }}>
+                                            {{ $tax->name }} ({{ number_format($tax->percentage, 2) }}%)
+                                        </option>
                                     @endforeach
-                                </span>
+                                    <option value="0" {{ $tax_percentage == 0 ? 'selected' : '' }}>Não Aplicável (0%)</option>
+                                </select>
                             @endif
                         </label>
                         <div class="join w-full">
-                            <input type="number" step="0.01" wire:model="tax_percentage"
-                                class="input input-bordered w-full join-item" @disabled($readOnly) />
-                            <span class="join-item btn btn-disabled">%</span>
+                            <input type="number" step="0.01" wire:model.live="tax_percentage"
+                                class="input input-bordered w-full join-item h-10" @disabled($readOnly) />
+                            <span class="join-item btn btn-disabled px-2 h-10 min-h-0">%</span>
                         </div>
                         @error('tax_percentage')
                             <span class="text-error text-xs mt-1">{{ $message }}</span>

@@ -123,6 +123,12 @@ class RevenueForm extends Component
 
     public function applyTax($taxId): void
     {
+        if ($taxId == 0) {
+            $this->tax_percentage = 0;
+
+            return;
+        }
+
         $tax = Tax::find($taxId);
         if ($tax) {
             $this->tax_percentage = $tax->percentage;
