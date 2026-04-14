@@ -65,7 +65,7 @@ class Dashboard extends Component
 
     public function calculateFinances()
     {
-        $now = Carbon::now();
+        $now = Carbon::now()->startOfMonth();
 
         if ($this->activeFilter === 'month') {
             $now->addMonths($this->dateOffset);
