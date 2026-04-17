@@ -75,6 +75,20 @@
                         @enderror
                     </div>
 
+                    <div class="form-control w-full">
+                        <label class="label"><span class="label-text">Conta de Saída</span></label>
+                        <select wire:model="bank_account_id" class="select select-bordered w-full"
+                            @disabled($readOnly)>
+                            <option value="">--- Selecione ---</option>
+                            @foreach ($bankAccounts as $ba)
+                                <option value="{{ $ba->id }}">{{ $ba->nickname ?: $ba->bank_name }}</option>
+                            @endforeach
+                        </select>
+                        @error('bank_account_id')
+                            <span class="text-error text-xs mt-1">{{ $message }}</span>
+                        @enderror
+                    </div>
+
                     <div class="grid grid-cols-2 gap-4">
                         <div class="form-control w-full">
                             <label class="label"><span class="label-text">Valor (R$)</span></label>
@@ -97,23 +111,29 @@
 
                     <div class="grid grid-cols-2 gap-4">
                         <div class="form-control w-full">
-                            <label class="label"><span class="label-text">Conta de Saída</span></label>
-                            <select wire:model="bank_account_id" class="select select-bordered w-full"
-                                @disabled($readOnly)>
-                                <option value="">--- Selecione ---</option>
-                                @foreach ($bankAccounts as $ba)
-                                    <option value="{{ $ba->id }}">{{ $ba->nickname ?: $ba->bank_name }}</option>
-                                @endforeach
-                            </select>
-                            @error('bank_account_id')
-                                <span class="text-error text-xs mt-1">{{ $message }}</span>
-                            @enderror
-                        </div>
-
-                        <div class="form-control w-full">
                             <label class="label"><span class="label-text">Pago em (Opcional)</span></label>
                             <input type="date" wire:model="paid_at" class="input input-bordered w-full"
                                 @disabled($readOnly) />
+                        </div>
+
+                        <div class="form-control w-full">
+                            <label class="label"><span class="label-text">Data de Referência</span></label>
+                            <input type="date" wire:model="reference_date" class="input input-bordered w-full"
+                                @disabled($readOnly) />
+                        </div>
+                    </div>
+
+                    <div class="border-t pt-4 mt-2">
+                        <h4 class="font-semibold text-sm mb-2">Ajustes</h4>
+                        <div class="form-control w-full mb-4">
+                            <label class="label"><span class="label-text">Valor de Ajuste (Opcional)</span></label>
+                            <input type="number" step="0.01" wire:model="adjustment_amount" class="input input-bordered w-full"
+                                placeholder="Valor de ajuste ou multa" @disabled($readOnly) />
+                        </div>
+                        <div class="form-control w-full">
+                            <label class="label"><span class="label-text">Justificativa do Ajuste</span></label>
+                            <input type="text" wire:model="adjustment_reason" class="input input-bordered w-full"
+                                placeholder="Motivo do ajuste" @disabled($readOnly) />
                         </div>
                     </div>
                 </div>

@@ -61,6 +61,15 @@ class ExpenditureForm extends Component
 
     public $paid_at = null;
 
+    #[Validate('nullable|numeric')]
+    public $adjustment_amount = 0;
+
+    #[Validate('nullable|string|max:255')]
+    public $adjustment_reason = '';
+
+    #[Validate('nullable|date')]
+    public $reference_date = null;
+
     // Suggestions and Linkables
     public $destinationSuggestions = [];
 
@@ -135,6 +144,9 @@ class ExpenditureForm extends Component
         $this->due_date = $exp->due_date->format('Y-m-d');
         $this->amount = $exp->amount;
         $this->paid_at = $exp->paid_at ? $exp->paid_at->format('Y-m-d') : null;
+        $this->reference_date = $exp->reference_date ? $exp->reference_date->format('Y-m-d') : null;
+        $this->adjustment_amount = $exp->adjustment_amount;
+        $this->adjustment_reason = $exp->adjustment_reason;
     }
 
     public function updatedModelType($value)
@@ -196,8 +208,11 @@ class ExpenditureForm extends Component
                 'classification' => $this->classification,
                 'bank_account_id' => $this->bank_account_id,
                 'due_date' => $this->due_date,
-                'amount' => $this->amount,
+                'amount' => round((float) $this->amount, 2),
                 'paid_at' => $this->paid_at === '' ? null : $this->paid_at,
+                'reference_date' => $this->reference_date === '' ? null : $this->reference_date,
+                'adjustment_amount' => round((float) ($this->adjustment_amount ?: 0), 2),
+                'adjustment_reason' => $this->adjustment_reason ?: null,
             ]
         );
 
@@ -215,7 +230,8 @@ class ExpenditureForm extends Component
     {
         $this->reset([
             'expenditureId', 'model_type', 'model_id', 'destination', 'description',
-            'classification', 'bank_account_id', 'amount', 'paid_at', 'linkables',
+            'classification', 'bank_account_id', 'amount', 'paid_at', 'reference_date', 'linkables',
+            'adjustment_amount', 'adjustment_reason',
         ]);
         $this->due_date = now()->format('Y-m-d');
     }

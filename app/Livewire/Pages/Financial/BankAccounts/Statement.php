@@ -78,46 +78,46 @@ class Statement extends Component
             ->where('bank_account_id', $this->account->id)
             ->whereNotNull('paid_at')
             ->select([
-                'id', 'description', 'origin_name as counterparty', 'gross_amount as amount', 'paid_at as date',
+                'id', 'description', 'origin_name as counterparty', DB::raw('gross_amount + adjustment_amount as amount'), 'paid_at as date',
                 DB::raw("'revenue' as type"), DB::raw("'plus' as icon"), DB::raw("'success' as color"),
             ])
             ->when($this->search, fn ($q) => $q->where(fn ($sq) => $sq->where('description', 'like', "%{$this->search}%")->orWhere('origin_name', 'like', "%{$this->search}%")))
             ->when($this->dateFrom, fn ($q) => $q->where('paid_at', '>=', $this->dateFrom))
-            ->when($this->dateTo, fn ($q) => $q->where('paid_at', '<=', $this->dateTo . ' 23:59:59'));
+            ->when($this->dateTo, fn ($q) => $q->where('paid_at', '<=', $this->dateTo.' 23:59:59'));
 
         $query2 = DB::table('expenditures')
             ->where('bank_account_id', $this->account->id)
             ->whereNotNull('paid_at')
             ->select([
-                'id', 'description', DB::raw("'Despesa' as counterparty"), 'amount', 'paid_at as date',
+                'id', 'description', DB::raw("'Despesa' as counterparty"), DB::raw('amount + adjustment_amount as amount'), 'paid_at as date',
                 DB::raw("'expenditure' as type"), DB::raw("'minus' as icon"), DB::raw("'error' as color"),
             ])
             ->when($this->search, fn ($q) => $q->where('description', 'like', "%{$this->search}%"))
             ->when($this->dateFrom, fn ($q) => $q->where('paid_at', '>=', $this->dateFrom))
-            ->when($this->dateTo, fn ($q) => $q->where('paid_at', '<=', $this->dateTo . ' 23:59:59'));
+            ->when($this->dateTo, fn ($q) => $q->where('paid_at', '<=', $this->dateTo.' 23:59:59'));
 
         $query3 = DB::table('outflows')
             ->where('origin_bank_account_id', $this->account->id)
             ->whereNotNull('paid_at')
             ->select([
-                'id', 'description', 'person_name as counterparty', DB::raw('(amount - COALESCE(tax_amount, 0)) as amount'), 'paid_at as date',
+                'id', 'description', 'person_name as counterparty', DB::raw('(amount + adjustment_amount - COALESCE(tax_amount, 0)) as amount'), 'paid_at as date',
                 DB::raw("'outflow' as type"), DB::raw("CASE WHEN type IN ('Lucro/Dividendos', 'Prolabore') THEN 'withdraw' ELSE 'minus' END as icon"), DB::raw("'secondary' as color"),
             ])
             ->when($this->search, fn ($q) => $q->where(fn ($sq) => $sq->where('description', 'like', "%{$this->search}%")->orWhere('person_name', 'like', "%{$this->search}%")))
             ->when($this->dateFrom, fn ($q) => $q->where('paid_at', '>=', $this->dateFrom))
-            ->when($this->dateTo, fn ($q) => $q->where('paid_at', '<=', $this->dateTo . ' 23:59:59'));
+            ->when($this->dateTo, fn ($q) => $q->where('paid_at', '<=', $this->dateTo.' 23:59:59'));
 
         $query4 = DB::table('outflows')
             ->where('destination_bank_account_id', $this->account->id)
             ->where('type', 'Transferência')
             ->whereNotNull('paid_at')
             ->select([
-                'id', 'description', DB::raw("'Transferência' as counterparty"), DB::raw('(amount - COALESCE(tax_amount, 0)) as amount'), 'paid_at as date',
+                'id', 'description', DB::raw("'Transferência' as counterparty"), DB::raw('(amount + adjustment_amount - COALESCE(tax_amount, 0)) as amount'), 'paid_at as date',
                 DB::raw("'transfer' as type"), DB::raw("'plus' as icon"), DB::raw("'info' as color"),
             ])
             ->when($this->search, fn ($q) => $q->where('description', 'like', "%{$this->search}%"))
             ->when($this->dateFrom, fn ($q) => $q->where('paid_at', '>=', $this->dateFrom))
-            ->when($this->dateTo, fn ($q) => $q->where('paid_at', '<=', $this->dateTo . ' 23:59:59'));
+            ->when($this->dateTo, fn ($q) => $q->where('paid_at', '<=', $this->dateTo.' 23:59:59'));
 
         return $query1->unionAll($query2)
             ->unionAll($query3)
@@ -130,34 +130,34 @@ class Statement extends Component
 
     public function getConsolidatedBalanceProperty(): float
     {
-        $limitDate = $this->dateTo ? ($this->dateTo . ' 23:59:59') : now()->endOfDay()->toDateTimeString();
+        $limitDate = $this->dateTo ? ($this->dateTo.' 23:59:59') : now()->endOfDay()->toDateTimeString();
 
         $rev = DB::table('revenues')
             ->where('bank_account_id', $this->account->id)
             ->whereNotNull('paid_at')
             ->where('paid_at', '<=', $limitDate)
-            ->sum('gross_amount');
+            ->sum(DB::raw('gross_amount + adjustment_amount'));
 
         $exp = DB::table('expenditures')
             ->where('bank_account_id', $this->account->id)
             ->whereNotNull('paid_at')
             ->where('paid_at', '<=', $limitDate)
-            ->sum('amount');
+            ->sum(DB::raw('amount + adjustment_amount'));
 
         $out = DB::table('outflows')
             ->where('origin_bank_account_id', $this->account->id)
             ->whereNotNull('paid_at')
             ->where('paid_at', '<=', $limitDate)
-            ->sum(DB::raw('amount - COALESCE(tax_amount, 0)'));
+            ->sum(DB::raw('amount + adjustment_amount - COALESCE(tax_amount, 0)'));
 
         $trans = DB::table('outflows')
             ->where('destination_bank_account_id', $this->account->id)
             ->where('type', 'Transferência')
             ->whereNotNull('paid_at')
             ->where('paid_at', '<=', $limitDate)
-            ->sum(DB::raw('amount - COALESCE(tax_amount, 0)'));
+            ->sum(DB::raw('amount + adjustment_amount - COALESCE(tax_amount, 0)'));
 
-        return (float) (($this->account->opening_balance + $rev + $trans) - ($exp + $out));
+        return (float) round(($this->account->opening_balance + $rev + $trans) - ($exp + $out), 2);
     }
 
     #[Layout('components.layouts.app')]

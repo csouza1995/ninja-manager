@@ -2,8 +2,8 @@
 
 namespace App\Livewire\Pages\Receipts;
 
-use Livewire\Component;
 use Livewire\Attributes\On;
+use Livewire\Component;
 use Livewire\WithPagination;
 
 class Index extends Component

@@ -3,12 +3,13 @@
 namespace App\Livewire\Components\Roles;
 
 use App\Models\Role;
-use Livewire\Component;
 use Livewire\Attributes\On;
+use Livewire\Component;
 
 class DeleteDialog extends Component
 {
     public ?int $roleId = null;
+
     public bool $showDialog = false;
 
     #[On('delete-role')]

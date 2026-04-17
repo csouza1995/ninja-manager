@@ -3,12 +3,13 @@
 namespace App\Livewire\Components\ServiceItems;
 
 use App\Models\ServiceItem;
-use Livewire\Component;
 use Livewire\Attributes\On;
+use Livewire\Component;
 
 class DeleteDialog extends Component
 {
     public ?int $itemId = null;
+
     public bool $showDialog = false;
 
     #[On('delete-service-item')]

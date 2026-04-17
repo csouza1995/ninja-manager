@@ -21,7 +21,7 @@ class Table extends Component
     #[On('toggle-filters')]
     public function toggleFilters()
     {
-        $this->showFilters = !$this->showFilters;
+        $this->showFilters = ! $this->showFilters;
     }
 
     // Filters

@@ -3,15 +3,17 @@
 namespace App\Livewire\Components\Clients;
 
 use App\Models\Client;
-use Livewire\Component;
+use Livewire\Attributes\Computed;
 use Livewire\Attributes\On;
 use Livewire\Attributes\Validate;
-use Livewire\Attributes\Computed;
+use Livewire\Component;
 
 class Form extends Component
 {
     public ?int $clientId = null;
+
     public bool $showModal = false;
+
     public bool $readOnly = false;
 
     #[Validate('required|in:individual,company')]
@@ -82,20 +84,22 @@ class Form extends Component
         $this->readOnly = false;
         $this->clientId = $id;
         $client = $this->client;
-        
+
         if ($client) {
             $this->fill($client->only([
                 'type', 'name', 'nickname', 'document', 'zip_code', 'street',
-                'number', 'complement', 'neighborhood', 'city', 'state'
+                'number', 'complement', 'neighborhood', 'city', 'state',
             ]));
         }
-        
+
         $this->showModal = true;
     }
 
     public function save()
     {
-        if ($this->readOnly) return;
+        if ($this->readOnly) {
+            return;
+        }
         $this->validate();
 
         Client::updateOrCreate(

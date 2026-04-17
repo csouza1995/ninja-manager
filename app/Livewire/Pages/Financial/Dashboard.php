@@ -120,11 +120,11 @@ class Dashboard extends Component
             // IDs das Invoices do mês atual e do mês anterior
             $currentInvoiceIds = \App\Models\Invoice::whereBetween(DB::raw('COALESCE(competence_date, issued_at)'), $range)->select('id');
             $prevInvoiceIds = \App\Models\Invoice::whereBetween(DB::raw('COALESCE(competence_date, issued_at)'), $prevMonthRange)->select('id');
-            $prevOutflowIds = Outflow::whereBetween(DB::raw('COALESCE(paid_at, due_date)'), $prevMonthRange)->select('id');
+            $prevOutflowIds = Outflow::whereBetween(DB::raw('COALESCE(reference_date, paid_at, due_date)'), $prevMonthRange)->select('id');
 
             // === BLOCO 1: Recebimentos (Caixa) ===
-            $billingPaid = Revenue::whereBetween(DB::raw('COALESCE(paid_at, due_date)'), $range)->whereNotNull('paid_at')->sum('gross_amount');
-            $billingPending = Revenue::whereBetween(DB::raw('COALESCE(paid_at, due_date)'), $range)->whereNull('paid_at')->sum('gross_amount');
+            $billingPaid = Revenue::whereBetween(DB::raw('COALESCE(paid_at, due_date)'), $range)->whereNotNull('paid_at')->sum(DB::raw('gross_amount + adjustment_amount'));
+            $billingPending = Revenue::whereBetween(DB::raw('COALESCE(paid_at, due_date)'), $range)->whereNull('paid_at')->sum(DB::raw('gross_amount + adjustment_amount'));
 
             // Encargos Futuros (reservar) - baseado no % de imposto de cada Revenue
             // Provisionado = tax dos Revenues já pagos neste mês
@@ -156,7 +156,7 @@ class Dashboard extends Component
             });
 
             // Encargos para Retiradas (reservar) - 11% das retiradas de prolabore do mês atual
-            $prolaboreCurrentMonth = Outflow::whereBetween(DB::raw('COALESCE(paid_at, due_date)'), $range)
+            $prolaboreCurrentMonth = Outflow::whereBetween(DB::raw('COALESCE(reference_date, paid_at, due_date)'), $range)
                 ->where('type', 'Prolabore')
                 ->sum('amount');
             $reserveOutflowTotal = $prolaboreCurrentMonth * 0.11;
@@ -171,65 +171,83 @@ class Dashboard extends Component
             $invoicedTaxRate = $invoicedTotal > 0 ? ($invoicedTaxTotal / $invoicedTotal) * 100 : 0;
 
             // === BLOCO 2: Encargos DAS (do mês ANTERIOR que vencem este mês) ===
-            $prevInvoiceRevenues = Revenue::whereIn('invoice_id', $prevInvoiceIds)->get();
+            $prevInvoiceRevenuesQuery = Revenue::whereIn('invoice_id', $prevInvoiceIds);
+            $prevInvoiceRevenues = (clone $prevInvoiceRevenuesQuery)->get();
+            $prevRevenueIds = (clone $prevInvoiceRevenuesQuery)->select('id');
+
             $billingTaxTotal = $prevInvoiceRevenues->sum(function ($rev) {
                 return $rev->gross_amount * ($rev->tax_percentage / 100);
             });
-            $billingTaxPaid = Expenditure::where('model_type', 'App\Models\Invoice')
-                ->whereIn('model_id', $prevInvoiceIds)
-                ->whereNotNull('paid_at')->sum('amount');
-            $billingTaxProvisioned = Expenditure::where('model_type', 'App\Models\Invoice')
-                ->whereIn('model_id', $prevInvoiceIds)
-                ->whereNull('paid_at')->sum('amount');
+
+            $billingTaxPaid = Expenditure::where(function ($q) use ($prevInvoiceIds, $prevRevenueIds) {
+                $q->where(fn ($q) => $q->where('model_type', 'App\Models\Invoice')->whereIn('model_id', $prevInvoiceIds))
+                    ->orWhere(fn ($q) => $q->where('model_type', 'App\Models\Revenue')->whereIn('model_id', $prevRevenueIds));
+            })->whereNotNull('paid_at')->sum(DB::raw('amount + adjustment_amount'));
+
+            $billingTaxProvisioned = Expenditure::where(function ($q) use ($prevInvoiceIds, $prevRevenueIds) {
+                $q->where(fn ($q) => $q->where('model_type', 'App\Models\Invoice')->whereIn('model_id', $prevInvoiceIds))
+                    ->orWhere(fn ($q) => $q->where('model_type', 'App\Models\Revenue')->whereIn('model_id', $prevRevenueIds));
+            })->whereNull('paid_at')->sum(DB::raw('amount + adjustment_amount'));
+
             $billingTaxPending = max(0, $billingTaxTotal - $billingTaxPaid - $billingTaxProvisioned);
 
             // === BLOCO 3: Despesas ===
-            $expensesPaid = Expenditure::whereBetween(DB::raw('COALESCE(paid_at, due_date)'), $range)
+            $expensesPaid = Expenditure::whereBetween(DB::raw('COALESCE(reference_date, paid_at, due_date)'), $range)
                 ->whereNotNull('paid_at')
                 ->where(function ($q) {
                     $q->where('classification', 'not like', '%Imposto%')
                         ->where('classification', 'not like', '%INSS%')
                         ->where('classification', 'not like', '%DAS%');
-                })->sum('amount');
-            $expensesPending = Expenditure::whereBetween(DB::raw('COALESCE(paid_at, due_date)'), $range)
+                })->sum(DB::raw('amount + adjustment_amount'));
+            $expensesPending = Expenditure::whereBetween(DB::raw('COALESCE(reference_date, paid_at, due_date)'), $range)
                 ->whereNull('paid_at')
                 ->where(function ($q) {
                     $q->where('classification', 'not like', '%Imposto%')
                         ->where('classification', 'not like', '%INSS%')
                         ->where('classification', 'not like', '%DAS%');
-                })->sum('amount');
+                })->sum(DB::raw('amount + adjustment_amount'));
 
             // === BLOCO 4: Retiradas (Bruto = Soma das saídas com os impostos) ===
-            $outflowsPaid = Outflow::whereBetween(DB::raw('COALESCE(paid_at, due_date)'), $range)
+            $outflowsPaid = Outflow::whereBetween(DB::raw('COALESCE(reference_date, paid_at, due_date)'), $range)
                 ->whereNotNull('paid_at')
-                ->sum('amount');
-            $outflowsPending = Outflow::whereBetween(DB::raw('COALESCE(paid_at, due_date)'), $range)
+                ->sum(DB::raw('amount + adjustment_amount'));
+            $outflowsPending = Outflow::whereBetween(DB::raw('COALESCE(reference_date, paid_at, due_date)'), $range)
                 ->whereNull('paid_at')
-                ->sum('amount');
+                ->sum(DB::raw('amount + adjustment_amount'));
 
             // Encargos Retiradas (mês anterior → este mês)
-            $outflowTaxTotal = Outflow::whereBetween(DB::raw('COALESCE(paid_at, due_date)'), $prevMonthRange)->sum('tax_amount');
+            $outflowTaxTotal = Outflow::whereBetween(DB::raw('COALESCE(reference_date, paid_at, due_date)'), $prevMonthRange)->sum('tax_amount');
             $outflowTaxPaid = Expenditure::where('model_type', 'App\Models\Outflow')
                 ->whereIn('model_id', $prevOutflowIds)
-                ->whereNotNull('paid_at')->sum('amount');
+                ->whereNotNull('paid_at')->sum(DB::raw('amount + adjustment_amount'));
             $outflowTaxProvisioned = Expenditure::where('model_type', 'App\Models\Outflow')
                 ->whereIn('model_id', $prevOutflowIds)
-                ->whereNull('paid_at')->sum('amount');
+                ->whereNull('paid_at')->sum(DB::raw('amount + adjustment_amount'));
             $outflowTaxPending = max(0, $outflowTaxTotal - $outflowTaxPaid - $outflowTaxProvisioned);
 
             // Pró-labore sugerido (maior entre 28% do faturamento e o salário mínimo vigente)
             $minimumWage = \App\Models\MinimumWage::getForDate($range[0]);
             $suggestedProlabore = max($invoicedTotal * 0.28, $minimumWage);
-            $totalProlaborePaid = Outflow::whereBetween(DB::raw('COALESCE(paid_at, due_date)'), $range)
+            $totalProlaborePaid = Outflow::whereBetween(DB::raw('COALESCE(reference_date, paid_at, due_date)'), $range)
                 ->where('type', 'Prolabore')
                 ->whereNotNull('paid_at')
-                ->sum('amount');
-            $prolaboreMet = $totalProlaborePaid >= $suggestedProlabore;
+                ->sum(DB::raw('amount + adjustment_amount'));
+            $totalProlaborePending = Outflow::whereBetween(DB::raw('COALESCE(reference_date, paid_at, due_date)'), $range)
+                ->where('type', 'Prolabore')
+                ->whereNull('paid_at')
+                ->sum(DB::raw('amount + adjustment_amount'));
+
+            $prolaboreStatus = 'error';
+            if ($totalProlaborePaid >= $suggestedProlabore) {
+                $prolaboreStatus = 'success';
+            } elseif ($totalProlaborePaid + $totalProlaborePending >= $suggestedProlabore) {
+                $prolaboreStatus = 'warning';
+            }
 
             // Withdrawals Breakdown (Use Net amount - what actually goes to the person)
-            $withdrawalsBreakdown = Outflow::whereBetween(DB::raw('COALESCE(paid_at, due_date)'), $range)
+            $withdrawalsBreakdown = Outflow::whereBetween(DB::raw('COALESCE(reference_date, paid_at, due_date)'), $range)
                 ->whereNotNull('person_name')
-                ->select('person_name', DB::raw('SUM(amount - COALESCE(tax_amount, 0)) as total'))
+                ->select('person_name', DB::raw('SUM(amount + adjustment_amount - COALESCE(tax_amount, 0)) as total'))
                 ->groupBy('person_name')
                 ->orderByDesc('total')
                 ->get()
@@ -276,8 +294,9 @@ class Dashboard extends Component
 
                 // Pró-labore sugerido
                 'suggested_prolabore' => $suggestedProlabore,
-                'prolabore_met' => $prolaboreMet,
+                'prolabore_status' => $prolaboreStatus,
                 'prolabore_paid' => $totalProlaborePaid,
+                'prolabore_pending' => $totalProlaborePending,
 
                 // Withdrawals Breakdown
                 'withdrawals_breakdown' => $withdrawalsBreakdown,
@@ -327,7 +346,7 @@ class Dashboard extends Component
         $accounts = BankAccount::all();
         $this->bankBalances = [];
         foreach ($accounts as $account) {
-            $grossRev = Revenue::where('bank_account_id', $account->id)->whereNotNull('paid_at')->sum('gross_amount');
+            $grossRev = Revenue::where('bank_account_id', $account->id)->whereNotNull('paid_at')->sum(DB::raw('gross_amount + adjustment_amount'));
 
             // Impostos das Receitas Pagas (usando percentual da receita, não o total da NF)
             $paidRevenues = Revenue::where('bank_account_id', $account->id)
@@ -349,42 +368,72 @@ class Dashboard extends Component
 
             $operExp = Expenditure::where('bank_account_id', $account->id)
                 ->whereNotNull('paid_at')
-                ->sum('amount');
+                ->sum(DB::raw('amount + adjustment_amount'));
 
             // Impostos pagos nesta conta (Para controle da provisão abaixo)
             $taxPaid = Expenditure::where('bank_account_id', $account->id)
                 ->where(function ($q) {
                     $q->where('classification', 'like', '%Imposto%')
-                        ->orWhere('classification', 'like', '%INSS%')
                         ->orWhere('classification', 'like', '%DAS%');
                 })
                 ->whereNotNull('paid_at')
-                ->sum('amount');
+                ->sum(DB::raw('amount + adjustment_amount'));
 
             // Retiradas (Líquido - o que efetivamente saiu da conta no dia)
             $outflowExp = Outflow::where('origin_bank_account_id', $account->id)
                 ->whereNotNull('paid_at')
-                ->sum(DB::raw('amount - COALESCE(tax_amount, 0)'));
+                ->sum(DB::raw('amount + adjustment_amount - COALESCE(tax_amount, 0)'));
 
             // Transferências recebidas (Líquido)
             $transfersIn = Outflow::where('destination_bank_account_id', $account->id)
                 ->where('type', 'Transferência')
                 ->whereNotNull('paid_at')
-                ->sum(DB::raw('amount - COALESCE(tax_amount, 0)'));
+                ->sum(DB::raw('amount + adjustment_amount - COALESCE(tax_amount, 0)'));
 
             // Saldo consolidado na conta (Caixa Real: Saldo Inicial + Entradas - Saídas)
             $balance = ($account->opening_balance + $grossRev + $transfersIn) - ($operExp + $outflowExp);
 
             // Provisão de Imposto (Acumulado que ainda não foi pago desta conta)
+            // 1. DAS Acumulado: Todas as receitas que já foram Faturadas OU já foram Recebidas
+            $taxAccrued = Revenue::where('bank_account_id', $account->id)
+                ->where(function ($q) {
+                    $q->whereNotNull('paid_at')
+                        ->orWhereNotNull('invoice_id');
+                })
+                ->get()
+                ->sum(fn ($r) => round($r->gross_amount * ($r->tax_percentage / 100), 2));
+
+            // 2. INSS Acumulado: Todos os pró-labores lançados que possuem despesa vinculada
+            $outflowTaxAccrued = Outflow::where('origin_bank_account_id', $account->id)
+                ->has('expenditure')
+                ->get()
+                ->sum('tax_amount');
+
+            // 3. Tributos já Pagos (Saídas reais de impostos)
+            $taxPaid = Expenditure::where('bank_account_id', $account->id)
+                ->whereNotNull('paid_at')
+                ->where(function ($q) {
+                    $q->where('classification', 'like', '%Imposto%')
+                        ->orWhere('classification', 'like', '%DAS%')
+                        ->orWhere('classification', 'like', '%INSS%');
+                })
+                ->get()
+                ->sum(fn ($e) => round($e->amount + $e->adjustment_amount, 2));
+
             // O imposto fica "bloqueado" aqui pois ainda não saiu via Expenditure
             $taxProvision = max(0, ($taxAccrued + $outflowTaxAccrued) - $taxPaid);
 
             $this->bankBalances[] = [
                 'id' => $account->id,
                 'name' => $account->nickname ?: $account->bank_name,
-                'balance' => $balance,
-                'tax_provision' => $taxProvision,
-                'free_balance' => $balance - $taxProvision,
+                'balance' => round((float) $balance, 2),
+                'tax_provision' => round((float) $taxProvision, 2),
+                'tax_provision_details' => [
+                    'das_accrued' => round((float) $taxAccrued, 2),
+                    'inss_accrued' => round((float) $outflowTaxAccrued, 2),
+                    'taxes_paid' => round((float) $taxPaid, 2),
+                ],
+                'free_balance' => round((float) ($balance - $taxProvision), 2),
             ];
         }
 

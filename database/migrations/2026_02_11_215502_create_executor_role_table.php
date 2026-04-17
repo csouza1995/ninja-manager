@@ -13,7 +13,7 @@ return new class extends Migration
             $table->foreignId('executor_id')->constrained()->cascadeOnDelete();
             $table->foreignId('role_id')->constrained()->cascadeOnDelete();
             $table->timestamps();
-            
+
             $table->unique(['executor_id', 'role_id']);
         });
     }

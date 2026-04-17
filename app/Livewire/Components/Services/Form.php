@@ -81,6 +81,24 @@ class Form extends Component
     }
 
     #[Computed]
+    public function hasRevenue(): bool
+    {
+        return $this->serviceId ? \App\Models\Revenue::where('service_id', $this->serviceId)->exists() : false;
+    }
+
+    #[Computed]
+    public function hasReceipt(): bool
+    {
+        return $this->serviceId ? \App\Models\Receipt::where('service_id', $this->serviceId)->exists() : false;
+    }
+
+    #[Computed]
+    public function hasInvoice(): bool
+    {
+        return $this->serviceId ? \App\Models\Invoice::where('service_id', $this->serviceId)->exists() : false;
+    }
+
+    #[Computed]
     public function canEdit()
     {
         if (! $this->serviceId) {

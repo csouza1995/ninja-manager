@@ -3,12 +3,13 @@
 namespace App\Livewire\Components\Receipts;
 
 use App\Models\Receipt;
-use Livewire\Component;
 use Livewire\Attributes\On;
+use Livewire\Component;
 
 class Viewer extends Component
 {
     public ?int $receiptId = null;
+
     public bool $showModal = false;
 
     #[On('view-receipt')]

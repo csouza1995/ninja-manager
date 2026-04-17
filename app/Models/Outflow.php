@@ -18,6 +18,9 @@ class Outflow extends Model
         'tax_amount',
         'due_date',
         'paid_at',
+        'reference_date',
+        'adjustment_amount',
+        'adjustment_reason',
     ];
 
     protected $casts = [
@@ -26,6 +29,8 @@ class Outflow extends Model
         'tax_amount' => 'decimal:2',
         'due_date' => 'date',
         'paid_at' => 'date',
+        'reference_date' => 'date',
+        'adjustment_amount' => 'decimal:2',
     ];
 
     public function originBankAccount(): BelongsTo

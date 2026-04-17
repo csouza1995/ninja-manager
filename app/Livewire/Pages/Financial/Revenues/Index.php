@@ -4,13 +4,11 @@ declare(strict_types=1);
 
 namespace App\Livewire\Pages\Financial\Revenues;
 
-use Livewire\Component;
-use Livewire\Attributes\On;
 use Livewire\Attributes\Layout;
+use Livewire\Component;
 
 class Index extends Component
 {
-
     public string $search = '';
 
     public function mount()

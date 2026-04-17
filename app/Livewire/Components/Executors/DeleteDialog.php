@@ -3,12 +3,13 @@
 namespace App\Livewire\Components\Executors;
 
 use App\Models\Executor;
-use Livewire\Component;
 use Livewire\Attributes\On;
+use Livewire\Component;
 
 class DeleteDialog extends Component
 {
     public ?int $executorId = null;
+
     public bool $showDialog = false;
 
     #[On('delete-executor')]

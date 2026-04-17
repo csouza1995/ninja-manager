@@ -17,12 +17,17 @@ class Expenditure extends Model
         'paid_at',
         'model_id',
         'model_type',
+        'reference_date',
+        'adjustment_amount',
+        'adjustment_reason',
     ];
 
     protected $casts = [
         'due_date' => 'date',
         'paid_at' => 'date',
+        'reference_date' => 'date',
         'amount' => 'decimal:2',
+        'adjustment_amount' => 'decimal:2',
     ];
 
     public function bankAccount(): BelongsTo

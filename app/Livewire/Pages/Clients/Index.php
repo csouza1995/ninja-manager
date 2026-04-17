@@ -2,9 +2,9 @@
 
 namespace App\Livewire\Pages\Clients;
 
+use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\WithPagination;
-use Livewire\Attributes\On;
 
 class Index extends Component
 {

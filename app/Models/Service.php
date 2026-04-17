@@ -78,12 +78,27 @@ class Service extends Model
     // Business Logic
     public function canEdit(): bool
     {
-        return !($this->status === \App\Enums\ServiceStatus::Finalized || $this->is_invoiced);
+        return true;
     }
 
     public function canDelete(): bool
     {
-        return $this->status === \App\Enums\ServiceStatus::Negotiating && !$this->is_invoiced && !$this->is_documented;
+        return $this->status === \App\Enums\ServiceStatus::Negotiating && ! $this->is_invoiced && ! $this->is_documented;
+    }
+
+    public function hasRevenue(): bool
+    {
+        return $this->revenue()->exists();
+    }
+
+    public function hasReceipt(): bool
+    {
+        return $this->receipt()->exists();
+    }
+
+    public function hasInvoice(): bool
+    {
+        return \App\Models\Invoice::where('service_id', $this->id)->exists();
     }
 
     // Status Helpers

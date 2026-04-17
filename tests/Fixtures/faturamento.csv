@@ -1,0 +1,7 @@
+Serviço;Valor;DAS;Mês Ref;Mês Pg;Faturado?;Recebido?;Mês Pg;
+#000001;R$ 3.037,68;R$ 182,26 ;Mar;Apr;Sim;Sim;Feb
+#000002;R$ 5.000,00;R$ 300,00 ;Mar;Apr;Sim;Sim;Jan
+#000003;R$ 5.000,00;R$ 300,00 ;Mar;Apr;Sim;Sim;Feb
+#000004;R$ 3.216,67;R$ 193,00 ;Apr;May;Sim;Sim;Apr
+#000005;R$ 5.000,00;R$ 300,00 ;Apr;May;Sim;Sim;Mar
+#000006;R$ 5.000,00;R$ 300,00 ;May;Jun;Não;Sim;Abr

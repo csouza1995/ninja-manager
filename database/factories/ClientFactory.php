@@ -19,17 +19,17 @@ class ClientFactory extends Factory
         $type = $this->faker->randomElement(['individual', 'company']);
 
         return [
-            'type'         => $type,
-            'name'         => $type === 'company' ? $this->faker->company() : $this->faker->name(),
-            'nickname'     => $this->faker->optional()->word(),
-            'document'     => $this->faker->numerify('##.###.###/####-##'),
-            'street'       => $this->faker->streetName(),
-            'number'       => $this->faker->buildingNumber(),
-            'complement'   => $this->faker->optional()->secondaryAddress(),
-            'zip_code'     => $this->faker->postcode(),
+            'type' => $type,
+            'name' => $type === 'company' ? $this->faker->company() : $this->faker->name(),
+            'nickname' => $this->faker->optional()->word(),
+            'document' => $this->faker->numerify('##.###.###/####-##'),
+            'street' => $this->faker->streetName(),
+            'number' => $this->faker->buildingNumber(),
+            'complement' => $this->faker->optional()->secondaryAddress(),
+            'zip_code' => $this->faker->postcode(),
             'neighborhood' => $this->faker->citySuffix(),
-            'city'         => $this->faker->city(),
-            'state'        => $this->faker->stateAbbr(),
+            'city' => $this->faker->city(),
+            'state' => $this->faker->stateAbbr(),
         ];
     }
 }

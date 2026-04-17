@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Receipt;
-use Illuminate\Http\Request;
 
 class ReceiptController extends Controller
 {
@@ -17,7 +16,7 @@ class ReceiptController extends Controller
         }
 
         $receipt->load(['service.client', 'service.executor', 'service.role', 'service.items']);
-        
+
         return view('receipts.template', [
             'receipt' => $receipt,
             'service' => $receipt->service,

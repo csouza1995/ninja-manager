@@ -36,7 +36,7 @@ class Receipt extends Model implements HasMedia
         static::creating(function ($receipt) {
             $year = now()->year;
             $yearShort = now()->format('y');
-            
+
             // Get next sequence number for this year
             $sequence = static::whereYear('created_at', $year)
                 ->max('sequence') + 1;

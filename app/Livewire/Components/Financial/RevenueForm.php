@@ -9,6 +9,7 @@ use App\Models\Invoice;
 use App\Models\Revenue;
 use App\Models\Service;
 use App\Models\Tax;
+use Livewire\Attributes\Computed;
 use Livewire\Attributes\On;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
@@ -51,6 +52,18 @@ class RevenueForm extends Component
 
     public $notes = '';
 
+    public $linkable_type;
+
+    public $linkable_id;
+
+    #[Validate('nullable|numeric')]
+    public $adjustment_amount = 0;
+
+    #[Validate('nullable|string|max:255')]
+    public $adjustment_reason = '';
+
+    public bool $hasExpenditure = false;
+
     public $classificationSuggestions = [];
 
     public function mount()
@@ -89,6 +102,12 @@ class RevenueForm extends Component
         $this->invoice_id = $revenue->invoice_id;
         $this->paid_at = $revenue->paid_at ? $revenue->paid_at->format('Y-m-d') : null;
         $this->notes = $revenue->notes;
+        $this->linkable_type = $revenue->linkable_type;
+        $this->linkable_id = $revenue->linkable_id;
+        $this->adjustment_amount = $revenue->adjustment_amount;
+        $this->adjustment_reason = $revenue->adjustment_reason;
+
+        $this->hasExpenditure = $revenue->expenditure()->exists() || ($revenue->invoice_id && $revenue->invoice->expenditure()->exists());
     }
 
     public function recalculateFromService()
@@ -98,7 +117,6 @@ class RevenueForm extends Component
             if ($service) {
                 $this->gross_amount = $service->total;
                 $this->description = "Serviço #{$service->id} - {$service->client->name}";
-                $this->calculateTotals();
             }
         }
     }
@@ -111,7 +129,6 @@ class RevenueForm extends Component
                 $this->gross_amount = $service->total;
                 $this->description = "Serviço #{$service->id} - {$service->client->name}";
                 $this->origin_name = $service->client->name;
-                $this->calculateTotals();
             }
         }
     }
@@ -135,6 +152,15 @@ class RevenueForm extends Component
         }
     }
 
+    #[Computed]
+    public function linkableOutflows()
+    {
+        return \App\Models\Outflow::query()
+            ->latest()
+            ->limit(50)
+            ->get();
+    }
+
     public function save()
     {
         if ($this->readOnly) {
@@ -151,11 +177,15 @@ class RevenueForm extends Component
                 'classification' => $this->classification,
                 'bank_account_id' => $this->bank_account_id,
                 'due_date' => $this->due_date,
-                'gross_amount' => $this->gross_amount,
-                'tax_percentage' => $this->tax_percentage,
-                'invoice_id' => $this->invoice_id,
+                'gross_amount' => round((float) $this->gross_amount, 2),
+                'tax_percentage' => round((float) $this->tax_percentage, 2),
+                'invoice_id' => $this->invoice_id ?: null,
                 'paid_at' => $this->paid_at ?: null,
                 'notes' => $this->notes,
+                'linkable_type' => $this->linkable_type ?: null,
+                'linkable_id' => $this->linkable_id ?: null,
+                'adjustment_amount' => round((float) ($this->adjustment_amount ?: 0), 2),
+                'adjustment_reason' => $this->adjustment_reason ?: null,
             ]
         );
 
@@ -182,7 +212,7 @@ class RevenueForm extends Component
         $this->reset([
             'revenueId', 'service_id', 'origin_name', 'description', 'classification',
             'bank_account_id', 'gross_amount', 'tax_percentage', 'invoice_id',
-            'paid_at', 'notes',
+            'paid_at', 'notes', 'adjustment_amount', 'adjustment_reason',
         ]);
         $this->due_date = now()->format('Y-m-d');
         $this->loadSuggestions();

@@ -2,10 +2,9 @@
 
 namespace App\Services;
 
-use App\Models\Service;
 use App\Models\Receipt;
+use App\Models\Service;
 use Barryvdh\DomPDF\Facade\Pdf;
-use Illuminate\Support\Facades\Storage;
 
 class ReceiptService
 {
@@ -26,8 +25,8 @@ class ReceiptService
         // Save PDF to temporary location
         $filename = "recibo_{$receipt->receipt_number_slug}.pdf";
         $tempPath = storage_path("app/public/temp/{$filename}");
-        
-        if (!file_exists(storage_path('app/public/temp'))) {
+
+        if (! file_exists(storage_path('app/public/temp'))) {
             mkdir(storage_path('app/public/temp'), 0755, true);
         }
 

@@ -20,7 +20,7 @@
                                 <label class="label"><span class="label-text">Cliente</span></label>
                                 <select wire:model="client_id"
                                     class="select select-bordered w-full @error('client_id') select-error @enderror"
-                                    @disabled(!$this->canEdit || $readOnly)>
+                                    @disabled($readOnly)>
                                     <option value="">Selecione um cliente</option>
                                     @foreach ($this->clients as $client)
                                         <option value="{{ $client->id }}">{{ $client->name }}</option>
@@ -35,7 +35,7 @@
                                 <label class="label"><span class="label-text">Executante</span></label>
                                 <select wire:model="executor_id"
                                     class="select select-bordered w-full @error('executor_id') select-error @enderror"
-                                    @disabled(!$this->canEdit || $readOnly)>
+                                    @disabled($readOnly)>
                                     <option value="">Selecione um executante</option>
                                     @foreach ($this->executors as $executor)
                                         <option value="{{ $executor->id }}">{{ $executor->name }}</option>
@@ -50,7 +50,7 @@
                                 <label class="label"><span class="label-text">Função</span></label>
                                 <select wire:model="role_id"
                                     class="select select-bordered w-full @error('role_id') select-error @enderror"
-                                    @disabled(!$this->canEdit || $readOnly)>
+                                    @disabled($readOnly)>
                                     <option value="">Selecione uma função</option>
                                     @foreach ($this->roles as $role)
                                         <option value="{{ $role->id }}">{{ $role->name }}</option>
@@ -88,25 +88,14 @@
                             <div class="form-control w-full">
                                 <label class="label"><span class="label-text">Data/Hora Início</span></label>
                                 <input type="datetime-local" wire:model="started_at" class="input input-bordered w-full"
-                                    @disabled(!$this->canEdit || $readOnly) />
+                                    @disabled($readOnly) />
                             </div>
 
                             <div class="form-control w-full">
                                 <label class="label"><span class="label-text">Data/Hora Fim</span></label>
                                 <input type="datetime-local" wire:model="finished_at"
-                                    class="input input-bordered w-full" @disabled(!$this->canEdit || $readOnly) />
+                                    class="input input-bordered w-full" @disabled($readOnly) />
                             </div>
-
-                            @if (!$readOnly)
-                                <div class="alert alert-info text-sm py-2">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                        class="stroke-current shrink-0 w-6 h-6">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                    </svg>
-                                    <span>Após finalizar ou faturar, os itens não podem ser alterados.</span>
-                                </div>
-                            @endif
                         </div>
 
                         <!-- Coluna 3: Status Adjacentes -->
@@ -116,12 +105,12 @@
                             <div class="form-control">
                                 <label class="label cursor-pointer justify-start gap-4">
                                     <input type="checkbox" wire:model.live="is_paid" class="checkbox checkbox-success"
-                                        @disabled($readOnly || ($serviceId && \App\Models\Revenue::where('service_id', $serviceId)->exists())) />
+                                        @disabled($readOnly || $this->hasRevenue) />
 
                                     <span class="label-text">
                                         <span class="font-medium text-success">Pago</span>
                                         <br>
-                                        @if ($serviceId && \App\Models\Revenue::where('service_id', $serviceId)->exists())
+                                        @if ($this->hasRevenue)
                                             <span class="text-xs opacity-50 italic">
                                                 Bloqueado por Receita vinculada.
                                             </span>
@@ -133,11 +122,11 @@
                             <div class="form-control">
                                 <label class="label cursor-pointer justify-start gap-4">
                                     <input type="checkbox" wire:model.live="is_documented"
-                                        class="checkbox checkbox-info" @disabled($readOnly || ($serviceId && \App\Models\Receipt::where('service_id', $serviceId)->exists())) />
+                                        class="checkbox checkbox-info" @disabled($readOnly || $this->hasReceipt) />
                                     <span class="label-text">
                                         <span class="font-medium text-info">Documentado (Recibo)</span>
                                         <br>
-                                        @if ($serviceId && \App\Models\Receipt::where('service_id', $serviceId)->exists())
+                                        @if ($this->hasReceipt)
                                             <span class="text-xs opacity-50 italic">
                                                 Bloqueado por Recibo vinculado.
                                             </span>
@@ -149,11 +138,11 @@
                             <div class="form-control">
                                 <label class="label cursor-pointer justify-start gap-4">
                                     <input type="checkbox" wire:model.live="is_invoiced"
-                                        class="checkbox checkbox-primary" @disabled($readOnly || ($serviceId && \App\Models\Invoice::where('service_id', $serviceId)->exists())) />
+                                        class="checkbox checkbox-primary" @disabled($readOnly || $this->hasInvoice) />
                                     <span class="label-text">
                                         <span class="font-medium text-primary">Faturado (NF)</span>
                                         <br>
-                                        @if ($serviceId && \App\Models\Invoice::where('service_id', $serviceId)->exists())
+                                        @if ($this->hasInvoice)
                                             <span class="text-xs opacity-50 italic">
                                                 Bloqueado por NF vinculada.
                                             </span>
@@ -167,7 +156,7 @@
                     <!-- Seção de Itens -->
                     <div class="divider">Itens do Serviço</div>
 
-                    @if ($this->canEdit && !$readOnly)
+                    @if (!$readOnly)
                         <div class="flex flex-wrap gap-4 items-end mb-6 bg-base-300 p-4 rounded-lg">
                             <div class="form-control w-full md:flex-1">
                                 <label class="label"><span class="label-text">Adicionar Item</span></label>
@@ -213,7 +202,7 @@
                                     <th>Valor Unit.</th>
                                     <th class="w-32">Quantidade</th>
                                     <th>Total</th>
-                                    @if ($this->canEdit && !$readOnly)
+                                    @if (!$readOnly)
                                         <th class="w-16"></th>
                                     @endif
                                 </tr>
@@ -225,7 +214,7 @@
                                         <td>{{ $item['description'] }}</td>
                                         <td>R$ {{ number_format($item['unit_price'], 2, ',', '.') }}</td>
                                         <td>
-                                            @if ($this->canEdit && !$readOnly)
+                                            @if (!$readOnly)
                                                 <input type="number" value="{{ $item['quantity'] }}"
                                                     wire:change="updateItemQuantity({{ $index }}, $event.target.value)"
                                                     min="0" step="0.0001"
@@ -236,7 +225,7 @@
                                         </td>
                                         <td class="font-bold">R$
                                             {{ number_format($item['total_price'], 2, ',', '.') }}</td>
-                                        @if ($this->canEdit && !$readOnly)
+                                        @if (!$readOnly)
                                             <td>
                                                 <button type="button" wire:click="removeItem({{ $index }})"
                                                     class="btn btn-ghost btn-xs btn-square text-error">
@@ -251,7 +240,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="{{ $this->canEdit && !$readOnly ? 6 : 5 }}"
+                                        <td colspan="{{ !$readOnly ? 6 : 5 }}"
                                             class="text-center py-4 bg-base-200 opacity-50">Nenhum item adicionado
                                             ainda.</td>
                                     </tr>
@@ -261,7 +250,7 @@
                                 <tfoot>
                                     <tr class="bg-base-300 font-bold">
                                         <td colspan="4" class="text-right uppercase">Total do Serviço:</td>
-                                        <td colspan="{{ $this->canEdit && !$readOnly ? 2 : 1 }}" class="text-lg">R$
+                                        <td colspan="{{ !$readOnly ? 2 : 1 }}" class="text-lg">R$
                                             {{ number_format(collect($items)->sum('total_price'), 2, ',', '.') }}</td>
                                     </tr>
                                 </tfoot>

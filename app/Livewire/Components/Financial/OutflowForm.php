@@ -49,13 +49,21 @@ class OutflowForm extends Component
     #[Validate('nullable|date')]
     public $paid_at;
 
+    #[Validate('nullable|date')]
+    public $reference_date;
+
+    #[Validate('nullable|numeric')]
+    public $adjustment_amount = 0;
+
+    #[Validate('nullable|string|max:255')]
+    public $adjustment_reason = '';
+
     // Suggestions
     public $peopleSuggestions = [];
 
     public function mount()
     {
         $this->due_date = Carbon::now()->format('Y-m-d');
-        $this->paid_at = Carbon::now()->format('Y-m-d');
     }
 
     public function rules()
@@ -102,6 +110,9 @@ class OutflowForm extends Component
         $this->tax_amount = $outflow->tax_amount;
         $this->due_date = $outflow->due_date->format('Y-m-d');
         $this->paid_at = $outflow->paid_at ? $outflow->paid_at->format('Y-m-d') : null;
+        $this->reference_date = $outflow->reference_date ? $outflow->reference_date->format('Y-m-d') : null;
+        $this->adjustment_amount = $outflow->adjustment_amount;
+        $this->adjustment_reason = $outflow->adjustment_reason;
     }
 
     public function updated($propertyName)
@@ -129,7 +140,7 @@ class OutflowForm extends Component
         }
 
         $calc = ($this->amount ?: 0) * ($this->tax_percentage / 100);
-        $this->tax_amount = min($calc, 932.00);
+        $this->tax_amount = round(min($calc, 932.00), 2);
     }
 
     public function save()
@@ -160,11 +171,14 @@ class OutflowForm extends Component
                 'origin_bank_account_id' => $this->origin_bank_account_id,
                 'destination_bank_account_id' => $this->type === 'Transferência' ? $this->destination_bank_account_id : null,
                 'person_name' => $this->person_name,
-                'amount' => $this->amount,
-                'tax_percentage' => $this->tax_percentage,
-                'tax_amount' => $this->tax_amount,
+                'amount' => round((float) $this->amount, 2),
+                'tax_percentage' => round((float) $this->tax_percentage, 2),
+                'tax_amount' => round((float) $this->tax_amount, 2),
                 'due_date' => $this->due_date,
-                'paid_at' => $this->paid_at,
+                'paid_at' => $this->paid_at ?: null,
+                'reference_date' => $this->reference_date ?: null,
+                'adjustment_amount' => round((float) ($this->adjustment_amount ?: 0), 2),
+                'adjustment_reason' => $this->adjustment_reason ?: null,
             ]
         );
 
@@ -183,11 +197,11 @@ class OutflowForm extends Component
     {
         $this->reset([
             'outflowId', 'description', 'destination_bank_account_id',
-            'person_name', 'amount', 'tax_amount',
+            'person_name', 'amount', 'tax_amount', 'reference_date',
+            'adjustment_amount', 'adjustment_reason',
         ]);
         $this->type = 'Prolabore';
         $this->due_date = Carbon::now()->format('Y-m-d');
-        $this->paid_at = Carbon::now()->format('Y-m-d');
     }
 
     private function updateSuggestions()

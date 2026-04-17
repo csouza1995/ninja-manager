@@ -3,12 +3,13 @@
 namespace App\Livewire\Components\Clients;
 
 use App\Models\Client;
-use Livewire\Component;
 use Livewire\Attributes\On;
+use Livewire\Component;
 
 class DeleteDialog extends Component
 {
     public ?int $clientId = null;
+
     public bool $showDialog = false;
 
     #[On('delete-client')]

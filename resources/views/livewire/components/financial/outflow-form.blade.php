@@ -132,13 +132,31 @@
                             @disabled($readOnly) />
                         <span class="label-text-alt opacity-50 mt-1">Deixe vazio se for apenas agendamento</span>
                     </div>
-                </div>
 
-                <div class="modal-action">
-                    <button wire:click="close" class="btn btn-ghost">{{ $readOnly ? 'Fechar' : 'Cancelar' }}</button>
-                    @if (!$readOnly)
-                        <button wire:click="save" class="btn btn-primary px-8">Salvar Saída</button>
-                    @endif
+                    <div class="form-control md:col-span-2 bg-base-200 p-3 rounded-lg border border-base-300 mt-2">
+                        <label class="label pt-0"><span class="label-text font-bold">Informações Adicionais</span></label>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div class="md:col-span-3">
+                                <label class="label py-1"><span class="label-text text-xs">Data de Referência</span></label>
+                                <input type="date" wire:model="reference_date" class="input input-bordered w-full" @disabled($readOnly) />
+                            </div>
+                            <div>
+                                <label class="label py-1"><span class="label-text text-xs">Ajuste de Valor</span></label>
+                                <input type="number" step="0.01" wire:model.live="adjustment_amount" class="input input-bordered w-full" placeholder="0.00" @disabled($readOnly) />
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="label py-1"><span class="label-text text-xs">Motivo do Ajuste</span></label>
+                                <input type="text" wire:model="adjustment_reason" class="input input-bordered w-full" placeholder="Ex: Taxa bancária" @disabled($readOnly) />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-end gap-2 md:col-span-2 mt-4">
+                        <button wire:click="close" class="btn btn-ghost">{{ $readOnly ? 'Fechar' : 'Cancelar' }}</button>
+                        @if (!$readOnly)
+                            <button wire:click="save" class="btn btn-primary px-8">Salvar Saída</button>
+                        @endif
+                    </div>
                 </div>
             </div>
         </div>
