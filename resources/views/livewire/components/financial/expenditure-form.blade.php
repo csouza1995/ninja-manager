@@ -19,7 +19,8 @@
                             <select wire:model.live="model_type" class="select select-bordered w-full"
                                 @disabled($readOnly)>
                                 <option value="">Não Vinculado</option>
-                                <option value="App\Models\Revenue">Receita (NF)</option>
+                                <option value="App\Models\Revenue">Receita</option>
+                                <option value="App\Models\Invoice">Nota Fiscal (NF)</option>
                                 <option value="App\Models\Outflow">Saída/Retirada</option>
                             </select>
                         </div>

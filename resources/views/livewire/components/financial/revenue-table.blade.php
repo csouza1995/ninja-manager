@@ -192,14 +192,13 @@
                                             d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
                                     </svg>
                                 </button>
-                                <!-- Expenditure Link (Only if has NF and no expenditure yet for either Revenue or NF) -->
-                                @if ($revenue->tax_amount > 0 && $revenue->invoice_id && !$revenue->expenditure && !$revenue->invoice?->expenditure)
+                                <!-- Expenditure Link (Only if revenue has tax and no expenditure yet) -->
+                                @if ($revenue->tax_amount > 0 && !$revenue->expenditure)
                                     <a href="{{ route('financial.expenditures', [
                                         'launch' => 'tax',
-                                        'fromModelType' => 'App\Models\Invoice',
-                                        'fromModelId' => $revenue->invoice_id,
+                                        'fromModelType' => 'App\Models\Revenue',
+                                        'fromModelId' => $revenue->id,
                                         'launchAmount' => $revenue->tax_amount,
-                                        'launchDescription' => 'Imposto Ref. ' . $revenue->description . ' ' . \Carbon\Carbon::parse($revenue->paid_at ?? ($revenue->due_date ?? now()))->addMonth()->format('m/Y') . ' (' . \Carbon\Carbon::parse($revenue->paid_at ?? ($revenue->due_date ?? now()))->format('m/Y') . ')'
                                     ]) }}"
                                         wire:navigate class="btn btn-square btn-ghost btn-xs text-warning"
                                         title="Lançar Despesa de Imposto">

@@ -6,6 +6,8 @@ namespace App\Livewire\Components\Financial;
 
 use App\Models\BankAccount;
 use App\Models\Expenditure;
+use App\Models\Invoice;
+use App\Models\Revenue;
 use Carbon\Carbon;
 use Livewire\Attributes\On;
 use Livewire\Attributes\Url;
@@ -183,12 +185,26 @@ class ExpenditureForm extends Component
     private function formatTaxDescription($model, $baseDate): string
     {
         $baseCarbon = Carbon::parse($baseDate);
-        $dueCarbon = $baseCarbon->copy()->addMonth();
-
+        $dueStr = $baseCarbon->copy()->addMonth()->format('m/Y');
         $baseStr = $baseCarbon->format('m/Y');
-        $dueStr = $dueCarbon->format('m/Y');
 
-        return "Imposto Ref. {$model->description} {$dueStr} ({$baseStr})";
+        if ($model instanceof Revenue) {
+            $model->loadMissing(['service.client']);
+            $ref = $model->service ? "Serviço #{$model->service->id}" : ($model->description ?? '');
+            if ($model->service?->client) {
+                $ref .= " - {$model->service->client->name}";
+            }
+        } elseif ($model instanceof Invoice) {
+            $model->loadMissing(['service', 'client']);
+            $ref = $model->service ? "Serviço #{$model->service->id}" : ($model->description ?? '');
+            if ($model->client) {
+                $ref .= " - {$model->client->name}";
+            }
+        } else {
+            $ref = $model->description;
+        }
+
+        return "Imposto Ref. {$ref} {$dueStr} ({$baseStr})";
     }
 
     public function save()
@@ -238,17 +254,28 @@ class ExpenditureForm extends Component
 
     private function loadLinkables()
     {
-        // Get Invoices with tax_amount > 0 and no linked expenditure
-        $invoices = \App\Models\Invoice::where('tax_amount', '>', 0)
+        // Revenues with tax > 0 and no linked expenditure
+        $revenues = Revenue::where('tax_percentage', '>', 0)
+            ->whereDoesntHave('expenditure')
+            ->with(['service.client'])
+            ->get()
+            ->map(fn ($r) => [
+                'type' => 'App\Models\Revenue',
+                'id' => $r->id,
+                'label' => $this->revenueLabel($r),
+            ]);
+
+        // Invoices with tax_amount > 0 and no linked expenditure
+        $invoices = Invoice::where('tax_amount', '>', 0)
             ->whereDoesntHave('expenditure')
             ->get()
             ->map(fn ($r) => [
                 'type' => 'App\Models\Invoice',
                 'id' => $r->id,
-                'label' => "Fatura: {$r->description} (R$ ".number_format((float) $r->tax_amount, 2, ',', '.').')',
+                'label' => "NF {$r->number} (R$ ".number_format((float) $r->tax_amount, 2, ',', '.').')',
             ]);
 
-        // Get Outflows with tax_amount > 0 and no linked expenditure
+        // Outflows with tax_amount > 0 and no linked expenditure
         $outflows = \App\Models\Outflow::where('tax_amount', '>', 0)
             ->whereDoesntHave('expenditure')
             ->get()
@@ -258,25 +285,41 @@ class ExpenditureForm extends Component
                 'label' => "Saída: {$o->description} (R$ ".number_format((float) $o->tax_amount, 2, ',', '.').')',
             ]);
 
-        // Include currently selected item if editing an existing expenditure
+        // Include currently selected item when editing (may already have expenditure)
         $current = [];
         if ($this->model_type && $this->model_id) {
             $modelClass = $this->model_type;
             $model = $modelClass::find($this->model_id);
             if ($model) {
-                $prefix = $this->model_type === 'App\Models\Invoice' ? 'Fatura' : 'Saída';
-                $current[] = [
-                    'type' => $this->model_type,
-                    'id' => $this->model_id,
-                    'label' => "{$prefix}: {$model->description} (R$ ".number_format((float) $model->tax_amount, 2, ',', '.').')',
-                    'selected' => true,
-                ];
+                $label = match ($this->model_type) {
+                    'App\Models\Revenue' => $this->revenueLabel($model->loadMissing(['service.client'])),
+                    'App\Models\Invoice' => "NF {$model->number} (R$ ".number_format((float) $model->tax_amount, 2, ',', '.').')',
+                    default => "Saída: {$model->description} (R$ ".number_format((float) $model->tax_amount, 2, ',', '.').')',
+                };
+                $current[] = ['type' => $this->model_type, 'id' => $this->model_id, 'label' => $label, 'selected' => true];
             }
         }
 
-        $this->linkables = collect($current)->merge($invoices)->merge($outflows)->unique(function ($item) {
-            return $item['type'].'-'.$item['id'];
-        })->toArray();
+        $this->linkables = collect($current)
+            ->merge($revenues)
+            ->merge($invoices)
+            ->merge($outflows)
+            ->unique(fn ($item) => $item['type'].'-'.$item['id'])
+            ->toArray();
+    }
+
+    private function revenueLabel(Revenue $revenue): string
+    {
+        if ($revenue->service) {
+            $label = "Serviço #{$revenue->service->id}";
+            if ($revenue->service->client) {
+                $label .= " - {$revenue->service->client->name}";
+            }
+        } else {
+            $label = $revenue->description ?? '';
+        }
+
+        return $label.' (R$ '.number_format((float) $revenue->tax_amount, 2, ',', '.').')';
     }
 
     private function updateSuggestions()

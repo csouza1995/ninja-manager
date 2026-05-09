@@ -96,9 +96,14 @@
                                         class="link link-hover text-primary" title="Ver Saída">
                                         {{ $exp->description }}
                                     </a>
-                                @elseif($exp->model_type === 'App\Models\Revenue')
+                                @elseif ($exp->model_type === 'App\Models\Revenue')
                                     <a href="{{ route('financial.revenues', ['showId' => $exp->model_id]) }}"
                                         class="link link-hover text-primary" title="Ver Receita">
+                                        {{ $exp->description }}
+                                    </a>
+                                @elseif ($exp->model_type === 'App\Models\Invoice')
+                                    <a href="{{ route('financial.invoices', ['showId' => $exp->model_id]) }}"
+                                        class="link link-hover text-primary" title="Ver Nota Fiscal" wire:navigate>
                                         {{ $exp->description }}
                                     </a>
                                 @else
