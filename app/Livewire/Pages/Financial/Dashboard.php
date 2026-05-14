@@ -384,53 +384,7 @@ class Dashboard extends Component
         $accounts = BankAccount::all();
         $this->bankBalances = [];
         foreach ($accounts as $account) {
-            $grossRev = Revenue::where('bank_account_id', $account->id)->whereNotNull('paid_at')->sum(DB::raw('gross_amount + adjustment_amount'));
-
-            // Impostos das Receitas Pagas (usando percentual da receita, não o total da NF)
-            $paidRevenues = Revenue::where('bank_account_id', $account->id)
-                ->whereNotNull('paid_at')
-                ->with('invoice')
-                ->get();
-
-            $taxAccrued = $paidRevenues->sum(function ($rev) {
-                $rate = $rev->tax_percentage;
-                if ($rate <= 0 && $rev->invoice && $rev->invoice->amount > 0) {
-                    $rate = ($rev->invoice->tax_amount / $rev->invoice->amount) * 100;
-                }
-
-                return $rev->gross_amount * ($rate / 100);
-            });
-
-            // Impostos das Retiradas Pagas (INSS 11%)
-            $outflowTaxAccrued = Outflow::where('origin_bank_account_id', $account->id)->whereNotNull('paid_at')->sum('tax_amount');
-
-            $operExp = Expenditure::where('bank_account_id', $account->id)
-                ->whereNotNull('paid_at')
-                ->sum(DB::raw('amount + adjustment_amount'));
-
-            // Impostos pagos nesta conta (Para controle da provisão abaixo)
-            $taxPaid = Expenditure::where('bank_account_id', $account->id)
-                ->where(function ($q) {
-                    $q->where('classification', 'like', '%Imposto%')
-                        ->orWhere('classification', 'like', '%INSS%')
-                        ->orWhere('classification', 'like', '%DAS%');
-                })
-                ->whereNotNull('paid_at')
-                ->sum(DB::raw('amount + adjustment_amount'));
-
-            // Retiradas (Líquido - o que efetivamente saiu da conta no dia)
-            $outflowExp = Outflow::where('origin_bank_account_id', $account->id)
-                ->whereNotNull('paid_at')
-                ->sum(DB::raw('amount + adjustment_amount - COALESCE(tax_amount, 0)'));
-
-            // Transferências recebidas (Líquido)
-            $transfersIn = Outflow::where('destination_bank_account_id', $account->id)
-                ->where('type', 'Transferência')
-                ->whereNotNull('paid_at')
-                ->sum(DB::raw('amount + adjustment_amount - COALESCE(tax_amount, 0)'));
-
-            // Saldo consolidado na conta (Caixa Real: Saldo Inicial + Entradas - Saídas)
-            $balance = ($account->opening_balance + $grossRev + $transfersIn) - ($operExp + $outflowExp);
+            $balance = $account->calculateBalance();
 
             // Provisão de Imposto (Acumulado que ainda não foi pago desta conta)
             // 1. DAS Acumulado: Todas as receitas que já foram Faturadas OU já foram Recebidas
